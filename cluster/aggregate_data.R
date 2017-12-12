@@ -4,19 +4,22 @@ library(forcats)
 library(ggplot2)
 library(rstanarm)
 library(lme4)
+library(sp)
+library(rgdal)
 
 options(mc.cores = parallel::detectCores())
 
 district_content <- read.csv('../../Data/crdc201314csv/CRDC2013_14_LEA_content.csv')
-df_district <- read.csv('../../Data/crdc201314csv/CRDC2013_14_LEA.csv')
+df_district <- read.csv('../../Data/crdc201314csv/CRDC2013_14_LEA.csv', colClasses = 'character')
 school_content <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH_content.csv')
 df_school <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH.csv')
-state_means <- read.csv('/home/triddle/Data/state_means.csv')
+MSA_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/MSA_means.csv')
 
+#resume at line 445
 
 # Get enrollment figures
 df_school %>%
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_ENR_HI_M:TOT_ENR_F) %>%
+  select(LEA_STATE:LEAID, SCH_ENR_HI_M:TOT_ENR_F) %>%
   gather(group, total_number, SCH_ENR_HI_M:TOT_ENR_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -29,7 +32,7 @@ df_school %>%
 # all metrics #
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_CORPINSTANCES_IND:TOT_DISCWODIS_CORP_F) %>% 
+  select(LEA_STATE:LEAID, SCH_CORPINSTANCES_IND:TOT_DISCWODIS_CORP_F) %>% 
   filter(SCH_CORPINSTANCES_IND=='YES') %>%
   gather(group, number, SCH_DISCWODIS_CORP_HI_M:TOT_DISCWODIS_CORP_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
@@ -41,7 +44,7 @@ df_school %>%
 
 corporal %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -57,7 +60,8 @@ full_dat %>%
   mutate(LEA_STATE=droplevels(LEA_STATE)) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_GRADE_PS, SCH_PSDISC_SINGOOS_HI_M:TOT_PSDISC_SINGOOS_F) %>% 
+  select(LEA_STATE:LEAID, SCH_GRADE_PS, 
+         SCH_PSDISC_SINGOOS_HI_M:TOT_PSDISC_SINGOOS_F) %>% 
   filter(SCH_GRADE_PS=='YES') %>%
   gather(group, number, SCH_PSDISC_SINGOOS_HI_M:TOT_PSDISC_SINGOOS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
@@ -68,7 +72,8 @@ df_school %>%
   select(-prefix) -> ps_susp
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_GRADE_PS, SCH_PSDISC_MULTOOS_HI_M:TOT_PSDISC_MULTOOS_F) %>% 
+  select(LEA_STATE:LEAID, SCH_GRADE_PS, 
+         SCH_PSDISC_MULTOOS_HI_M:TOT_PSDISC_MULTOOS_F) %>% 
   filter(SCH_GRADE_PS=='YES') %>%
   gather(group, number_2, SCH_PSDISC_MULTOOS_HI_M:TOT_PSDISC_MULTOOS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
@@ -83,7 +88,7 @@ df_school %>%
 
 ps_susp %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -100,7 +105,7 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_DISCWODIS_ISS_HI_M:TOT_DISCWODIS_ISS_F) %>% 
+  select(LEA_STATE:LEAID, SCH_DISCWODIS_ISS_HI_M:TOT_DISCWODIS_ISS_F) %>% 
   gather(group, number, SCH_DISCWODIS_ISS_HI_M:TOT_DISCWODIS_ISS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -111,7 +116,7 @@ df_school %>%
 
 susp_inschool %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -128,7 +133,7 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_DISCWODIS_SINGOOS_HI_M:TOT_DISCWODIS_SINGOOS_F) %>% 
+  select(LEA_STATE:LEAID, SCH_DISCWODIS_SINGOOS_HI_M:TOT_DISCWODIS_SINGOOS_F) %>% 
   gather(group, number, SCH_DISCWODIS_SINGOOS_HI_M:TOT_DISCWODIS_SINGOOS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -138,7 +143,7 @@ df_school %>%
   select(-prefix) -> oos_susp
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_DISCWODIS_MULTOOS_HI_M:TOT_DISCWODIS_MULTOOS_F) %>% 
+  select(LEA_STATE:LEAID, SCH_DISCWODIS_MULTOOS_HI_M:TOT_DISCWODIS_MULTOOS_F) %>% 
   gather(group, number_2, SCH_DISCWODIS_MULTOOS_HI_M:TOT_DISCWODIS_MULTOOS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -152,7 +157,7 @@ df_school %>%
 
 oos_susp %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -169,7 +174,7 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_PSDISC_EXP_HI_M:TOT_PSDISC_EXP_F) %>% 
+  select(LEA_STATE:LEAID, SCH_PSDISC_EXP_HI_M:TOT_PSDISC_EXP_F) %>% 
   gather(group, number, SCH_PSDISC_EXP_HI_M:TOT_PSDISC_EXP_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -180,7 +185,7 @@ df_school %>%
 
 ps_exp %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -196,7 +201,7 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_DISCWODIS_EXPWE_HI_M:TOT_DISCWODIS_EXPWE_F) %>% 
+  select(LEA_STATE:LEAID, SCH_DISCWODIS_EXPWE_HI_M:TOT_DISCWODIS_EXPWE_F) %>% 
   gather(group, number, SCH_DISCWODIS_EXPWE_HI_M:TOT_DISCWODIS_EXPWE_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -207,7 +212,7 @@ df_school %>%
 
 exp_w_ed %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -223,7 +228,7 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWODIS_EXPWOE_F) %>% 
+  select(LEA_STATE:LEAID, SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWODIS_EXPWOE_F) %>% 
   gather(group, number, SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWODIS_EXPWOE_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -234,7 +239,7 @@ df_school %>%
 
 exp_wo_ed %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -251,7 +256,7 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_DISCWODIS_EXPZT_HI_M:TOT_DISCWODIS_EXPZT_F) %>% 
+  select(LEA_STATE:LEAID, SCH_DISCWODIS_EXPZT_HI_M:TOT_DISCWODIS_EXPZT_F) %>% 
   gather(group, number, SCH_DISCWODIS_EXPZT_HI_M:TOT_DISCWODIS_EXPZT_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -262,7 +267,7 @@ df_school %>%
 
 exp_zero %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -278,7 +283,7 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_DISCWODIS_REF_HI_M:TOT_DISCWODIS_REF_F) %>% 
+  select(LEA_STATE:LEAID, SCH_DISCWODIS_REF_HI_M:TOT_DISCWODIS_REF_F) %>% 
   gather(group, number, SCH_DISCWODIS_REF_HI_M:TOT_DISCWODIS_REF_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -289,7 +294,7 @@ df_school %>%
 
 law_enf %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -305,7 +310,7 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_DISCWODIS_ARR_HI_M:TOT_DISCWODIS_ARR_F) %>% 
+  select(LEA_STATE:LEAID, SCH_DISCWODIS_ARR_HI_M:TOT_DISCWODIS_ARR_F) %>% 
   gather(group, number, SCH_DISCWODIS_ARR_HI_M:TOT_DISCWODIS_ARR_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -316,7 +321,7 @@ df_school %>%
 
 in_school_arrest %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -333,7 +338,7 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_RS_NONIDEA_MECH_HI_M:TOT_RS_NONIDEA_MECH_F) %>% 
+  select(LEA_STATE:LEAID, SCH_RS_NONIDEA_MECH_HI_M:TOT_RS_NONIDEA_MECH_F) %>% 
   gather(group, number, SCH_RS_NONIDEA_MECH_HI_M:TOT_RS_NONIDEA_MECH_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -344,7 +349,7 @@ df_school %>%
 
 mech_rest %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -360,7 +365,7 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_RS_NONIDEA_PHYS_HI_M:TOT_RS_NONIDEA_PHYS_F) %>% 
+  select(LEA_STATE:LEAID, SCH_RS_NONIDEA_PHYS_HI_M:TOT_RS_NONIDEA_PHYS_F) %>% 
   gather(group, number, SCH_RS_NONIDEA_PHYS_HI_M:TOT_RS_NONIDEA_PHYS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -371,7 +376,7 @@ df_school %>%
 
 phys_rest %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -387,7 +392,7 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_RS_NONIDEA_SECL_HI_M:TOT_RS_NONIDEA_SECL_F) %>% 
+  select(LEA_STATE:LEAID, SCH_RS_NONIDEA_SECL_HI_M:TOT_RS_NONIDEA_SECL_F) %>% 
   gather(group, number, SCH_RS_NONIDEA_SECL_HI_M:TOT_RS_NONIDEA_SECL_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -398,7 +403,7 @@ df_school %>%
 
 seclusion %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -413,335 +418,47 @@ full_dat %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   rbind(subdat) -> subdat
 
-state_means %>%
+df_district %>%
+  select(LEAID, LEA_ZIP) %>%
+  right_join(subdat) %>%
+  mutate(LEA_ZIP = as.character(LEA_ZIP)) -> tempout
+
+## next, append the msa number as seen on the DOL website
+msa_dat <- read.csv('../../Data/fs13_gpci_by_msa-ZIP.csv', skip=10, colClasses = 'character')
+msa_dat %>%
+  mutate(LEA_ZIP = ZIP.CODE) %>%
+  select(LEA_ZIP, MSA.No.) %>%
+  right_join(tempout) -> tempout
+
+#some zip codes in district data do not seem to exist at all (eg 91705, 30335) 
+#or in the DOL data (eg 30305)
+MSA_means %>%
   filter(raceomb=='White') %>%
-  mutate(LEA_STATE=STATE) %>%
-  select(LEA_STATE, bias, warmth) %>%
+  mutate(MSA.No. = as.character(MSANo)) %>%
+  select(MSANo, MSA.No., bias, warmth) %>%
   mutate(bias = scale(bias)[,1],
          warmth = scale(warmth)[,1]) %>%
-  right_join(subdat) -> model_dat
-
-write.csv(model_dat, file='output/full_model_data.csv', row.names = FALSE)
-model_dat <- read.csv('output/full_model_data.csv')
-
-###
-fulldat_bias <- NA
-bias_models <- NA
-modelb_list <- list()
-for(i in rownames(table(model_dat$metric))){
-  print(i)
-  model_dat %>%
-    filter(metric==i) -> subdat
-  m <- glmer(cbind(number, total_number-number) ~ group*bias + (group|LEA_STATE),
-             data=subdat, family='binomial')
-  modelb_list[[length(modelb_list)+1]] <- m
-  subdat$lmer_yhat_fixed <- predict(m, re.form=NA, type='response')
-  subdat$lmer_yhat_s <- predict(m, re.form=~(group|LEA_STATE), type='response')
-  temp <- broom::tidy(m)
-  temp$var <- i
-  bias_models <- rbind(bias_models, temp)
-  fulldat_bias <- rbind(fulldat_bias, subdat)
-}
-
-fulldat_warmth <- NA
-warmth_models <- NA
-modelw_list <- list()
-for(i in rownames(table(model_dat$metric))){
-  print(i)
-  model_dat %>%
-    filter(metric==i) -> subdat
-  m <- glmer(cbind(number, total_number-number) ~ group*warmth + (group|LEA_STATE),
-             data=subdat, family='binomial')
-  modelw_list[[length(modelw_list)+1]] <- m
-  subdat$lmer_yhat_fixed <- predict(m, re.form=NA, type='response')
-  subdat$lmer_yhat_s <- predict(m, re.form=~(group|LEA_STATE), type='response')
-  temp <- broom::tidy(m)
-  temp$var <- i
-  warmth_models <- rbind(warmth_models, temp)
-  fulldat_warmth <- rbind(fulldat_warmth, subdat)
-}
-
-#fulldat_warmth <- fulldat_warmth[-1,]
-#fulldat_bias <- fulldat_bias[-1,]
-
-p <- ggplot(fulldat_warmth, aes(x=warmth, y=lmer_yhat_fixed, color=group, group=group)) + 
-  geom_line() + 
-  facet_wrap(~metric, scales = 'free') +
-  theme_classic()
-
-ggsave('../figs/individual_models/warmth.jpeg', p)
-p <- ggplot(fulldat_bias, aes(x=bias, y=lmer_yhat_fixed, color=group, group=group)) + 
-  geom_line() + 
-  facet_wrap(~metric, scales = 'free') +
-  theme_classic()
-
-ggsave('../figs/individual_models/bias.jpeg', p)
-
-load('output/meanfield/meanfield_model_statemeans.rdata')
-
-m.bias <- stan_glmer(cbind(number, total_number-number) ~ group*bias + 
-                  (group|LEA_STATE) + (group*bias|metric), data=model_dat, 
-                  family='binomial', prior = normal(0,1), 
-                  prior_intercept = normal(0,1), algorithm='meanfield')
-
-m.warmth <- stan_glmer(cbind(number, total_number-number) ~ group*warmth + 
-                  (group|LEA_STATE) + (group*warmth|metric), data=model_dat, 
-                  family='binomial', prior = normal(0,1), 
-                  prior_intercept = normal(0,1), algorithm='meanfield')
+  right_join(tempout) %>%
+  filter(!is.na(MSA.No.)) %>%
+  filter(!is.na(bias)) %>%
+  select(MSA.No., bias, warmth, COMBOKEY, group, number, total_number, metric) -> tempout
 
 
-fulldat %>%
-  select(group, LEA_STATE, metric) %>%
-  distinct() %>%
-  mutate(warmth_l2=-2,
-         warmth_l1=-1,
-         warmth_0=0,
-         warmth_1=1,
-         warmth_2=2) %>%
-  gather(label, warmth, warmth_l2:warmth_2) %>%
-  select(-label) %>%
-  filter(!is.na(group))-> newdat
+df_acs <- read.csv('../../Data/ACS/ACS_14_5YR_DP05/ACS_14_5YR_DP05_with_ann.csv',skip = 1)
 
-newdat$index <- as.character(seq(1, length(newdat$group)))
+covs <- df_acs[,c(3, 4, 128, 132)]
+names(covs) <- c('LEA_ZIP', 'total_pop', 'white_pop', 'black_pop')
+covs$LEA_ZIP <- substr(covs$LEA_ZIP, 7,13)
 
-temp <- as.data.frame(
-  posterior_linpred(m.warmth, newdata = newdat, re.form=~(group*warmth|metric),
-                    transform=T))
-temp$sample <- seq(1, length(temp$`1`))
+df_acs <- read.csv('../../Data/ACS/ACS_14_5YR_DP03/ACS_14_5YR_DP03_with_ann.csv',skip = 1)
 
-temp %>%
-  gather(index, prediction, -sample) %>%
-  left_join(newdat) %>%
-  group_by(group, metric, warmth) %>%
-  summarise(est = mean(prediction),
-            lower = quantile(prediction, .025),
-            upper = quantile(prediction, .975)) -> plot.dat
+covs2 <- df_acs[,c(2, 22, 248, 478)]
+names(covs2) <- c('CBSAFP', 'unemp_rate', 'med_income', 'poverty_rate')
 
-p <- ggplot(plot.dat, aes(x=warmth, y=est, color=group, group=group)) + 
-  geom_line() + 
-  geom_errorbar(aes(ymin=lower, ymax=upper)) + 
-  facet_wrap(~metric, scales = 'free') +
-  theme_classic()
+covs3 <- left_join(covs, covs2)
+covs3$CBSAFP <- as.character(covs3$CBSAFP)
 
-ggsave('../figs/individual_models/warmth_meanfield.jpeg', p)
+tempthis <- left_join(tempout, covs3)
 
-fulldat %>%
-  select(group, LEA_STATE, metric) %>%
-  distinct() %>%
-  mutate(bias_l2=-2,
-         bias_l1=-1,
-         bias_0=0,
-         bias_1=1,
-         bias_2=2) %>%
-  gather(label, bias, bias_l2:bias_2) %>%
-  select(-label) %>%
-  filter(!is.na(group))-> newdat
+write.csv(tempout, file='output/full_model_data.csv', row.names = FALSE)
 
-newdat$index <- as.character(seq(1, length(newdat$group)))
-
-temp <- as.data.frame(
-  posterior_linpred(m.bias, newdata = newdat, re.form=~(group*bias|metric),
-                    transform=T))
-temp$sample <- seq(1, length(temp$`1`))
-
-temp %>%
-  gather(index, prediction, -sample) %>%
-  left_join(newdat) %>%
-  group_by(group, metric, bias) %>%
-  summarise(est = mean(prediction),
-            lower = quantile(prediction, .025),
-            upper = quantile(prediction, .975)) -> plot.dat
-
-p <- ggplot(plot.dat, aes(x=bias, y=est, color=group, group=group)) + 
-  geom_line() + 
-  geom_errorbar(aes(ymin=lower, ymax=upper)) + 
-  facet_wrap(~metric, scales = 'free') +
-  theme_classic()
-
-ggsave('../figs/individual_models/bias_meanfield.jpeg', p)
-
-slopes <- data.frame()
-for(i in 1:length(modelw_list)){
-  sl <- summary(lsmeans(modelw_list[[i]], ~warmth|group, var='warmth', cov.reduce=F), type='response')
-  sl$metric <- rownames(table(model_dat$metric))[i]
-  slopes <- rbind(slopes, as.data.frame(sl))
-}
-
-p <- ggplot(slopes, aes(x=warmth, y=prob, group=group, color=group)) + 
-  geom_line() + 
-  geom_ribbon(aes(ymin=asymp.LCL, ymax=asymp.UCL), alpha=.1, color='white') + 
-  theme_classic() +
-  facet_wrap(~metric, scales='free') +
-  theme(legend.position = 'top')
-
-ggsave('../figs/individual_models/warmth_se.jpeg', p)
-
-slopes <- data.frame()
-for(i in 1:length(modelb_list)){
-  sl <- summary(lsmeans(modelb_list[[i]], ~bias|group, var='bias', cov.reduce=F), type='response')
-  sl$metric <- rownames(table(model_dat$metric))[i]
-  slopes <- rbind(slopes, as.data.frame(sl))
-}
-
-p <- ggplot(slopes, aes(x=bias, y=prob, group=group, color=group)) + 
-  geom_line() + 
-  geom_ribbon(aes(ymin=asymp.LCL, ymax=asymp.UCL), alpha=.1, color='white') + 
-  theme_classic() +
-  facet_wrap(~metric, scales='free') +
-  theme(legend.position = 'top')
-
-ggsave('../figs/individual_models/bias_se.jpeg', p)
-
-slopes <- data.frame()
-for(i in 1:length(modelb_list)){
-  sl <- summary(lstrends(modelb_list[[i]], ~group, var='bias'))
-  sl$metric <- rownames(table(model_dat$metric))[i]
-  slopes <- rbind(slopes, as.data.frame(sl))
-}
-
-ggplot(slopes, aes(x=metric, y=bias.trend, group=group, color=group)) + 
-  geom_point() + 
-  geom_errorbar(aes(ymax=asymp.UCL, ymin=asymp.LCL)) +
-  coord_flip() +
-  theme_classic()
-
-
-slopes <- data.frame()
-for(i in 1:length(modelw_list)){
-  sl <- summary(lstrends(modelw_list[[i]], ~group, var='warmth'))
-  sl$metric <- rownames(table(model_dat$metric))[i]
-  slopes <- rbind(slopes, as.data.frame(sl))
-}
-
-ggplot(slopes, aes(x=metric, y=warmth.trend, group=group, color=group)) + 
-  geom_point() + 
-  geom_errorbar(aes(ymax=asymp.UCL, ymin=asymp.LCL)) +
-  coord_flip() +
-  theme_classic()
-
-state_teacher_means <- read.csv('../output/state_teacher_means.csv')
-state_teacher_means %>%
-  filter(raceomb=='White',
-         occupation=='Primary, Secondary, & SpEd teachers') %>%
-  mutate(LEA_STATE=STATE) %>%
-  select(LEA_STATE, bias, warmth) %>%
-  mutate(bias = scale(bias)[,1],
-         warmth = scale(warmth)[,1]) %>%
-  right_join(subdat) -> model_dat
-
-###
-fulldat_bias_t <- NA
-bias_models_t <- NA
-modelb_list_t <- list()
-for(i in rownames(table(model_dat$metric))){
-  print(i)
-  model_dat %>%
-    filter(metric==i) -> subdat
-  m <- glmer(cbind(number, total_number-number) ~ group*bias + (group|LEA_STATE),
-             data=subdat, family='binomial')
-  modelb_list_t[[length(modelb_list_t)+1]] <- m
-  subdat$lmer_yhat_fixed <- predict(m, re.form=NA, type='response')
-  subdat$lmer_yhat_s <- predict(m, re.form=~(group|LEA_STATE), type='response')
-  temp <- broom::tidy(m)
-  temp$var <- i
-  bias_models_t <- rbind(bias_models_t, temp)
-  fulldat_bias_t <- rbind(fulldat_bias_t, subdat)
-}
-
-fulldat_warmth_t <- NA
-warmth_models_t <- NA
-modelw_list_t <- list()
-for(i in rownames(table(model_dat$metric))){
-  print(i)
-  model_dat %>%
-    filter(metric==i) -> subdat
-  m <- glmer(cbind(number, total_number-number) ~ group*warmth + (group|LEA_STATE),
-             data=subdat, family='binomial')
-  modelw_list_t[[length(modelw_list_t)+1]] <- m
-  subdat$lmer_yhat_fixed <- predict(m, re.form=NA, type='response')
-  subdat$lmer_yhat_s <- predict(m, re.form=~(group|LEA_STATE), type='response')
-  temp <- broom::tidy(m)
-  temp$var <- i
-  warmth_models_t <- rbind(warmth_models_t, temp)
-  fulldat_warmth_t <- rbind(fulldat_warmth_t, subdat)
-}
-
-fulldat_warmth_t <- fulldat_warmth_t[-1,]
-fulldat_bias_t <- fulldat_bias_t[-1,]
-
-p <- ggplot(fulldat_warmth_t, aes(x=warmth, y=lmer_yhat_fixed, color=group, group=group)) + 
-  geom_line() + 
-  facet_wrap(~metric, scales = 'free') +
-  theme_classic()
-
-ggsave('../figs/individual_models/warmth_teachers.jpeg', p)
-p <- ggplot(fulldat_bias_t, aes(x=bias, y=lmer_yhat_fixed, color=group, group=group)) + 
-  geom_line() + 
-  facet_wrap(~metric, scales = 'free') +
-  theme_classic()
-
-ggsave('../figs/individual_models/bias_teachers.jpeg', p)
-
-slopes <- data.frame()
-for(i in 1:length(modelw_list_t)){
-  sl <- summary(lsmeans(modelw_list_t[[i]], ~warmth|group, var='warmth', cov.reduce=F), type='response')
-  sl$metric <- rownames(table(model_dat$metric))[i]
-  slopes <- rbind(slopes, as.data.frame(sl))
-}
-
-p <- ggplot(slopes, aes(x=warmth, y=prob, group=group, color=group)) + 
-  geom_line() + 
-  geom_ribbon(aes(ymin=asymp.LCL, ymax=asymp.UCL), alpha=.1, color='white') + 
-  theme_classic() +
-  facet_wrap(~metric, scales='free') +
-  theme(legend.position = 'bottom') +
-  ggtitle('teachers')
-
-ggsave('../figs/individual_models/warmth_se_t.jpeg', p)
-
-slopes <- data.frame()
-for(i in 1:length(modelb_list_t)){
-  print(i)
-  sl <- summary(lsmeans(modelb_list_t[[i]], ~bias|group, var='bias', cov.reduce=F), type='response')
-  sl$metric <- rownames(table(model_dat$metric))[i]
-  slopes <- rbind(slopes, as.data.frame(sl))
-}
-
-p <- ggplot(slopes, aes(x=bias, y=prob, group=group, color=group)) + 
-  geom_line() + 
-  geom_ribbon(aes(ymin=asymp.LCL, ymax=asymp.UCL), alpha=.1, color='white') + 
-  theme_classic() +
-  facet_wrap(~metric, scales='free') +
-  theme(legend.position = 'bottom') +
-  ggtitle('teachers')
-
-ggsave('../figs/individual_models/bias_se_t.jpeg', p)
-
-slopes <- data.frame()
-for(i in 1:length(modelb_list_t)){
-  print(i)
-  sl <- summary(lstrends(modelb_list_t[[i]], ~group, var='bias'))
-  sl$metric <- rownames(table(model_dat$metric))[i]
-  slopes <- rbind(slopes, as.data.frame(sl))
-}
-
-ggplot(slopes, aes(x=metric, y=bias.trend, group=group, color=group)) + 
-  geom_point() + 
-  geom_errorbar(aes(ymax=asymp.UCL, ymin=asymp.LCL)) +
-  coord_flip() +
-  theme_classic()
-
-
-slopes <- data.frame()
-for(i in 1:length(modelw_list_t)){
-  print(i)
-  sl <- summary(lstrends(modelw_list_t[[i]], ~group, var='warmth'))
-  sl$metric <- rownames(table(model_dat$metric))[i]
-  slopes <- rbind(slopes, as.data.frame(sl))
-}
-
-ggplot(slopes, aes(x=metric, y=warmth.trend, group=group, color=group)) + 
-  geom_point() + 
-  geom_errorbar(aes(ymax=asymp.UCL, ymin=asymp.LCL)) +
-  coord_flip() +
-  theme_classic()
