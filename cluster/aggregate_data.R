@@ -10,16 +10,16 @@ library(rgdal)
 options(mc.cores = parallel::detectCores())
 
 district_content <- read.csv('../../Data/crdc201314csv/CRDC2013_14_LEA_content.csv')
-df_district <- read.csv('../../Data/crdc201314csv/CRDC2013_14_LEA.csv', colClasses = 'character')
+df_district <- read.csv('../../Data/crdc201314csv/CRDC2013_14_LEA.csv')
 school_content <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH_content.csv')
 df_school <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH.csv')
 MSA_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/MSA_means.csv')
 
-#resume at line 445
+#### check starting at line 453
 
 # Get enrollment figures
 df_school %>%
-  select(LEA_STATE:LEAID, SCH_ENR_HI_M:TOT_ENR_F) %>%
+  select(COMBOKEY, LEA_STATE:SCH_NAME, LEAID, SCH_ENR_HI_M:TOT_ENR_F) %>%
   gather(group, total_number, SCH_ENR_HI_M:TOT_ENR_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -32,7 +32,8 @@ df_school %>%
 # all metrics #
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_CORPINSTANCES_IND:TOT_DISCWODIS_CORP_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_CORPINSTANCES_IND:TOT_DISCWODIS_CORP_F) %>% 
   filter(SCH_CORPINSTANCES_IND=='YES') %>%
   gather(group, number, SCH_DISCWODIS_CORP_HI_M:TOT_DISCWODIS_CORP_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
@@ -44,7 +45,8 @@ df_school %>%
 
 corporal %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -60,8 +62,8 @@ full_dat %>%
   mutate(LEA_STATE=droplevels(LEA_STATE)) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_GRADE_PS, 
-         SCH_PSDISC_SINGOOS_HI_M:TOT_PSDISC_SINGOOS_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_GRADE_PS, 
+         CCD_LATCOD, CCD_LONCOD, SCH_PSDISC_SINGOOS_HI_M:TOT_PSDISC_SINGOOS_F) %>% 
   filter(SCH_GRADE_PS=='YES') %>%
   gather(group, number, SCH_PSDISC_SINGOOS_HI_M:TOT_PSDISC_SINGOOS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
@@ -72,8 +74,8 @@ df_school %>%
   select(-prefix) -> ps_susp
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_GRADE_PS, 
-         SCH_PSDISC_MULTOOS_HI_M:TOT_PSDISC_MULTOOS_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, SCH_GRADE_PS, 
+         CCD_LATCOD, CCD_LONCOD, SCH_PSDISC_MULTOOS_HI_M:TOT_PSDISC_MULTOOS_F) %>% 
   filter(SCH_GRADE_PS=='YES') %>%
   gather(group, number_2, SCH_PSDISC_MULTOOS_HI_M:TOT_PSDISC_MULTOOS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
@@ -88,7 +90,8 @@ df_school %>%
 
 ps_susp %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD,  SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -105,7 +108,8 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_DISCWODIS_ISS_HI_M:TOT_DISCWODIS_ISS_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_DISCWODIS_ISS_HI_M:TOT_DISCWODIS_ISS_F) %>% 
   gather(group, number, SCH_DISCWODIS_ISS_HI_M:TOT_DISCWODIS_ISS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -116,7 +120,8 @@ df_school %>%
 
 susp_inschool %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -133,7 +138,8 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_DISCWODIS_SINGOOS_HI_M:TOT_DISCWODIS_SINGOOS_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_DISCWODIS_SINGOOS_HI_M:TOT_DISCWODIS_SINGOOS_F) %>% 
   gather(group, number, SCH_DISCWODIS_SINGOOS_HI_M:TOT_DISCWODIS_SINGOOS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -143,7 +149,8 @@ df_school %>%
   select(-prefix) -> oos_susp
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_DISCWODIS_MULTOOS_HI_M:TOT_DISCWODIS_MULTOOS_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_DISCWODIS_MULTOOS_HI_M:TOT_DISCWODIS_MULTOOS_F) %>% 
   gather(group, number_2, SCH_DISCWODIS_MULTOOS_HI_M:TOT_DISCWODIS_MULTOOS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -157,7 +164,8 @@ df_school %>%
 
 oos_susp %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -174,7 +182,8 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_PSDISC_EXP_HI_M:TOT_PSDISC_EXP_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_PSDISC_EXP_HI_M:TOT_PSDISC_EXP_F) %>% 
   gather(group, number, SCH_PSDISC_EXP_HI_M:TOT_PSDISC_EXP_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -185,7 +194,8 @@ df_school %>%
 
 ps_exp %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -201,7 +211,8 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_DISCWODIS_EXPWE_HI_M:TOT_DISCWODIS_EXPWE_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_DISCWODIS_EXPWE_HI_M:TOT_DISCWODIS_EXPWE_F) %>% 
   gather(group, number, SCH_DISCWODIS_EXPWE_HI_M:TOT_DISCWODIS_EXPWE_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -212,7 +223,8 @@ df_school %>%
 
 exp_w_ed %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -228,7 +240,8 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWODIS_EXPWOE_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWODIS_EXPWOE_F) %>% 
   gather(group, number, SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWODIS_EXPWOE_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -239,7 +252,8 @@ df_school %>%
 
 exp_wo_ed %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -256,7 +270,8 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_DISCWODIS_EXPZT_HI_M:TOT_DISCWODIS_EXPZT_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_DISCWODIS_EXPZT_HI_M:TOT_DISCWODIS_EXPZT_F) %>% 
   gather(group, number, SCH_DISCWODIS_EXPZT_HI_M:TOT_DISCWODIS_EXPZT_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -267,7 +282,8 @@ df_school %>%
 
 exp_zero %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -283,7 +299,8 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_DISCWODIS_REF_HI_M:TOT_DISCWODIS_REF_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_DISCWODIS_REF_HI_M:TOT_DISCWODIS_REF_F) %>% 
   gather(group, number, SCH_DISCWODIS_REF_HI_M:TOT_DISCWODIS_REF_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -294,7 +311,8 @@ df_school %>%
 
 law_enf %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -310,7 +328,8 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_DISCWODIS_ARR_HI_M:TOT_DISCWODIS_ARR_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_DISCWODIS_ARR_HI_M:TOT_DISCWODIS_ARR_F) %>% 
   gather(group, number, SCH_DISCWODIS_ARR_HI_M:TOT_DISCWODIS_ARR_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -321,7 +340,8 @@ df_school %>%
 
 in_school_arrest %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -338,7 +358,8 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_RS_NONIDEA_MECH_HI_M:TOT_RS_NONIDEA_MECH_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_RS_NONIDEA_MECH_HI_M:TOT_RS_NONIDEA_MECH_F) %>% 
   gather(group, number, SCH_RS_NONIDEA_MECH_HI_M:TOT_RS_NONIDEA_MECH_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -349,7 +370,8 @@ df_school %>%
 
 mech_rest %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -365,7 +387,8 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_RS_NONIDEA_PHYS_HI_M:TOT_RS_NONIDEA_PHYS_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_RS_NONIDEA_PHYS_HI_M:TOT_RS_NONIDEA_PHYS_F) %>% 
   gather(group, number, SCH_RS_NONIDEA_PHYS_HI_M:TOT_RS_NONIDEA_PHYS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -376,7 +399,8 @@ df_school %>%
 
 phys_rest %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -392,7 +416,8 @@ full_dat %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
-  select(LEA_STATE:LEAID, SCH_RS_NONIDEA_SECL_HI_M:TOT_RS_NONIDEA_SECL_F) %>% 
+  select(COMBOKEY, LEA_STATE:SCH_NAME, 
+         CCD_LATCOD, CCD_LONCOD, SCH_RS_NONIDEA_SECL_HI_M:TOT_RS_NONIDEA_SECL_F) %>% 
   gather(group, number, SCH_RS_NONIDEA_SECL_HI_M:TOT_RS_NONIDEA_SECL_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
@@ -403,7 +428,8 @@ df_school %>%
 
 seclusion %>%
   left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID, SCH_NAME, group) %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number),
             total_number = sum(total_number)) %>%
   mutate(proportion = number/total_number) -> full_dat
@@ -418,37 +444,35 @@ full_dat %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   rbind(subdat) -> subdat
 
-df_district %>%
-  select(LEAID, LEA_ZIP) %>%
-  right_join(subdat) %>%
-  mutate(LEA_ZIP = as.character(LEA_ZIP)) -> tempout
+subdat %>%
+  filter(!is.na(CCD_LATCOD)) -> outdat
+coordinates(outdat) <- c('CCD_LONCOD', 'CCD_LATCOD')
+#proj4string(subdat) <- "+init=EPSG:4269"
+msa_shapes <- readOGR(dsn='/Users/travis/Documents/gits/Data/cb_2014_us_cbsa_500k/', 
+                      layer='cb_2014_us_cbsa_500k')
 
-## next, append the msa number as seen on the DOL website
-msa_dat <- read.csv('../../Data/fs13_gpci_by_msa-ZIP.csv', skip=10, colClasses = 'character')
-msa_dat %>%
-  mutate(LEA_ZIP = ZIP.CODE) %>%
-  select(LEA_ZIP, MSA.No.) %>%
-  right_join(tempout) -> tempout
+#### I'm not sure whether this is right:
+proj4string(msa_shapes) <- CRS("+init=EPSG:4269")
+proj4string(outdat) <- CRS("+init=EPSG:4269")
+#######
+merged_data <- over(outdat, msa_shapes)
+model_data <- cbind(outdat@data, merged_data)
 
-#some zip codes in district data do not seem to exist at all (eg 91705, 30335) 
-#or in the DOL data (eg 30305)
 MSA_means %>%
   filter(raceomb=='White') %>%
-  mutate(MSA.No. = as.character(MSANo)) %>%
-  select(MSANo, MSA.No., bias, warmth) %>%
+  mutate(CBSAFP = as.character(MSANo)) %>%
+  select(MSANo, CBSAFP, bias, warmth) %>%
   mutate(bias = scale(bias)[,1],
          warmth = scale(warmth)[,1]) %>%
-  right_join(tempout) %>%
-  filter(!is.na(MSA.No.)) %>%
+  right_join(model_data) %>%
+  filter(!is.na(CBSAFP)) %>%
   filter(!is.na(bias)) %>%
-  select(MSA.No., bias, warmth, COMBOKEY, group, number, total_number, metric) -> tempout
-
+  select(CBSAFP, bias, warmth, COMBOKEY, group, number, total_number, metric) -> tempout
 
 df_acs <- read.csv('../../Data/ACS/ACS_14_5YR_DP05/ACS_14_5YR_DP05_with_ann.csv',skip = 1)
 
-covs <- df_acs[,c(3, 4, 128, 132)]
-names(covs) <- c('LEA_ZIP', 'total_pop', 'white_pop', 'black_pop')
-covs$LEA_ZIP <- substr(covs$LEA_ZIP, 7,13)
+covs <- df_acs[,c(2, 4, 128, 132)]
+names(covs) <- c('CBSAFP', 'total_pop', 'white_pop', 'black_pop')
 
 df_acs <- read.csv('../../Data/ACS/ACS_14_5YR_DP03/ACS_14_5YR_DP03_with_ann.csv',skip = 1)
 
