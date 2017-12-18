@@ -4,8 +4,10 @@ library(ggplot2)
 library(forcats)
 library(rstanarm)
 library(tidyr)
-library(rgdal)
+library(stringr)
+library(lme4)
 
+#load datasets
 df <- rbind(read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2013.sav'),
             read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2012.sav'),
             read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2010.sav'))
@@ -19,6 +21,18 @@ df7 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2005.sav'
 df8 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2004.sav')
 df9 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2002-2003.sav')
 df10 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2014.sav')
+df_acs <- read.csv('../Data/ACS/county_age/ACS_14_5YR_DP05_with_ann.csv', skip=1)
+df_county_linking_info <- read.csv('cluster/output/county_linking_table.csv', stringsAsFactors = F)
+df_county_linking_info$county_name[1904] <- 'Doña Ana'
+df_states <- data.frame(state=c(state.name, 'District of Columbia'),
+                        state_abb=c(state.abb, 'DC'))
+df_acs_eth <- read.csv('../Data/ACS/state_ethnicity/ACS_14_5YR_B02001_with_ann.csv',
+                       skip = 1, stringsAsFactors = F)
+df_acs_ed <- read.csv('../Data/ACS/state_education/ACS_14_5YR_S1501_with_ann.csv',
+                      skip = 1, stringsAsFactors = F)
+df_acs_pov_emp <- read.csv('../Data/ACS/state_poverty_emp/ACS_14_5YR_DP03_with_ann.csv',
+                           skip = 1, stringsAsFactors = F)
+
 
 "%ni%" <- Negate("%in%")
 
@@ -117,32 +131,105 @@ df10 %>%
   filter(raceomb==5 | raceomb==6) -> subdat
 
 subdat %>%
-  mutate(age_bin = cut(age, breaks=c(15, 24, 34, 54, 75, 120))) %>%
+  mutate(age_bin = cut(age, breaks=c(14, 24, 34, 54, 75, 120))) %>%
   mutate(race = fct_recode(as.character(raceomb), 
                            'Black'='5', 'White'='6')) %>%
-  filter(!is.na(age_bin)) -> individual_data
+  filter(!is.na(age_bin)) %>%
+  filter(race=='White') %>%
+  filter(STATE %ni% 
+           c('AA', 'AE', 'AP', 'AS', 'FM', 'GU', 'MH', 'MP', 'PR', 'VI')) %>%
+  mutate(county_id = paste(STATE, CountyNo, sep='-')) -> individual_data
 
-#individual.model <- lmer(D_biep.White_Good_all ~ (1|race) + (1|age_bin) + 
-#                           (1|STATE), data=individual_data)
+df_acs <- df_acs[,c(3, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64)]
+df_acs$Geography <- as.character(df_acs$Geography)
+df_acs$Geography[1803] <- 'Doña Ana County, New Mexico'
+
+df_acs %>%
+  gather(age, num, -Geography) %>%
+  mutate(county=Geography) %>%
+  select(-Geography) %>%
+  separate(county, into=c('county_name', 'state'), sep=', ') %>%
+  filter(state!='Puerto Rico') %>% #no PR in the education data
+  mutate(county_name = 
+           str_replace(county_name, 
+                       ' County| Borough| Census Area| Parish| Municipality| City and Borough', '')) %>%
+  mutate(age = substr(age, 25, 26)) %>%
+  mutate(age_bin = cut(as.numeric(age), 
+                       breaks=c(14, 24, 34, 54, 75, 120))) %>%
+  group_by(county_name, age_bin) %>%
+  summarise(num = sum(num)) %>%
+  left_join(df_county_linking_info) -> df_acs_counts
+
+covs <- df_acs_eth[,c(3, 4, 6, 8)]
+names(covs) <- c('state', 'total_pop', 'white_pop', 'black_pop')
+covs %>%
+  mutate(white_prop = white_pop/total_pop,
+         black_prop = black_pop/total_pop) %>%
+  mutate(b.w.ratio = black_prop/white_prop) -> covs
+
+covs_ed <- df_acs_ed[,c(3, 28)]
+names(covs_ed) <- c('state', 'col_grads')
+
+covs_income <- df_acs_pov_emp[,c(3, 21, 248, 478)]
+names(covs_income) <- c('state', 'unemp', 'income', 'poverty')
+
+df_acs_counts %>%
+  left_join(covs) %>%
+  left_join(covs_ed) %>%
+  left_join(covs_income) -> df_acs_counts
+
+
+#df_acs_counts[which(is.na(df_acs_counts$county_id)),] -> missings
+#counties w/o IAT data: 
+#Aleutians East, Wrangell, Berkshire, Billings, Rolette,
+#Borden, Culberson, Foard, Glassock, Greensville, Calhoun, Campbell, Carter, 
+#Buffalo, Blaine, Billings, Berkshire, Banner, Douglas, Franklin, Garfield, 
+#Golden Valley, Grant, Greeley, Greensville, Hampshire, Harding, Hinsdale, 
+#Hodgeman, Hoonah-Angoon, Irion, Jackson, Kenedy, King, Loup, Petroleum, Piute, 
+#Potter, Powder River, Prairie, Prince of Wales-Hyder, Quitman, Roberts, Rock, 
+#Rolette, Sheridan (ks), Sheridan (ND), Skagway, Thomas, Treasure
+
+#counties w/o schools:
+#kalawao, Issaquena, Mora, Divide, Loving, Marion, Miller,
+names(individual_data)[2] <- 'state_abb'
+individual_data %>%
+  left_join(df_states) %>%
+  left_join(df_acs_counts[,1:4], by=c('county_id', 'age_bin')) %>%
+  left_join(covs, by='state') %>%
+  left_join(covs_ed, by='state') %>%
+  left_join(covs_income, by='state') %>%
+  mutate_at(vars(white_prop:poverty), scale) -> individual_data
+
+individual.model.bias <- lmer(D_biep.White_Good_all ~ white_prop + black_prop + 
+                                b.w.ratio + col_grads + unemp + income + poverty +
+                                (1|age_bin) + (1|county_id) + (1|state_abb), 
+                         data=individual_data)
+individual.model.warmth <- lmer(tblack ~ white_prop + black_prop + 
+                                  b.w.ratio + col_grads + unemp + income + poverty +
+                                  (1|age_bin) + (1|county_id) + (1|state_abb), 
+                                data=individual_data)
+
+df_acs_countstemp <- df_acs_counts[which(!is.na(df_acs_counts$county_id)),]
+#df_acs_counts <- left_join(df_acs_counts, df_states)
+df_acs_countstemp %>%
+  ungroup() %>%
+  mutate_at(vars(white_prop:poverty), scale) -> scaled_counts
+
+scaled_counts$yhat_bias <- predict(individual.model.bias, 
+                                   newdata=scaled_counts, allow.new.levels=T)
+scaled_counts$yhat_warmth <- predict(individual.model.warmth, 
+                                     newdat=scaled_counts, allow.new.levels=T)
+
+scaled_counts %>% 
+  ungroup() %>% 
+  group_by(county_id) %>% 
+  summarise(weighted_bias = weighted.mean(yhat_bias, num),
+            weighted_warmth = weighted.mean(yhat_warmth, num)) -> mrp_ests
 
 individual_data %>%
-  group_by(raceomb, CountyNo, age_bin) %>%
-  summarise(m_d_biep = mean(D_biep.White_Good_all, na.rm=T),
-            m_tblack = mean(tblack, na.rm=T)) %>%
-  ungroup() %>%
-  select(-raceomb) -> categorized_bias
-
-subdat %>%
-  group_by(CountyNo, STATE, raceomb) %>%
+  group_by(county_id) %>%
   summarise(bias = mean(D_biep.White_Good_all),
-            bias_se = sd(D_biep.White_Good_all)/sqrt(n()),
-            warmth = mean(tblack),
-            warmth_se = sd(tblack)/sqrt(n())) %>%
-  mutate(bias_low = bias-1.96*bias_se,
-         bias_high = bias+1.96*bias_se,
-         warmth_low = warmth-1.96*warmth_se,
-         warmth_high = warmth+1.96*warmth_se) %>%
-  mutate(raceomb = fct_recode(as.character(raceomb), 
-                              'African Americans'='5', 'White'='6')) -> county_means
+            warmth = mean(tblack)) %>%
+    left_join(mrp_ests) -> county_means
 
 write.csv(county_means, '/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
