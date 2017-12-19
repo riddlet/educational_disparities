@@ -1,10 +1,10 @@
 library(dplyr)
 
-df <- read.csv('data/full_model_data.csv')
+df <- read.csv('output/full_model_data.csv')
 
 ### write cross validating data & model files
 df %>% 
-  group_by(LEA_STATE) %>% 
+  group_by(county_id) %>% 
   select(COMBOKEY) %>% 
   distinct() -> school_state_combos #every unique school
 
@@ -12,20 +12,10 @@ labs <- paste('g', seq(1:100), sep='_')
 
 school_state_combos %>%
   ungroup() %>%
-  mutate(arr_column = runif(n(),0,1)) %>%
-  group_by(LEA_STATE) %>%
-  arrange(arr_column) %>%
-  mutate(r_num = row_number()) %>%
-  mutate(grouping = cut(r_num, 100, labels = labs)) -> group_assignments
+  mutate(grouping = sample(1:100, n(), replace=T)) -> group_assignments
 
 df %>%
-  select(LEA_STATE, bias, warmth, COMBOKEY, number, total_number, metric, group) %>%
-  left_join(group_assignments) %>%
-  group_by(grouping) %>%
-  mutate(n_states = n_distinct(LEA_STATE)) %>%
-  ungroup() %>%
-  filter(n_states==51) %>%
-  mutate(grouping = droplevels(grouping)) -> grouped_dat #append the grouping information
+  left_join(group_assignments) -> grouped_dat #append the grouping information
 
 write.csv(grouped_dat, file='data/cross_val_grouping.csv', row.names = F)
 
@@ -39,20 +29,32 @@ library(rstanarm)
 options(mc.cores = parallel::detectCores())
 
 df <- read.csv('/home/triddle/educational_disparities/cluster/data/cross_val_grouping.csv')
-df %>% filter(grouping=='g_"
 
-string2 <-  "') -> mod.dat
+df %>% filter(grouping=="
 
-m <- stan_glmer(cbind(number, total_number-number) ~ group + (group|LEA_STATE) + 
-                  (group|metric) + (1|COMBOKEY), 
-                data=mod.dat, prior = normal(0,1), 
-                prior_intercept = normal(0,1), family=binomial, adapt_delta=.99)
+string2 <-  ") %>% select(county_id, bias:weighted_warmth, total_pop, unemp_rate:b.w.ratio) %>% distinct() %>% mutate_at(vars(-county_id), scale) -> scaled_county_level
 
-save(m, file='/tigress/triddle/educational_disparities/cross_val/m"
+df %>% filter(grouping=="
+
+string3 <- ") %>% select(county_id, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
+
+m <- stan_glmer(cbind(number, total_number-number) ~ group + bias + warmth + 
+                  group:bias + group:warmth + total_pop + unemp_rate + 
+                  med_income + poverty_rate + col_grads + white_prop + 
+                  black_prop + b.w.ratio + 
+                  (group + bias + warmth + group:bias + group:warmth|county_id) + 
+                  (group + bias + warmth + group:bias + group:warmth + 
+                    total_pop + unemp_rate + med_income + poverty_rate + 
+                    col_grads + white_prop + black_prop + b.w.ratio|metric) + 
+                  (group + bias + warmth + group:bias + group:warmth|COMBOKEY), 
+                data=mod.dat, prior = normal(0,5), 
+                prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
+
+save(m, file='/tigress/triddle/educational_disparities/cross_val_raw/m"
 
 for(i in 1:100){
-  fs <- paste(string1, i, string2, i, ".rdata')", sep='')
-  fileConn <- file(paste("model_scripts/cross_val/m", i, ".R", sep=''))
+  fs <- paste(string1, i, string2, i, string3, i, ".rdata')", sep='')
+  fileConn <- file(paste("model_scripts/cross_val_raw/m", i, ".R", sep=''))
   writeLines(fs, fileConn)
   close(fileConn)
 }
@@ -68,20 +70,32 @@ library(rstanarm)
 options(mc.cores = parallel::detectCores())
 
 df <- read.csv('/home/triddle/educational_disparities/cluster/data/cross_val_grouping.csv')
-df %>% filter(grouping=='g_"
 
-string2 <-  "') -> mod.dat
+df %>% filter(grouping=="
 
-m <- stan_glmer(cbind(number, total_number-number) ~ group*bias + (group|LEA_STATE) + 
-(group*bias|metric) + (1|COMBOKEY), 
-data=mod.dat, prior = normal(0,1), 
-prior_intercept = normal(0,1), family=binomial, adapt_delta=.99)
+string2 <-  ") %>% select(county_id, bias:weighted_warmth, total_pop, unemp_rate:b.w.ratio) %>% distinct() %>% mutate_at(vars(-county_id), scale) -> scaled_county_level
 
-save(m, file='/tigress/triddle/educational_disparities/cross_val_bias/m"
+df %>% filter(grouping=="
+
+string3 <- ") %>% select(county_id, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
+
+m <- stan_glmer(cbind(number, total_number-number) ~ group + weighted_bias + weighted_warmth + 
+group:weighted_bias + group:weighted_warmth + total_pop + unemp_rate + 
+med_income + poverty_rate + col_grads + white_prop + 
+black_prop + b.w.ratio + 
+(group + weighted_bias + weighted_warmth + group:weighted_bias + group:weighted_warmth|county_id) + 
+(group + weighted_bias + weighted_warmth + group:weighted_bias + group:weighted_warmth + 
+total_pop + unemp_rate + med_income + poverty_rate + 
+col_grads + white_prop + black_prop + b.w.ratio|metric) + 
+(group + weighted_bias + weighted_warmth + group:weighted_bias + group:weigted_warmth|COMBOKEY), 
+data=mod.dat, prior = normal(0,5), 
+prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
+
+save(m, file='/tigress/triddle/educational_disparities/cross_val_weighted/m"
 
 for(i in 1:100){
-  fs <- paste(string1, i, string2, i, ".rdata')", sep='')
-  fileConn <- file(paste("model_scripts/cross_val_bias/m", i, ".R", sep=''))
+  fs <- paste(string1, i, string2, i, string3, i, ".rdata')", sep='')
+  fileConn <- file(paste("model_scripts/cross_val_weighted/m", i, ".R", sep=''))
   writeLines(fs, fileConn)
   close(fileConn)
 }
