@@ -8,8 +8,6 @@ df %>%
   select(COMBOKEY) %>% 
   distinct() -> school_state_combos #every unique school
 
-labs <- paste('g', seq(1:100), sep='_')
-
 school_state_combos %>%
   ungroup() %>%
   mutate(grouping = sample(1:100, n(), replace=T)) -> group_assignments
@@ -79,17 +77,21 @@ df %>% filter(grouping=="
 
 string3 <- ") %>% select(county_id, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
 
-m <- stan_glmer(cbind(number, total_number-number) ~ group + weighted_bias + weighted_warmth + 
-group:weighted_bias + group:weighted_warmth + total_pop + unemp_rate + 
-med_income + poverty_rate + col_grads + white_prop + 
-black_prop + b.w.ratio + 
-(group + weighted_bias + weighted_warmth + group:weighted_bias + group:weighted_warmth|county_id) + 
-(group + weighted_bias + weighted_warmth + group:weighted_bias + group:weighted_warmth + 
-total_pop + unemp_rate + med_income + poverty_rate + 
-col_grads + white_prop + black_prop + b.w.ratio|metric) + 
-(group + weighted_bias + weighted_warmth + group:weighted_bias + group:weigted_warmth|COMBOKEY), 
-data=mod.dat, prior = normal(0,5), 
-prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
+m <- stan_glmer(cbind(number, total_number-number) ~ group + weighted_bias + 
+                  weighted_warmth + group:weighted_bias + 
+                  group:weighted_warmth + total_pop + unemp_rate + med_income + 
+                  poverty_rate + col_grads + white_prop + black_prop + 
+                  b.w.ratio + 
+                  (group + weighted_bias + weighted_warmth + 
+                    group:weighted_bias + group:weighted_warmth|county_id) + 
+                  (group + weighted_bias + weighted_warmth + 
+                    group:weighted_bias + group:weighted_warmth + total_pop + 
+                    unemp_rate + med_income + poverty_rate + col_grads + 
+                    white_prop + black_prop + b.w.ratio|metric) + 
+                  (group + weighted_bias + weighted_warmth + 
+                    group:weighted_bias + group:weigted_warmth|COMBOKEY), 
+                data=mod.dat, prior = normal(0,5), 
+                prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
 
 save(m, file='/tigress/triddle/educational_disparities/cross_val_weighted/m"
 
