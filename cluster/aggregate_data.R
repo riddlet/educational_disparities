@@ -16,7 +16,6 @@ df_school <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH.csv')
 county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv', 
                          colClasses = 'character')
 
-#### check starting at line 453
 
 # Get enrollment figures
 df_school %>%
