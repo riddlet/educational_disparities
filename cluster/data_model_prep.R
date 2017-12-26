@@ -1,18 +1,18 @@
 library(dplyr)
-
-df <- read.csv('output/full_model_data.csv')
+set.seed(42)
+dfs <- read.csv('output/full_model_data.csv')
 
 ### write cross validating data & model files
-df %>% 
+dfs %>% 
   group_by(county_id) %>% 
   select(COMBOKEY) %>% 
   distinct() -> school_state_combos #every unique school
 
 school_state_combos %>%
   ungroup() %>%
-  mutate(grouping = sample(1:100, n(), replace=T)) -> group_assignments
+  mutate(grouping = sample(1:175, n(), replace=T)) -> group_assignments
 
-df %>%
+dfs %>%
   left_join(group_assignments) -> grouped_dat #append the grouping information
 
 write.csv(grouped_dat, file='data/cross_val_grouping.csv', row.names = F)
@@ -40,17 +40,17 @@ m <- stan_glmer(cbind(number, total_number-number) ~ group + bias + warmth +
                   group:bias + group:warmth + total_pop + unemp_rate + 
                   med_income + poverty_rate + col_grads + white_prop + 
                   black_prop + b.w.ratio + 
-                  (group + bias + warmth + group:bias + group:warmth|county_id) + 
+                  (group|county_id) + 
                   (group + bias + warmth + group:bias + group:warmth + 
                     total_pop + unemp_rate + med_income + poverty_rate + 
                     col_grads + white_prop + black_prop + b.w.ratio|metric) + 
-                  (group + bias + warmth + group:bias + group:warmth|COMBOKEY), 
+                  (group|COMBOKEY), 
                 data=mod.dat, prior = normal(0,5), 
                 prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
 
 save(m, file='/tigress/triddle/educational_disparities/cross_val_raw/m"
 
-for(i in 1:100){
+for(i in 1:175){
   fs <- paste(string1, i, string2, i, string3, i, ".rdata')", sep='')
   fileConn <- file(paste("model_scripts/cross_val_raw/m", i, ".R", sep=''))
   writeLines(fs, fileConn)
@@ -82,22 +82,22 @@ m <- stan_glmer(cbind(number, total_number-number) ~ group + weighted_bias +
                   group:weighted_warmth + total_pop + unemp_rate + med_income + 
                   poverty_rate + col_grads + white_prop + black_prop + 
                   b.w.ratio + 
-                  (group + weighted_bias + weighted_warmth + 
-                    group:weighted_bias + group:weighted_warmth|county_id) + 
+                  (group|county_id) + 
                   (group + weighted_bias + weighted_warmth + 
                     group:weighted_bias + group:weighted_warmth + total_pop + 
                     unemp_rate + med_income + poverty_rate + col_grads + 
                     white_prop + black_prop + b.w.ratio|metric) + 
-                  (group + weighted_bias + weighted_warmth + 
-                    group:weighted_bias + group:weigted_warmth|COMBOKEY), 
+                  (group|COMBOKEY), 
                 data=mod.dat, prior = normal(0,5), 
                 prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
 
 save(m, file='/tigress/triddle/educational_disparities/cross_val_weighted/m"
 
-for(i in 1:100){
+for(i in 1:175){
   fs <- paste(string1, i, string2, i, string3, i, ".rdata')", sep='')
   fileConn <- file(paste("model_scripts/cross_val_weighted/m", i, ".R", sep=''))
   writeLines(fs, fileConn)
   close(fileConn)
 }
+
+#for i in model_scripts/cross_val_raw/*.R; do sbatch batch_submit.cmd $i; done;
