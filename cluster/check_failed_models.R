@@ -1,5 +1,5 @@
 
-pth <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/cross_val_raw/'
+pth <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/metrics_raw/preschool_susp/'
 
 files <- list.files(pth)
 
@@ -25,6 +25,7 @@ for (i in files){
   print(divs)
   if (divs>0){
     failed_models <- c(failed_models, i)
+    print(failed_models)
   }
-  failed_models <- failed_models[-1]
 }
+failed_models <- failed_models[-1]
