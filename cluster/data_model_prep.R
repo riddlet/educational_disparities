@@ -10,7 +10,7 @@ dfs %>%
 
 school_state_combos %>%
   ungroup() %>%
-  mutate(grouping = sample(1:200, n(), replace=T)) -> group_assignments
+  mutate(grouping = sample(1:250, n(), replace=T)) -> group_assignments
 
 dfs %>%
   left_join(group_assignments) -> grouped_dat #append the grouping information
@@ -46,11 +46,11 @@ m <- stan_glmer(cbind(number, total_number-number) ~ group + bias + warmth +
                     col_grads + white_prop + black_prop + b.w.ratio|metric) + 
                   (group|COMBOKEY), 
                 data=mod.dat, prior = normal(0,5), 
-                prior_intercept = normal(0,5), family=binomial, adapt_delta=.999)
+                prior_intercept = normal(0,5), family=binomial, adapt_delta=.9999)
 
 save(m, file='/tigress/triddle/educational_disparities/cross_val_raw/m"
 
-for(i in 1:200){
+for(i in 1:250){
   fs <- paste(string1, i, string2, i, string3, i, ".rdata')", sep='')
   fileConn <- file(paste("model_scripts/cross_val_raw/m", i, ".R", sep=''))
   writeLines(fs, fileConn)
@@ -89,11 +89,11 @@ m <- stan_glmer(cbind(number, total_number-number) ~ group + weighted_bias +
                     white_prop + black_prop + b.w.ratio|metric) + 
                   (group|COMBOKEY), 
                 data=mod.dat, prior = normal(0,5), 
-                prior_intercept = normal(0,5), family=binomial, adapt_delta=.999)
+                prior_intercept = normal(0,5), family=binomial, adapt_delta=.9999)
 
 save(m, file='/tigress/triddle/educational_disparities/cross_val_weighted/m"
 
-for(i in 1:200){
+for(i in 1:250){
   fs <- paste(string1, i, string2, i, string3, i, ".rdata')", sep='')
   fileConn <- file(paste("model_scripts/cross_val_weighted/m", i, ".R", sep=''))
   writeLines(fs, fileConn)
