@@ -15,7 +15,7 @@ school_content <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH_content.csv
 df_school <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH.csv')
 county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv', 
                          colClasses = 'character')
-
+state_teacher_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/state_teacher_means.csv')
 
 # Get enrollment figures
 df_school %>%
@@ -559,3 +559,9 @@ tempthis <- left_join(tempout, covs)
 
 write.csv(tempthis, file='output/full_model_data.csv', row.names = FALSE)
 
+### write with teacher data
+county_teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means.csv')
+
+schools_loc %>%
+  left_join(county_teacher_estimates) %>%
+  filter(!is.na(county_bias)) -> out
