@@ -16,7 +16,7 @@ counties %>%
   mutate(grouping=sample(1:10, n(), replace=T)) -> county_assignments
 
 teacher_counties %>%
-  mutate(grouping=sample(1:7, n(), replace=T)) -> teacher_county_assignments
+  mutate(grouping=sample(1:9, n(), replace=T)) -> teacher_county_assignments
 
 dfs %>% 
   left_join(county_assignments) -> county_groups #append the grouping information
@@ -129,11 +129,11 @@ unemp_rate + med_income + poverty_rate + col_grads + white_prop + black_prop + b
 (group|county_id), data=mod.dat, prior = normal(0,5), 
 prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
 
-save(m, file='/tigress/triddle/educational_disparities/teacher_metrics/"
+save(m, file='/tigress/triddle/educational_disparities/teacher_metrics_della/"
 
 
 for(i in rownames(table(dft$metric))){
-  for (j in 1:7){
+  for (j in 1:9){
     fs <- paste(string1, i, string2, j, string3, i, string4, i, "/m", j, ".rdata')", sep='')
     fileConn <- file(paste("model_scripts/teacher_metrics/",i,"/m", j, ".R", sep=''))
     writeLines(fs, fileConn)
