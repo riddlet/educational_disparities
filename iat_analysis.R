@@ -44,14 +44,16 @@ df %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.White_Good_all, tblack_0to10, raceomb, age)  -> subdat
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         tblack_0to10, twhite_0to10, raceomb, age)  -> subdat
 
 df2 %>%
   filter(CountyNo!='' &
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.White_Good_all, tblack_0to10, raceomb, age) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all,  
+         tblack_0to10, twhites_0to10, raceomb, age) %>%
   rbind(subdat) %>%
   filter(raceomb==5 | raceomb==6) -> subdat
 
@@ -60,7 +62,8 @@ df3 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.White_Good_all, tblack_0to10, raceomb, age) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         tblack_0to10, twhite_0to10, raceomb, age) %>%
   rbind(subdat) %>%
   filter(raceomb==5 | raceomb==6) -> subdat
 
@@ -69,7 +72,8 @@ df4 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.White_Good_all, tblack_0to10, raceomb, age) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         tblack_0to10, twhite_0to10, raceomb, age) %>%
   rbind(subdat) %>%
   filter(raceomb==5 | raceomb==6) -> subdat
 
@@ -78,7 +82,8 @@ df5 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.White_Good_all, tblack_0to10, raceomb, age) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         tblack_0to10, twhite_0to10, raceomb, age) %>%
   rbind(subdat) %>%
   filter(raceomb==5 | raceomb==6) -> subdat
 
@@ -87,7 +92,8 @@ df6 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.White_Good_all, tblack_0to10, raceomb, age) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         tblack_0to10, twhite_0to10, raceomb, age) %>%
   rbind(subdat) %>%
   filter(raceomb==5 | raceomb==6) -> subdat
 
@@ -96,9 +102,11 @@ df7 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblacks_0to10) &
            !is.na(age)) %>%
-  mutate(tblack_0to10=tblacks_0to10) %>%
+  mutate(tblack_0to10=tblacks_0to10,
+         twhite_0to10=twhites_0to10) %>%
   mutate(raceomb = ethnic) %>%
-  select(CountyNo, STATE, D_biep.White_Good_all, tblack_0to10, raceomb, age) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         tblack_0to10, twhite_0_to_10, raceomb, age) %>%
   rbind(subdat) %>%
   filter(raceomb==5 | raceomb==6) -> subdat
 
@@ -107,9 +115,11 @@ df8 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblacks_0to10) &
            !is.na(age)) %>%
-  mutate(tblack_0to10=tblacks_0to10) %>%
+  mutate(tblack_0to10=tblacks_0to10,
+         twhite_0to10=twhites_0to10) %>%
   mutate(raceomb = ethnic) %>%
-  select(CountyNo, STATE, D_biep.White_Good_all, tblack_0to10, raceomb, age) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         tblack_0to10, twhite_0to10, raceomb, age) %>%
   rbind(subdat) %>%
   filter(raceomb==5 | raceomb==6) -> subdat
 
@@ -119,8 +129,10 @@ df9 %>%
            !is.na(tblacks_0to10) &
            !is.na(age)) %>%
   mutate(raceomb = ethnic) %>%
-  mutate(tblack_0to10=tblacks_0to10) %>%
-  select(CountyNo, STATE, D_biep.White_Good_all, tblack_0to10, raceomb, age) %>%
+  mutate(tblack_0to10=tblacks_0to10,
+         twhite_0to10=twhites_0to10) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         tblack_0to10, twhite_0to10, raceomb, age) %>%
   rbind(subdat) %>%
   filter(raceomb==5 | raceomb==6) -> subdat
 
@@ -129,12 +141,14 @@ df10 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.White_Good_all, tblack_0to10, raceomb, age) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         tblack_0to10, twhite_0to10, raceomb, age) %>%
   rbind(subdat) %>%
   filter(raceomb==5 | raceomb==6) -> subdat
 
 subdat %>%
   mutate(tblack=tblack_0to10) %>%
+  mutate(explicit_bias = twhite_0to10 - tblack_0to10) %>%
   mutate(age_bin = cut(age, breaks=c(14, 24, 34, 54, 75, 120))) %>%
   mutate(race = fct_recode(as.character(raceomb), 
                            'Black'='5', 'White'='6')) %>%
@@ -208,7 +222,7 @@ individual.model.bias <- lmer(D_biep.White_Good_all ~ white_prop + black_prop +
                                 b.w.ratio + col_grads + unemp + income + poverty +
                                 (1|age_bin) + (1|county_id) + (1|state_abb), 
                          data=individual_data)
-individual.model.warmth <- lmer(tblack ~ white_prop + black_prop + 
+individual.model.explicit <- lmer(explicit_bias ~ white_prop + black_prop + 
                                   b.w.ratio + col_grads + unemp + income + poverty +
                                   (1|age_bin) + (1|county_id) + (1|state_abb), 
                                 data=individual_data)
@@ -221,14 +235,14 @@ df_acs_countstemp %>%
 
 scaled_counts$yhat_bias <- predict(individual.model.bias, 
                                    newdata=scaled_counts, allow.new.levels=T)
-scaled_counts$yhat_warmth <- predict(individual.model.warmth, 
+scaled_counts$yhat_explicit <- predict(individual.model.explicit, 
                                      newdat=scaled_counts, allow.new.levels=T)
 
 scaled_counts %>% 
   ungroup() %>% 
   group_by(county_id) %>% 
   summarise(weighted_bias = weighted.mean(yhat_bias, num),
-            weighted_warmth = weighted.mean(yhat_warmth, num)) -> mrp_ests
+            weighted_explicit = weighted.mean(yhat_explicit, num)) -> mrp_ests
 
 individual_data %>%
   group_by(county_id) %>%
@@ -236,7 +250,7 @@ individual_data %>%
             warmth = mean(tblack)) %>%
     left_join(mrp_ests) -> county_means
 
-write.csv(county_means, '/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
+write.csv(county_means, '/Users/travis/Documents/gits/educational_disparities/output/county_means_explicit_diff.csv')
 
 ###### write teacher data
 df %>%
@@ -311,6 +325,7 @@ subdat %>%
 names(individual_data)[2] <- 'state_abb'
 
 individual_data %>%
+  filter(raceomb==6) %>%
   group_by(county_id) %>%
   mutate(county_bias = mean(D_biep.White_Good_all),
          county_warmth = mean(tblack_0to10),
