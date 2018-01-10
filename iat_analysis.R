@@ -242,7 +242,7 @@ scaled_counts %>%
   ungroup() %>% 
   group_by(county_id) %>% 
   summarise(weighted_bias = weighted.mean(yhat_bias, num),
-            weighted_explicit = weighted.mean(yhat_explicit, num)) -> mrp_ests
+            weighted_warmth = weighted.mean(yhat_explicit, num)) -> mrp_ests
 
 individual_data %>%
   group_by(county_id) %>%
