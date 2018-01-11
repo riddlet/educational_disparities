@@ -2,7 +2,7 @@ library(dplyr)
 set.seed(42)
 dfs <- read.csv('output/full_model_data.csv')
 dfss <- read.csv('output/selected_model_data_ucla_excl.csv')
-dfss_diff <- read.csv('output/selected_model_data_explicitdiff.csv')
+dfss_diff <- read.csv('output/selected_model_data_ucla_excl_exp_diff.csv')
 dft <- read.csv('output/teacher_model_data.csv')
 
 ######## write consensus MCMC files
@@ -15,7 +15,7 @@ dft %>%
   distinct() -> teacher_counties
 
 counties %>% 
-  mutate(grouping=sample(1:10, n(), replace=T)) -> county_assignments
+  mutate(grouping=sample(1:11, n(), replace=T)) -> county_assignments
 
 teacher_counties %>%
   mutate(grouping=sample(1:9, n(), replace=T)) -> teacher_county_assignments
@@ -227,7 +227,7 @@ save(m, file='/tigress/triddle/educational_disparities/mw_uclaexcl_diff/"
 
 
 for(i in rownames(table(dfss$metric))){
-  for (j in 1:10){
+  for (j in 1:11){
     fs <- paste(string1, i, string2, j, string3, i, string4, i, "/m", j, ".rdata')", sep='')
     fileConn <- file(paste("model_scripts/mw_uclaexcl_diff//",i,"/m", j, ".R", sep=''))
     writeLines(fs, fileConn)
