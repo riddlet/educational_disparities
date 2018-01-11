@@ -11,7 +11,7 @@ options(mc.cores = parallel::detectCores())
 
 "%ni%" <- Negate("%in%")
 
-district_content <- read.csv('../../Data/crdc201314csv/CRDC2013_14_LEA_content.csv')
+district_content <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_LEA_content.csv')
 df_district <- read.csv('../../Data/crdc201314csv/CRDC2013_14_LEA.csv')
 school_content <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH_content.csv')
 df_school <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH.csv')
@@ -348,7 +348,7 @@ error_second <- c('0100002', '0500394', '0500390', '0409734', '0400144',
 tempout %>%
   filter(COMBOKEY %ni% exclude$COMBOKEY) %>%
   filter(LEAID %ni% error_elem) %>%
-  filter(LEAID %ni% error_second) -> uhm
+  filter(LEAID %ni% error_second) -> tempout
 
 df_acs <- read.csv('../../Data/ACS/county_ethnicity/ACS_14_5YR_B02001_with_ann.csv',skip = 1)
 
@@ -402,7 +402,7 @@ covs %>%
 
 
 
-write.csv(mod.dat, file='output/full_model_data.csv', row.names = FALSE)
+write.csv(mod.dat, file='output/selected_model_data_ucla_excl.csv', row.names = FALSE)
 
 ### write with teacher data
 county_teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means.csv')

@@ -21,7 +21,7 @@ df7 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2005.sav'
 df8 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2004.sav')
 df9 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2002-2003.sav')
 df10 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2014.sav')
-df_acs <- read.csv('../Data/ACS/county_age/ACS_14_5YR_DP05_with_ann.csv', skip=1)
+df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_age/ACS_14_5YR_DP05_with_ann.csv', skip=1)
 df_county_linking_info <- read.csv('cluster/output/county_linking_table.csv', stringsAsFactors = F)
 df_county_linking_info$county_name[1904] <- 'Doña Ana'
 df_states <- data.frame(state=c(state.name, 'District of Columbia'),
@@ -222,7 +222,7 @@ individual.model.bias <- lmer(D_biep.White_Good_all ~ white_prop + black_prop +
                                 b.w.ratio + col_grads + unemp + income + poverty +
                                 (1|age_bin) + (1|county_id) + (1|state_abb), 
                          data=individual_data)
-individual.model.explicit <- lmer(explicit_bias ~ white_prop + black_prop + 
+individual.model.explicit <- lmer(tblack_0to10 ~ white_prop + black_prop + 
                                   b.w.ratio + col_grads + unemp + income + poverty +
                                   (1|age_bin) + (1|county_id) + (1|state_abb), 
                                 data=individual_data)
@@ -250,7 +250,7 @@ individual_data %>%
             warmth = mean(tblack)) %>%
     left_join(mrp_ests) -> county_means
 
-write.csv(county_means, '/Users/travis/Documents/gits/educational_disparities/output/county_means_explicit_diff.csv')
+write.csv(county_means, '/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
 
 ###### write teacher data
 df %>%
