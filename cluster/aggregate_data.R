@@ -12,10 +12,10 @@ options(mc.cores = parallel::detectCores())
 "%ni%" <- Negate("%in%")
 
 district_content <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_LEA_content.csv')
-df_district <- read.csv('../../Data/crdc201314csv/CRDC2013_14_LEA.csv')
+df_district <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_LEA.csv')
 school_content <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH_content.csv')
 df_school <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH.csv')
-county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv', 
+county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means_explicit_diff.csv', 
                          colClasses = 'character')
 state_teacher_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/state_teacher_means.csv')
 
@@ -54,6 +54,7 @@ susp_inschool %>%
 tempout$number[which(tempout$number<0)] <- NA
 
 tempout %>%
+  filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T),
@@ -61,7 +62,6 @@ tempout %>%
   mutate(proportion = number/total_number) -> full_dat
 
 full_dat %>% 
-  filter(group=='black'|group=='white') %>%
   filter(is.finite(proportion)) %>%
   filter(total_number>number) %>%
   ungroup() %>%
@@ -107,6 +107,7 @@ oos_susp %>%
 tempout$number[which(tempout$number<0)] <- NA
 
 tempout %>%
+  filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T),
@@ -114,7 +115,6 @@ tempout %>%
   mutate(proportion = number/total_number) -> full_dat
 
 full_dat %>% 
-  filter(group=='black'|group=='white') %>%
   filter(is.finite(proportion)) %>%
   filter(number>=0) %>%
   filter(total_number>number) %>%
@@ -162,6 +162,7 @@ exp_w_ed %>%
 tempout$number[which(tempout$number<0)] <- NA
 tempout$w_ed_num[which(tempout$w_ed_num<0)] <- NA
 tempout %>%
+  filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T),
@@ -172,7 +173,6 @@ tempout %>%
   mutate(proportion = number/total_number) -> full_dat
 
 full_dat %>% 
-  filter(group=='black'|group=='white') %>%
   filter(is.finite(proportion)) %>%
   filter(total_number>number) %>%
   ungroup() %>%
@@ -200,6 +200,7 @@ law_enf %>%
 
 tempout$number[which(tempout$number<0)] <- NA
 tempout %>%
+  filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T),
@@ -207,7 +208,6 @@ tempout %>%
   mutate(proportion = number/total_number) -> full_dat
 
 full_dat %>% 
-  filter(group=='black'|group=='white') %>%
   filter(is.finite(proportion)) %>%
   filter(number>=0) %>%
   filter(total_number>number) %>%
@@ -236,6 +236,7 @@ in_school_arrest %>%
 
 tempout$number[which(tempout$number<0)] <- NA
 tempout %>%
+  filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T),
@@ -243,7 +244,6 @@ tempout %>%
   mutate(proportion = number/total_number) -> full_dat
 
 full_dat %>% 
-  filter(group=='black'|group=='white') %>%
   filter(is.finite(proportion)) %>%
   filter(number>=0) %>%
   filter(total_number>number) %>%
@@ -402,7 +402,7 @@ covs %>%
 
 
 
-write.csv(mod.dat, file='output/selected_model_data_ucla_excl.csv', row.names = FALSE)
+write.csv(mod.dat, file='output/selected_model_data_ucla_excl_exp_diff.csv', row.names = FALSE)
 
 ### write with teacher data
 county_teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means.csv')

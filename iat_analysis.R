@@ -26,7 +26,7 @@ df_county_linking_info <- read.csv('cluster/output/county_linking_table.csv', st
 df_county_linking_info$county_name[1904] <- 'Doña Ana'
 df_states <- data.frame(state=c(state.name, 'District of Columbia'),
                         state_abb=c(state.abb, 'DC'))
-df_acs_eth <- read.csv('../Data/ACS/state_ethnicity/ACS_14_5YR_B02001_with_ann.csv',
+df_acs_eth <- read.csv('/Users/travis/Documents/gits/Data/ACS/state_ethnicity/ACS_14_5YR_B02001_with_ann.csv',
                        skip = 1, stringsAsFactors = F)
 df_acs_ed <- read.csv('../Data/ACS/state_education/ACS_14_5YR_S1501_with_ann.csv',
                       skip = 1, stringsAsFactors = F)
@@ -222,7 +222,7 @@ individual.model.bias <- lmer(D_biep.White_Good_all ~ white_prop + black_prop +
                                 b.w.ratio + col_grads + unemp + income + poverty +
                                 (1|age_bin) + (1|county_id) + (1|state_abb), 
                          data=individual_data)
-individual.model.explicit <- lmer(tblack_0to10 ~ white_prop + black_prop + 
+individual.model.explicit <- lmer(explicit_bias ~ white_prop + black_prop + 
                                   b.w.ratio + col_grads + unemp + income + poverty +
                                   (1|age_bin) + (1|county_id) + (1|state_abb), 
                                 data=individual_data)
@@ -246,11 +246,11 @@ scaled_counts %>%
 
 individual_data %>%
   group_by(county_id) %>%
-  summarise(bias = mean(D_biep.White_Good_all),
+  summarise(bias = mean(explicit_bias),
             warmth = mean(tblack)) %>%
     left_join(mrp_ests) -> county_means
 
-write.csv(county_means, '/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
+write.csv(county_means, '/Users/travis/Documents/gits/educational_disparities/output/county_means_explicit_diff.csv')
 
 ###### write teacher data
 df %>%
