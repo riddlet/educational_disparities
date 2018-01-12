@@ -410,6 +410,7 @@ county_teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_d
 schools_loc %>%
   left_join(county_teacher_estimates) %>%
   filter(!is.na(county_bias)) %>%
+  left_join(states) %>%
   left_join(covs) %>%
   filter(COMBOKEY %ni% exclude$COMBOKEY) %>%
   filter(LEAID %ni% error_elem) %>%
