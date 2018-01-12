@@ -33,7 +33,9 @@ df_acs_ed <- read.csv('../Data/ACS/state_education/ACS_14_5YR_S1501_with_ann.csv
 df_acs_pov_emp <- read.csv('../Data/ACS/state_poverty_emp/ACS_14_5YR_DP03_with_ann.csv',
                            skip = 1, stringsAsFactors = F)
 
-educators <- c('25-2000', '25-3000', '25-4000', '25-9000')
+#educators <- c('25-2000', '25-3000', '25-4000', '25-9000')
+# per stacey's contact in education, limit to the following:
+educators <- c('25-2000', '25-3000')
 
 # '25-1000' - postsecondary teachers
 
