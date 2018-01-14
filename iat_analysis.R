@@ -260,16 +260,16 @@ df %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, 
-         D_biep.White_Good_all, tblack_0to10, raceomb, age, occupation)  -> subdat
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation)  -> subdat
 
 df2 %>%
   filter(CountyNo!='' &
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, 
-         D_biep.White_Good_all, tblack_0to10, raceomb, age, occupation) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat
 
 df3 %>%
@@ -277,8 +277,8 @@ df3 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, 
-         D_biep.White_Good_all, tblack_0to10, raceomb, age, occupation) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat
 
 df4 %>%
@@ -286,8 +286,8 @@ df4 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, 
-         D_biep.White_Good_all, tblack_0to10, raceomb, age, occupation) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat
 
 df5 %>%
@@ -295,8 +295,8 @@ df5 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, 
-         D_biep.White_Good_all, tblack_0to10, raceomb, age, occupation) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat
 
 df6 %>%
@@ -304,8 +304,8 @@ df6 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, 
-         D_biep.White_Good_all, tblack_0to10, raceomb, age, occupation) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat
 
 df10 %>%
@@ -313,12 +313,12 @@ df10 %>%
            !is.na(D_biep.White_Good_all) &
            !is.na(tblack_0to10) &
            !is.na(age)) %>%
-  select(CountyNo, STATE, 
-         D_biep.White_Good_all, tblack_0to10, raceomb, age, occupation) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat
 
 subdat %>%
-  mutate(tblack=tblack_0to10) %>%
+  mutate(tblack=twhite_0to10 - tblack_0to10) %>%
   filter(STATE %ni% 
            c('AA', 'AE', 'AP', 'AS', 'FM', 'GU', 'MH', 'MP', 'PR', 'VI')) %>%
   filter(occupation %in% educators) %>%
@@ -330,11 +330,11 @@ individual_data %>%
   filter(raceomb==6) %>%
   group_by(county_id) %>%
   mutate(county_bias = mean(D_biep.White_Good_all),
-         county_warmth = mean(tblack_0to10),
+         county_warmth = mean(tblack, na.rm=T),
          num_obs = n()) %>%
   filter(num_obs>49) %>%
   select(county_id, state_abb, county_bias, county_warmth, num_obs) %>%
   distinct() -> county_teacher_estimates
 
 write.csv(county_teacher_estimates, row.names = F,
-            file = '/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means.csv')
+            file = '/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means_expdiff.csv')
