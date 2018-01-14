@@ -14,7 +14,7 @@ options(mc.cores = parallel::detectCores())
 district_content <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_LEA_content.csv')
 df_district <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_LEA.csv')
 school_content <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH_content.csv')
-df_school <- read.csv('../../Data/crdc201314csv/CRDC2013_14_SCH.csv')
+df_school <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH.csv')
 county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means_explicit_diff.csv', 
                          colClasses = 'character')
 state_teacher_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/state_teacher_means.csv')
@@ -417,3 +417,17 @@ schools_loc %>%
   filter(LEAID %ni% error_second) -> out
 
 write.csv(out, file='output/teacher_model_data.csv', row.names=FALSE)
+
+# teacher data w/explicit diffs
+county_teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means_expdiff.csv')
+
+schools_loc %>%
+  left_join(county_teacher_estimates) %>%
+  filter(!is.na(county_bias)) %>%
+  left_join(states) %>%
+  left_join(covs) %>%
+  filter(COMBOKEY %ni% exclude$COMBOKEY) %>%
+  filter(LEAID %ni% error_elem) %>%
+  filter(LEAID %ni% error_second) -> out
+
+write.csv(out, file='output/teacher_model_data_expdiff.csv', row.names=FALSE)
