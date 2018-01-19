@@ -17,7 +17,6 @@ school_content <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC
 df_school <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH.csv')
 county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means_explicit_diff.csv', 
                          colClasses = 'character')
-state_teacher_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/state_teacher_means.csv')
 
 # Get enrollment figures
 df_school %>%
@@ -28,7 +27,11 @@ df_school %>%
   mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
                           hispanic='HI_', pac_isl='HP_', total='NR_', 
                           biracial='TR_', white='WH_')) %>%
-  select(-prefix) -> enrollment
+  group_by(COMBOKEY, group) %>%
+  mutate(total_number = sum(total_number)) %>%
+  ungroup() %>%
+  select(-prefix, -gender) %>%
+  distinct() -> enrollment
 
 ################ 
 # relevant metrics #
@@ -49,24 +52,22 @@ df_school %>%
   select(-prefix) -> susp_inschool
 
 susp_inschool %>%
-  left_join(enrollment) -> tempout
-
-tempout$number[which(tempout$number<0)] <- NA
-
-tempout %>%
   filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
-  summarise(number = sum(number, na.rm=T),
-            total_number = sum(total_number)) %>%
-  mutate(proportion = number/total_number) -> full_dat
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(enrollment) %>%
+  mutate(proportion = number/total_number) -> tempout
 
-full_dat %>% 
+tempout$number[which(tempout$number<0)] <- NA
+
+tempout %>% 
+  ungroup() %>%
   filter(is.finite(proportion)) %>%
   filter(total_number>number) %>%
-  ungroup() %>%
   mutate(metric='inschool_susp') %>%
-  mutate(LEA_STATE = droplevels(LEA_STATE)) -> subdat
+  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  distinct() -> subdat
 
 df_school %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
@@ -102,25 +103,23 @@ df_school %>%
   mutate(number = number+number_2) -> oos_susp
 
 oos_susp %>%
-  left_join(enrollment) -> tempout
-
-tempout$number[which(tempout$number<0)] <- NA
-
-tempout %>%
   filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
-  summarise(number = sum(number, na.rm=T),
-            total_number = sum(total_number)) %>%
-  mutate(proportion = number/total_number) -> full_dat
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(enrollment) %>%
+  mutate(proportion = number/total_number) -> tempout
 
-full_dat %>% 
+tempout$number[which(tempout$number<0)] <- NA
+
+tempout %>% 
+  ungroup() %>%
   filter(is.finite(proportion)) %>%
   filter(number>=0) %>%
   filter(total_number>number) %>%
-  ungroup() %>%
   mutate(metric='oos_susp') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  distinct() %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
@@ -153,31 +152,28 @@ df_school %>%
                                not_disabled='E_', disabled='A_')) %>%
   select(-prefix) -> exp_wo_ed
 
+exp_w_ed$number[which(exp_w_ed$number<0)] <- NA
+exp_wo_ed$number[which(exp_wo_ed$number<0)] <- NA
+
 exp_w_ed %>%
-  mutate(w_ed_num = number) %>%
+  mutate(w_ed_number = number) %>%
   select(-number) %>%
   left_join(exp_wo_ed) %>%
-  left_join(enrollment) -> tempout
-
-tempout$number[which(tempout$number<0)] <- NA
-tempout$w_ed_num[which(tempout$w_ed_num<0)] <- NA
-tempout %>%
+  mutate(number = number + w_ed_number) %>%
   filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
-  summarise(number = sum(number, na.rm=T),
-            w_ed_number = sum(w_ed_num, na.rm=T),
-            total_number = sum(total_number)) %>%
-  mutate(number=number+w_ed_number) %>%
-  select(-w_ed_number) %>%
-  mutate(proportion = number/total_number) -> full_dat
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(enrollment) %>%
+  mutate(proportion = number/total_number) -> tempout
 
-full_dat %>% 
+tempout %>% 
+  ungroup() %>%
   filter(is.finite(proportion)) %>%
   filter(total_number>number) %>%
-  ungroup() %>%
   mutate(metric='expulsion_combined') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  distinct() %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
@@ -196,24 +192,22 @@ df_school %>%
   select(-prefix) -> law_enf
 
 law_enf %>%
-  left_join(enrollment) -> tempout
-
-tempout$number[which(tempout$number<0)] <- NA
-tempout %>%
   filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
-  summarise(number = sum(number, na.rm=T),
-            total_number = sum(total_number)) %>%
-  mutate(proportion = number/total_number) -> full_dat
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(enrollment) %>%
+  mutate(proportion = number/total_number) -> tempout
 
-full_dat %>% 
+tempout %>% 
+  ungroup() %>%
   filter(is.finite(proportion)) %>%
   filter(number>=0) %>%
   filter(total_number>number) %>%
   ungroup() %>%
   mutate(metric='law_enforcement') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  distinct() %>%
   rbind(subdat) -> subdat
 
 df_school %>% 
@@ -232,24 +226,23 @@ df_school %>%
   select(-prefix) -> in_school_arrest
 
 in_school_arrest %>%
-  left_join(enrollment) -> tempout
-
-tempout$number[which(tempout$number<0)] <- NA
-tempout %>%
   filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
-  summarise(number = sum(number, na.rm=T),
-            total_number = sum(total_number)) %>%
-  mutate(proportion = number/total_number) -> full_dat
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(enrollment) %>%
+  mutate(proportion = number/total_number) -> tempout
 
-full_dat %>% 
+tempout$number[which(tempout$number<0)] <- NA
+
+tempout %>% 
+  ungroup() %>%
   filter(is.finite(proportion)) %>%
   filter(number>=0) %>%
   filter(total_number>number) %>%
-  ungroup() %>%
   mutate(metric='in_school_arrest') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  distinct() %>%
   rbind(subdat) -> subdat
 
 rm(exp_w_ed, exp_wo_ed, in_school_arrest, law_enf, oos_susp, susp_inschool)
@@ -281,7 +274,7 @@ get_fips_code <- function(lat, long) {
 # }
 
 #write.csv(schools_loc, file='output/schools_w_fips.csv', row.names = F)
-schools_loc <- read.csv('output/schools_w_fips.csv')
+schools_loc <- read.csv('/Users/travis/Documents/gits/educational_disparities/cluster/output/schools_w_fips.csv')
 schools_loc <- left_join(subdat, schools_loc)  
 schools_loc %>%
   filter(!is.na(fips_api)) %>%
@@ -350,17 +343,17 @@ tempout %>%
   filter(LEAID %ni% error_elem) %>%
   filter(LEAID %ni% error_second) -> tempout
 
-df_acs <- read.csv('../../Data/ACS/county_ethnicity/ACS_14_5YR_B02001_with_ann.csv',skip = 1)
+df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_ethnicity/ACS_14_5YR_B02001_with_ann.csv',skip = 1)
 
 covs1 <- df_acs[,c(3, 4, 6, 8)]
 names(covs1) <- c('county', 'total_pop', 'white_pop', 'black_pop')
 
-df_acs <- read.csv('../../Data/ACS/county_poverty_emp/ACS_14_5YR_DP03_with_ann.csv',skip = 1)
+df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_poverty_emp/ACS_14_5YR_DP03_with_ann.csv',skip = 1)
 
 covs2 <- df_acs[,c(3, 22, 248, 478)]
 names(covs2) <- c('county', 'unemp_rate', 'med_income', 'poverty_rate')
 
-df_acs <- read.csv('../../Data/ACS/county_education/ACS_14_5YR_S1501_with_ann.csv',skip=1)
+df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_education/ACS_14_5YR_S1501_with_ann.csv',skip=1)
 covs3 <- df_acs[,c(3, 28)]
 names(covs3) <- c('county', 'col_grads')
 
@@ -402,8 +395,11 @@ covs %>%
 
 
 
-write.csv(mod.dat, file='output/selected_model_data_ucla_excl_exp_diff.csv', row.names = FALSE)
+write.csv(mod.dat, file='/Users/travis/Documents/gits/educational_disparities/cluster/output/selected_model_data_ucla_excl_exp_diff.csv', row.names = FALSE)
 
+
+############### rerun all of the above from start to finish (including making IAT data)
+# then check the below.
 ### write with teacher data
 county_teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means.csv')
 

@@ -16,10 +16,10 @@ dft %>%
   distinct() -> teacher_counties
 
 counties %>% 
-  mutate(grouping=sample(1:11, n(), replace=T)) -> county_assignments
+  mutate(grouping=sample(1:12, n(), replace=T)) -> county_assignments
 
 teacher_counties %>%
-  mutate(grouping=sample(1:11, n(), replace=T)) -> teacher_county_assignments
+  mutate(grouping=sample(1:12, n(), replace=T)) -> teacher_county_assignments
 
 dfs %>% 
   left_join(county_assignments) -> county_groups #append the grouping information
@@ -189,7 +189,7 @@ save(m, file='/tigress/triddle/educational_disparities/mw_uclaexcl/"
 
 
 for(i in rownames(table(dfss$metric))){
-  for (j in 1:10){
+  for (j in 1:12){
     fs <- paste(string1, i, string2, j, string3, i, string4, i, "/m", j, ".rdata')", sep='')
     fileConn <- file(paste("model_scripts/mw_uclaexcl/",i,"/m", j, ".R", sep=''))
     writeLines(fs, fileConn)
@@ -230,9 +230,9 @@ save(m, file='/tigress/triddle/educational_disparities/mw_uclaexcl_diff/"
 
 
 for(i in rownames(table(dfss$metric))){
-  for (j in 1:11){
+  for (j in 1:12){
     fs <- paste(string1, i, string2, j, string3, i, string4, i, "/m", j, ".rdata')", sep='')
-    fileConn <- file(paste("model_scripts/mw_uclaexcl_diff//",i,"/m", j, ".R", sep=''))
+    fileConn <- file(paste("model_scripts/mw_uclaexcl_diff/",i,"/m", j, ".R", sep=''))
     writeLines(fs, fileConn)
     close(fileConn)
   }
@@ -268,7 +268,7 @@ save(m, file='/tigress/triddle/educational_disparities/teacher_metrics_expdiff/"
 
 
 for(i in rownames(table(dft$metric))){
-  for (j in 1:11){
+  for (j in 1:12){
     fs <- paste(string1, i, string2, j, string3, i, string4, i, "/m", j, ".rdata')", sep='')
     fileConn <- file(paste("model_scripts/teacher_metrics_expdiff/",i,"/m", j, ".R", sep=''))
     writeLines(fs, fileConn)
