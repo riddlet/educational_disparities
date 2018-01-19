@@ -3,3 +3,4 @@
 *.Rhistory
 *.jpeg
 cluster/model_scripts/*
+cluster/tl_2014_us_cbsa.zip
