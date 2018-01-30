@@ -33,8 +33,8 @@ df_school %>%
   select(-prefix, -gender) %>%
   distinct() -> enrollment
 
-################ 
 # relevant metrics #
+################ 
 
 df_school %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
@@ -245,6 +245,11 @@ tempout %>%
   distinct() %>%
   rbind(subdat) -> subdat
 
+
+################
+# transform county information #
+################
+
 rm(exp_w_ed, exp_wo_ed, in_school_arrest, law_enf, oos_susp, susp_inschool)
 
 subdat %>%
@@ -274,7 +279,7 @@ get_fips_code <- function(lat, long) {
 # }
 
 #write.csv(schools_loc, file='output/schools_w_fips.csv', row.names = F)
-schools_loc <- read.csv('/Users/travis/Documents/gits/educational_disparities/cluster/output/schools_w_fips.csv')
+schools_loc <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/schools_w_fips.csv')
 schools_loc <- left_join(subdat, schools_loc)  
 schools_loc %>%
   filter(!is.na(fips_api)) %>%
@@ -305,6 +310,10 @@ county_means %>%
   select(county_id, county_name, state_abb, 
          bias, warmth, weighted_bias, weighted_warmth, 
          COMBOKEY, group, number, total_number, metric, LEAID) -> tempout
+
+################
+# Exclude schools #
+################
 
 # Get exclusion schools
 df_school %>%
@@ -342,6 +351,10 @@ tempout %>%
   filter(COMBOKEY %ni% exclude$COMBOKEY) %>%
   filter(LEAID %ni% error_elem) %>%
   filter(LEAID %ni% error_second) -> tempout
+
+################
+# append covariates #
+################
 
 df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_ethnicity/ACS_14_5YR_B02001_with_ann.csv',skip = 1)
 
@@ -393,14 +406,17 @@ covs %>%
 #   distinct() %>%
 #   write.csv(., file='output/county_linking_table.csv', row.names=FALSE)
 
+################
+# write file #
+################
+
+#change the name of the file, depending on what model it is for
+write.csv(mod.dat, file='/Users/travis/Documents/gits/educational_disparities/output/full_model_data.csv', row.names = FALSE)
 
 
-write.csv(mod.dat, file='/Users/travis/Documents/gits/educational_disparities/cluster/output/selected_model_data_ucla_excl_exp_diff.csv', row.names = FALSE)
-
-
-############### rerun all of the above from start to finish (including making IAT data)
-# then check the below.
-### write with teacher data
+################
+# teacher data #
+################
 county_teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means.csv')
 
 schools_loc %>%
@@ -414,7 +430,9 @@ schools_loc %>%
 
 write.csv(out, file='output/teacher_model_data.csv', row.names=FALSE)
 
-# teacher data w/explicit diffs
+################
+# teacher data with explicit differences #
+################
 county_teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means_expdiff.csv')
 
 schools_loc %>%
@@ -426,4 +444,4 @@ schools_loc %>%
   filter(LEAID %ni% error_elem) %>%
   filter(LEAID %ni% error_second) -> out
 
-write.csv(out, file='output/teacher_model_data_expdiff.csv', row.names=FALSE)
+write.csv(out, file='/Users/travis/Documents/gits/educational_disparities/output/teacher_model_data_expdiff.csv', row.names=FALSE)
