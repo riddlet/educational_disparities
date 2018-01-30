@@ -1,10 +1,7 @@
 library(dplyr)
 set.seed(42)
 dfs <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/full_model_data.csv')
-dfss <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/selected_model_data_ucla_excl.csv')
-dfss_diff <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/selected_model_data_ucla_excl_exp_diff.csv')
 dft <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/teacher_model_data.csv')
-dft_diff <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/teacher_model_data_expdiff.csv')
 
 ######## write consensus MCMC files
 dfs %>% 
@@ -23,20 +20,13 @@ teacher_counties %>%
 
 dfs %>% 
   left_join(county_assignments) -> county_groups #append the grouping information
-dfss %>%
-  left_join(county_assignments) -> subcounty_groups
-dfss_diff %>%
-  left_join(county_assignments) -> subcounty_groups_diff
 dft %>%
   left_join(teacher_county_assignments) -> teacher_groups
-dft_diff %>%
-  left_join(teacher_county_assignments) -> teacher_groups_diff
 
 write.csv(county_groups, file='/Users/travis/Documents/gits/educational_disparities/cluster/data/county_grouping.csv', row.names = F)
-write.csv(subcounty_groups, file='data/subcounty_grouping_ucla_excl.csv', row.names=F)
-write.csv(subcounty_groups_diff, file='data/subcounty_grouping_diff.csv', row.names=F)
 write.csv(teacher_groups, file='data/county_teacher_grouping.csv', row.names=F)
-write.csv(teacher_groups_diff, file='/Users/travis/Documents/gits/educational_disparities/cluster/data/county_teacher_grouping_expdiff.csv', row.names=F)
+
+#### note that the script writing below is from when the model dataframes were written as separate files
 
 ######################## write raw files #############
 
