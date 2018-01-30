@@ -22,15 +22,15 @@ df8 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2004.sav'
 df9 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2002-2003.sav')
 df10 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2014.sav')
 df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_age/ACS_14_5YR_DP05_with_ann.csv', skip=1)
-df_county_linking_info <- read.csv('cluster/output/county_linking_table.csv', stringsAsFactors = F)
+df_county_linking_info <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_linking_table.csv', stringsAsFactors = F)
 df_county_linking_info$county_name[1904] <- 'Doña Ana'
 df_states <- data.frame(state=c(state.name, 'District of Columbia'),
                         state_abb=c(state.abb, 'DC'))
 df_acs_eth <- read.csv('/Users/travis/Documents/gits/Data/ACS/state_ethnicity/ACS_14_5YR_B02001_with_ann.csv',
                        skip = 1, stringsAsFactors = F)
-df_acs_ed <- read.csv('../Data/ACS/state_education/ACS_14_5YR_S1501_with_ann.csv',
+df_acs_ed <- read.csv('/Users/travis/Documents/gits/Data/ACS/state_education/ACS_14_5YR_S1501_with_ann.csv',
                       skip = 1, stringsAsFactors = F)
-df_acs_pov_emp <- read.csv('../Data/ACS/state_poverty_emp/ACS_14_5YR_DP03_with_ann.csv',
+df_acs_pov_emp <- read.csv('/Users/travis/Documents/gits/Data/ACS/state_poverty_emp/ACS_14_5YR_DP03_with_ann.csv',
                            skip = 1, stringsAsFactors = F)
 
 #educators <- c('25-2000', '25-3000', '25-4000', '25-9000')
