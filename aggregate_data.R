@@ -15,7 +15,7 @@ district_content <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CR
 df_district <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_LEA.csv')
 school_content <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH_content.csv')
 df_school <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH.csv')
-county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means_explicit_diff.csv', 
+county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv', 
                          colClasses = 'character')
 
 # Get enrollment figures
@@ -307,8 +307,8 @@ schools_loc$county_name[which(schools_loc$county_id=='VA-510')] <- 'Alexandria c
 county_means %>%
   select(-X) %>%
   right_join(schools_loc) %>%
-  select(county_id, county_name, state_abb, 
-         bias, warmth, weighted_bias, weighted_warmth, 
+  select(county_id, county_name, state_abb, bias, explicit, explicit_diff, 
+         weighted_bias, weighted_explicit, weighted_explicit_diff, 
          COMBOKEY, group, number, total_number, metric, LEAID) -> tempout
 
 ################
@@ -348,9 +348,9 @@ error_second <- c('0100002', '0500394', '0500390', '0409734', '0400144',
                   '5000005', '5308700', '5500035', '5600015', '5680251')
 
 tempout %>%
-  filter(COMBOKEY %ni% exclude$COMBOKEY) %>%
-  filter(LEAID %ni% error_elem) %>%
-  filter(LEAID %ni% error_second) -> tempout
+  mutate(exclude = COMBOKEY %in% exclude$COMBOKEY | 
+           LEAID %in% error_elem |
+           LEAID %in% error_second) -> tempout
 
 ################
 # append covariates #
@@ -421,27 +421,11 @@ county_teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_d
 
 schools_loc %>%
   left_join(county_teacher_estimates) %>%
-  filter(!is.na(county_bias)) %>%
+  filter(!is.na(teacher_bias)) %>%
   left_join(states) %>%
   left_join(covs) %>%
-  filter(COMBOKEY %ni% exclude$COMBOKEY) %>%
-  filter(LEAID %ni% error_elem) %>%
-  filter(LEAID %ni% error_second) -> out
+  mutate(exclude = COMBOKEY %in% exclude$COMBOKEY | 
+           LEAID %in% error_elem |
+           LEAID %in% error_second) -> out
 
-write.csv(out, file='output/teacher_model_data.csv', row.names=FALSE)
-
-################
-# teacher data with explicit differences #
-################
-county_teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means_expdiff.csv')
-
-schools_loc %>%
-  left_join(county_teacher_estimates) %>%
-  filter(!is.na(county_bias)) %>%
-  left_join(states) %>%
-  left_join(covs) %>%
-  filter(COMBOKEY %ni% exclude$COMBOKEY) %>%
-  filter(LEAID %ni% error_elem) %>%
-  filter(LEAID %ni% error_second) -> out
-
-write.csv(out, file='/Users/travis/Documents/gits/educational_disparities/output/teacher_model_data_expdiff.csv', row.names=FALSE)
+write.csv(out, file='/Users/travis/Documents/gits/educational_disparities/output/teacher_model_data.csv', row.names=FALSE)
