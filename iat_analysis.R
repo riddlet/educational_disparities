@@ -150,8 +150,7 @@ df10 %>%
 
 subdat %>%
   mutate(explicit_bias=tblack_0to10) %>%
-  #filter(!is.na(twhite_0to10)) %>%
-  #mutate(explicit_bias = twhite_0to10 - tblack_0to10) %>%
+  mutate(explicit_bias_diff = twhite_0to10 - tblack_0to10) %>%
   mutate(age_bin = cut(age, breaks=c(14, 24, 34, 54, 75, 120))) %>%
   mutate(race = fct_recode(as.character(raceomb), 
                            'Black'='5', 'White'='6')) %>%
@@ -219,16 +218,30 @@ individual_data %>%
   left_join(covs, by='state') %>%
   left_join(covs_ed, by='state') %>%
   left_join(covs_income, by='state') %>%
-  mutate_at(vars(white_prop:poverty), scale) -> individual_data
+  mutate_at(vars(white_prop:poverty), scale) -> individual_data_base
 
 individual.model.bias <- lmer(D_biep.White_Good_all ~ white_prop + black_prop + 
-                                b.w.ratio + col_grads + unemp + income + poverty +
-                                (1|age_bin) + (1|county_id) + (1|state_abb), 
-                         data=individual_data)
+                                b.w.ratio + col_grads + unemp + income + 
+                                poverty + (1|age_bin) + (1|county_id) + 
+                                (1|state_abb), data=individual_data_base)
 individual.model.explicit <- lmer(explicit_bias ~ white_prop + black_prop + 
-                                  b.w.ratio + col_grads + unemp + income + poverty +
-                                  (1|age_bin) + (1|county_id) + (1|state_abb), 
-                                data=individual_data)
+                                    b.w.ratio + col_grads + unemp + income + 
+                                    poverty + (1|age_bin) + (1|county_id) + 
+                                    (1|state_abb), data=individual_data_base)
+individual_data %>%
+  left_join(df_states) %>%
+  left_join(df_acs_counts[,1:4], by=c('county_id', 'age_bin')) %>%
+  left_join(covs, by='state') %>%
+  left_join(covs_ed, by='state') %>%
+  left_join(covs_income, by='state') %>%
+  filter(!is.na(explicit_bias_diff)) %>%
+  mutate_at(vars(white_prop:poverty), scale) -> individual_data_diff
+
+individual.model.explicit_diff <- lmer(explicit_bias_diff ~ white_prop + 
+                                         black_prop + b.w.ratio + col_grads + 
+                                         unemp + income + poverty + 
+                                         (1|age_bin) + (1|county_id) + 
+                                         (1|state_abb), data=individual_data_diff)
 
 df_acs_countstemp <- df_acs_counts[which(!is.na(df_acs_counts$county_id)),]
 #df_acs_counts <- left_join(df_acs_counts, df_states)
@@ -240,17 +253,24 @@ scaled_counts$yhat_bias <- predict(individual.model.bias,
                                    newdata=scaled_counts, allow.new.levels=T)
 scaled_counts$yhat_explicit <- predict(individual.model.explicit, 
                                      newdat=scaled_counts, allow.new.levels=T)
+#reverse score explicit bias
+scaled_counts$yhat_explicit <- scaled_counts$yhat_explicit*-1
+scaled_counts$yhat_explicit_diff <- predict(individual.model.explicit_diff, 
+                                            newdat=scaled_counts, 
+                                            allow.new.levels=T)
 
 scaled_counts %>% 
   ungroup() %>% 
   group_by(county_id) %>% 
   summarise(weighted_bias = weighted.mean(yhat_bias, num),
-            weighted_warmth = weighted.mean(yhat_explicit, num)) -> mrp_ests
+            weighted_explicit = weighted.mean(yhat_explicit, num),
+            weighted_explicit_diff = weighted.mean(yhat_explicit_diff, num)) -> mrp_ests
 
 individual_data %>%
   group_by(county_id) %>%
-  summarise(bias = mean(explicit_bias),
-            warmth = mean(explicit_bias)) %>%
+  summarise(bias = mean(D_biep.White_Good_all),
+            explicit = mean(explicit_bias),
+            explicit_diff = mean(explicit_bias_diff)) %>%
   left_join(mrp_ests) -> county_means
 
 write.csv(county_means, '/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
@@ -319,7 +339,8 @@ df10 %>%
   rbind(subdat) -> subdat
 
 subdat %>%
-  mutate(tblack=twhite_0to10 - tblack_0to10) %>%
+  mutate(explicit_diff=twhite_0to10 - tblack_0to10,
+         explicit = tblack_0to10*-1) %>%
   filter(STATE %ni% 
            c('AA', 'AE', 'AP', 'AS', 'FM', 'GU', 'MH', 'MP', 'PR', 'VI')) %>%
   filter(occupation %in% educators) %>%
@@ -330,11 +351,13 @@ names(individual_data)[2] <- 'state_abb'
 individual_data %>%
   filter(raceomb==6) %>%
   group_by(county_id) %>%
-  mutate(county_bias = mean(D_biep.White_Good_all),
-         county_warmth = mean(tblack, na.rm=T),
+  mutate(teacher_bias = mean(D_biep.White_Good_all, na.rm=T),
+         teacher_explicit = mean(explicit, na.rm=T),
+         teacher_explicit_diff = mean(explicit_diff, na.rm=T),
          num_obs = n()) %>%
   filter(num_obs>49) %>%
-  select(county_id, state_abb, county_bias, county_warmth, num_obs) %>%
+  select(county_id, state_abb, teacher_bias, 
+         teacher_explicit, teacher_explicit_diff, num_obs) %>%
   distinct() -> county_teacher_estimates
 
 write.csv(county_teacher_estimates, row.names = F,
