@@ -27,9 +27,9 @@ abstract: >
 keywords          : "keywords"
 wordcount         : "X"
 
-bibliography      : ["r-references.bib"]
+bibliography      : ["ref.bib"]
 
-figsintext        : no
+figsintext        : yes
 figurelist        : no
 tablelist         : no
 footnotelist      : no
@@ -37,11 +37,12 @@ lineno            : yes
 
 lang              : "english"
 class             : "man"
-output            : papaja::apa6_pdf
+output            : papaja::apa6_word
 ---
 
 ```{r include = FALSE}
 library("papaja")
+knitr::opts_chunk$set(echo = FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide')
 ```
 # Introduction
 
@@ -51,6 +52,9 @@ library("papaja")
 library(dplyr)
 library(forcats)
 library(haven)
+library(tidyr)
+county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv', 
+                         colClasses = 'character')
 schools_dat <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH.csv')
 
 schools_dat %>%
@@ -71,7 +75,7 @@ enrollment %>% group_by(group) %>% summarise(sum(total_number)) -> enrollment_to
 ```
 We used three distinct data sources for the work described here. The academic disciplinary data is part of the Civil Rights Data Collection (CRDC) through the US Department of Education. The dataset we used comes from the 2013-2014 academic year and has data on "all public local and educational agencies and schools, including long-term secure juvenile justice facilities, charter schools, alternative schools, and schools serving students with disabilities." In total, the CRDC data represents `r dim(schools_dat)[1]` institutions enrolling approximately 50 million students, of which approximately 25 million are white and 7.8 million are Black.
 
-We obtained county-level demographic information for use as covariates and state-level demographic information for use in post-stratification from the US Census Bureau. For both county-level and state-level demographics, we use 5-year estimatesfor the period ending in 2014 from the American Community Survey, which surveys around 295k households per month.
+We obtained county-level demographic information for use as covariates and state-level demographic information for use in post-stratification from the US Census Bureau. For both county-level and state-level demographics, we use 5-year estimates for the period ending in 2014 from the American Community Survey, which surveys around 295k households per month.
 
 ```{r iat-data}
 df <- rbind(read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2013.sav'),
@@ -209,66 +213,124 @@ subdat %>%
   filter(STATE %ni% 
            c('AA', 'AE', 'AP', 'AS', 'FM', 'GU', 'MH', 'MP', 'PR', 'VI')) %>%
   mutate(county_id = paste(STATE, CountyNo, sep='-')) -> individual_data
+
 ```
 
-We used measurements of implicit and explicit bias available from data collected through Project Implicit [@xu2014psychology]. From this data, we used only respondents who had geographic information that would allow us to place them in a United States county, identified as White, and visited the site before 2015. This consisted of approximately 1.1 million total respondents.
+We used measurements of implicit and explicit bias available from data collected through Project Implicit [@xu2014psychology]. From this data, we used only respondents who had geographic information that would allow us to place them in a United States county, identified as White, and visited the site before 2015. This consisted of approximately 1.1 million total respondents from `r dim(county_means)[1]`.
+
+```{r teachers-summary}
+
+educators <- c('25-2000', '25-3000')
+
+df %>%
+  filter(CountyNo!='' &
+           !is.na(D_biep.White_Good_all) &
+           !is.na(tblack_0to10) &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation)  -> subdat
+
+df2 %>%
+  filter(CountyNo!='' &
+           !is.na(D_biep.White_Good_all) &
+           !is.na(tblack_0to10) &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
+  rbind(subdat) -> subdat
+
+df3 %>%
+  filter(CountyNo!='' &
+           !is.na(D_biep.White_Good_all) &
+           !is.na(tblack_0to10) &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
+  rbind(subdat) -> subdat
+
+df4 %>%
+  filter(CountyNo!='' &
+           !is.na(D_biep.White_Good_all) &
+           !is.na(tblack_0to10) &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
+  rbind(subdat) -> subdat
+
+df5 %>%
+  filter(CountyNo!='' &
+           !is.na(D_biep.White_Good_all) &
+           !is.na(tblack_0to10) &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
+  rbind(subdat) -> subdat
+
+df6 %>%
+  filter(CountyNo!='' &
+           !is.na(D_biep.White_Good_all) &
+           !is.na(tblack_0to10) &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
+  rbind(subdat) -> subdat
+
+df10 %>%
+  filter(CountyNo!='' &
+           !is.na(D_biep.White_Good_all) &
+           !is.na(tblack_0to10) &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.White_Good_all, 
+         twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
+  rbind(subdat) -> subdat
+
+subdat %>%
+  filter(raceomb==6) %>%
+  mutate(explicit_diff=twhite_0to10 - tblack_0to10,
+         explicit = tblack_0to10*-1) %>%
+  filter(STATE %ni% 
+           c('AA', 'AE', 'AP', 'AS', 'FM', 'GU', 'MH', 'MP', 'PR', 'VI')) %>%
+  filter(occupation %in% educators) %>%
+  mutate(county_id = paste(STATE, CountyNo, sep='-')) -> individual_data_teachers
+
+teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means.csv')
+```
+
+A subset of years in the Project Implicit data also collected occupational information from respondents. As identified in our pre-analysis plan, we took advantage of the presence of primary and secondary educators in these data to test whether any associations between bias and race-based differences in the rates of disciplinary action were stronger among these respondents. Filtering for only white individuals who identified as primary, secondary, special education, and other teachers and instructors (occupation codes 25-2000 and 25-3000) reduced the dataset to `r dim(individual_data_teachers)[1]` respondents. In order to assure that our estimates were reasonably stable, we limited analysis to only counties that had at least 50 respondents. As such, our teacher analysis is limited to just `r dim(teacher_estimates)[1]` counties. Additionally, because we do not know of any state-level demographic estimates for teachers, we are unable to perform post-stratification for these data. 
 
 ## Measures
 
 ```{r summary_counts}
-schools_dat %>% 
-  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
-         SCH_DISCWODIS_ISS_HI_M:TOT_DISCWODIS_ISS_F, 
-         SCH_DISCWDIS_ISS_IDEA_HI_M:TOT_DISCWDIS_ISS_IDEA_F) %>% 
-  gather(group, number, SCH_DISCWODIS_ISS_HI_M:TOT_DISCWDIS_ISS_IDEA_F) %>%
-  separate(group, into=c('group', 'gender'), -2) %>% 
-  separate(group, into=c('prefix', 'group'), -4) %>%
-  separate(prefix, into=c('prefix', 'disability'), -3) %>%
-  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
-                          hispanic='HI_', pac_isl='HP_', total='SS_', 
-                          total='EA_', biracial='TR_', white='WH_')) -> tempout_susp
-%>%
-  mutate(disability=fct_recode(disability, not_disabled='_I', disabled='ID',
-                               not_disabled='S_', disabled='A_')) %>%
-  select(-prefix) -> susp_inschool
-
-susp_inschool %>%
-  filter(group=='black'|group=='white') %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
-           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
-  summarise(number = sum(number, na.rm=T)) %>%
-  left_join(enrollment) %>%
-  mutate(proportion = number/total_number) -> tempout
-
-tempout$number[which(tempout$number<0)] <- NA
-
-tempout %>% 
-  ungroup() %>%
-  filter(is.finite(proportion)) %>%
-  filter(total_number>number) %>%
-  mutate(metric='inschool_susp') %>%
-  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
-  distinct() -> subdat
 
 ###############
+schools_dat %>%
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, SCH_PSENR_HI_M:TOT_PSENR_F) %>%
+  gather(group, total_number, SCH_PSENR_HI_M:TOT_PSENR_F) %>%
+  separate(group, into=c('group', 'gender'), -2) %>%
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='NR_', 
+                          biracial='TR_', white='WH_')) %>%
+  filter(total_number>=0) %>%
+  group_by(COMBOKEY, group) %>%
+  mutate(total_number = sum(total_number)) %>%
+  ungroup() %>%
+  select(-prefix, -gender) %>%
+  distinct() -> ps_enrollment
+
 schools_dat %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
-         SCH_GRADE_PS, SCH_PSDISC_SINGOOS_HI_M:SCH_PSDISC_SINGOOS_IDEA_F) %>% 
+         SCH_GRADE_PS, SCH_PSDISC_SINGOOS_HI_M:TOT_PSDISC_SINGOOS_F) %>% 
   filter(SCH_GRADE_PS=='YES') %>%
-  gather(group, number, SCH_PSDISC_SINGOOS_HI_M:SCH_PSDISC_SINGOOS_IDEA_F) %>%
+  gather(group, number, SCH_PSDISC_SINGOOS_HI_M:TOT_PSDISC_SINGOOS_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
-  separate(prefix, into=c('prefix', 'disability'), -3) %>%
   mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
                           hispanic='HI_', pac_isl='HP_', total='OS_', 
-                          biracial='TR_', white='WH_')) -> tempout
-
-%>%
-  mutate(disability=fct_recode(disability, not_disabled='_I', disabled='ID',
-                             not_disabled='GO', disabled='A_')) %>%
+                          biracial='TR_', white='WH_')) %>%
   select(-prefix) -> ps_susp
 
-df_school %>% 
+schools_dat %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD,
          SCH_GRADE_PS, SCH_PSDISC_MULTOOS_HI_M:TOT_PSDISC_MULTOOS_F) %>% 
   filter(SCH_GRADE_PS=='YES') %>%
@@ -283,26 +345,7 @@ df_school %>%
   filter(number>=0 & number_2 >= 0) %>%
   mutate(number = number+number_2) -> ps_susp
 
-ps_susp %>%
-  left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
-           CCD_LATCOD, CCD_LONCOD,  SCH_NAME, group) %>%
-  summarise(number = sum(number),
-            total_number = sum(total_number)) %>%
-  mutate(proportion = number/total_number) -> full_dat
-
-full_dat %>% 
-  filter(group=='black'|group=='white') %>%
-  filter(is.finite(proportion)) %>%
-  filter(number>=0) %>%
-  filter(total_number>number) %>%
-  mutate(group=droplevels(group)) %>%
-  ungroup() %>%
-  mutate(metric='preschool_susp') %>%
-  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
-  rbind(subdat) -> subdat
-
-df_school %>% 
+schools_dat %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
          SCH_PSDISC_EXP_HI_M:TOT_PSDISC_EXP_F) %>% 
   gather(group, number, SCH_PSDISC_EXP_HI_M:TOT_PSDISC_EXP_F) %>%
@@ -311,35 +354,44 @@ df_school %>%
   mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
                           hispanic='HI_', pac_isl='HP_', total='XP_', 
                           biracial='TR_', white='WH_')) %>%
+  filter(number>=0) %>%
   select(-prefix) -> ps_exp
 
-ps_exp %>%
-  left_join(enrollment) %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, 
-           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
-  summarise(number = sum(number),
-            total_number = sum(total_number)) %>%
-  mutate(proportion = number/total_number) -> full_dat
+ps_susp %>% group_by(group) %>% summarise(n_students=sum(number)) -> susp_summ
+ps_exp %>% group_by(group) %>% summarise(n_students=sum(number)) -> exp_summ
+ps_enrollment %>% group_by(group) %>% summarise(n_students=sum(total_number)) -> enr_summ
 
-full_dat %>% 
-  filter(group=='black'|group=='white') %>%
-  filter(is.finite(proportion)) %>%
-  filter(number>=0) %>%
-  filter(total_number>number) %>%
-  ungroup() %>%
-  mutate(metric='preschool_expulsion') %>%
-  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
-  rbind(subdat) -> subdat
 
 ```
-The primary outcome in this analysis is a count of the number of students by race (black and white) who received one of several types of disciplinary action. Originally, and as specified in our preanalysis plan, our analyses focused on 13 actions - corporal punishment, in-school suspension, out-of-school suspension, expulsion with educational services, expulsion without educational services, expulsion under zero-tolerance policies, referral to law enforcement, school-related arrests, mechanical restraint, physical restraint, seclusion, preschool suspension, and preschool expulsion.  However, upon further study, we discovered reasons we thought justified excluding a number of these outcomes. In particular, seclusion, physical restraint, and mechanical restraint are not disciplinary actions, but are rather used as means to restrain students who are at risk of harming themselves or others. Additionally, the number of preschool students who are expelled or suspended is vanishingly smallseveral of these outcomes are not used for discipline, but rather as forms of treatment for students who pose threats to themselves or others (seclusion, physical restraint, mechanical restraint), and the number of preschool expulsions and suspensions are vanishingly small (10 expulsions, )
+The primary outcome in this analysis is a count of the number of students by race (black and white) who received one of several types of disciplinary action. Originally, and as specified in our preanalysis plan, our analyses focused on 13 actions - corporal punishment, in-school suspension, out-of-school suspension, expulsion with educational services, expulsion without educational services, expulsion under zero-tolerance policies, referral to law enforcement, school-related arrests, mechanical restraint, physical restraint, seclusion, preschool suspension, and preschool expulsion.  However, upon further study, we discovered reasons we thought justified excluding a number of these outcomes. In particular, seclusion, physical restraint, and mechanical restraint are not disciplinary actions, but are rather used as means to restrain students who are at risk of harming themselves or others. Additionally, the number of preschool students who are expelled or suspended is vanishingly small (`r exp_summ$n_students[8]`, total expulsions and `r susp_summ$n_students[6]` total suspensions out of over 1.4 million enrolled preschool students), making reliably estimating any association across counties exceedingly unlikely. We additionally discovered that counts of one expulsion category (expulsion under zero-tolerance policies) overlapped with counts in other categories, and so excluded this category. Finally, for expository reasons, we opted to combine the remaining two expulsion categories to yield one overall count of the number of students expelled. **Results with the uncombined counts largely mirror the results here.**
 
-## Material
+For both the post-stratification procedure and the actual statistical models used for inference, we used the same set of covariates. These covariates were at the state-level for post-stratification, and were at the county-level for the statistical models used for final estimation and inference. Specifically, our population based covariates were the total population count, the proportion of the population that is black, the proportion of the population that is white and the ratio of black-to-white persons. We also used socioeconomic covariates. We used the percent of individuals aged 16 or over who were in the labor force, but unemployed, the median household income, and the percentage of all families whose income is below the poverty line.
 
-## Procedure
+Finally, for the implicit and explicit bias measures, we relied on two primary variables from the Project Implicit data. Implicit bias was assessed via an Implicit Association Test (IAT). This test uses a speeded dual-categorization task in which individuals must quickly categorize black and white faces and "good" and "bad" words with key presses. The difference in how quickly and accurately participants are able to pair white faces with "good" words and black faces with "bad words" in comparison to the inverse is thought to reflect implicit associations between the two races and positive and negative affective reactions. This association is reflected in the IAT D-score, which we used as a measure of implicit bias. We preregistered our explicit bias as a simple feeling thermometer towards balcks (i.e. *how warm or cold do you feel towards Blacks? 0=very cold, 10=very warm). However, past research [@leitner2016blacks; @hehman2017disproportionate] has used the difference in reported warmth towards whites and blacks, and so we also report models using this metric of explicit bias.
 
 ## Data analysis
-We used `r cite_r("r-references.bib")` for all our analyses.
+Data analysis proceded in two steps. We first estimated county-level implict and bias. These estimates took two forms - either simple county-based averages, or post-stratified estimates. Post-stratification is a valuable procedure in obtaining accurate geographical population-based estimates because it allows a non-representative sample (e.g Project Implicit) to more closely resemble the true population, and it regularizes extreme observations with little data to support them (e.g. a county with only a handful of respondents with especially high or low scores) [@park2004bayesian, @gelman1997poststratification]. Following past work [@leitner2016blacks], we identified age as one dimentions along which IAT respondents strongly differed from the general population. Our post-stratification weighting scheme is as follows: We first grouped respondents into five age group categories in each county (15-24, 25-34, 35-54, 55-75, and 75+). We next fit multilevel models estimating bias (implicit and explicit biases seperately) as a function of our state-level covariates (the "fixed" effects), and allowed the estimates to vary by age bin, county, and state (the "random" effects). Next, we determined the population of whites in each county in these age groups using the American Community Survey's 5-year estimates ending in 2014. Finally, we used our estimated models to predict the expected response for each age bin, in each county. Our final county-level estimates is the average of the values predicted for the 5 age bins, weighted by the population size of that bin in that county. As a result of this procedure, we can be confident that our county-level estimates should more closely approximate what our estimates would look like if the Project Implicit data were truly representative along the age dimension in all counties.
+
+After obtaining these estimates, we use them as predictors in bayesian multilevel logistic regressions. Formally, the likelihood for a given observation is written as a binomial functions:
+
+$$
+{n\choose y}\pi^y(1-\pi)^{n-y}
+$$
+
+Where $y$ is the observed count of incidents (e.g. number of black or white students suspended), $n$ is the number of at-risk students (e.g. total number of black or white students), and $\pi = g^{-1}(\eta)$ is the probability of the incident ocurring. For this analysis, the linear predictor takes the form of a multilevel model with a set of effects that vary over county:
+
+$$
+\eta = \alpha + X\beta + \gamma_{county}
+$$
+
+Where $\alpha$ is an intercept that is constant across observations, $\beta$ represents a set of effects that are also constant across observations (i.e. fixed effects), and $\gamma_{county}$ represents intercepts and effects of ethnicity that vary across the counties (i.e. random efffects).
+
+In addition to the covariates described above, we also include effects of race, implicit bias, explicit bias, and the two-way interactions between implicit bias and race and explicit bias and race. We fit separate models for each of the outcomes, each of the two types of explicit biases (raw temperature toward blacks, and the difference in reported warmth between whites and blacks), and for teachers and general public. We also estimate models with raw and poststratified estimates.
+
+Because of the computational demands of fitting such a high-dimensional model to such a large dataset (the full model would consist of over 6k parameters to approximately 170k observations), we used a consensus monte carlo algorithm to obtain approximate posterior distributions for the parameters of interest [@scott2016bayes]. The approximate posteriors derived from this algorithm have been shown to be nearly indistinguishable from the true posterior, a result we verified using a small subset of our own data.
+
+All numerical predictor variables were standardized at the appropriate level (county, state) before model estimation to help with estimation efficiency and interpretability. We set priors for the intercept and coefficients in the bayesian models to be weakly informative normal distributions centered on zero with a standard deviation of five. All other parameters were left to default values. Data analysis was done in R [@rcitation] version 3.3.2 running under OS X 10.11.6. Post-stratification was done with lme4, version 1.1.14 [@bates2015fitting]. Final model fitting was done on the university cluster running Springdale Linux, release 6.9 using rstanarm, version 2.17.2 [@rstanarm2016]. We used the implementation of the consensus monte carlo algorithm found in parallelMCMCcombine, version 1.0 [@miroshnikov2014parallel]. Figures were made with ggplot2, version 2.2.1 [@wickham2009ggplot2], with data manipulation done using dplyr version 0.7.2 [@wickham2017dplyr] and tidyr, version 0.7.1 [@wickham2017tidyr]. Full session info can be found on the OSF page (....)
+
 
 
 # Results
