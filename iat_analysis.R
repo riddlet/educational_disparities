@@ -361,4 +361,4 @@ individual_data %>%
   distinct() -> county_teacher_estimates
 
 write.csv(county_teacher_estimates, row.names = F,
-            file = '/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means_expdiff.csv')
+            file = '/Users/travis/Documents/gits/educational_disparities/output/county_teacher_means.csv')
