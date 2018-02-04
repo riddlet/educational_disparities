@@ -4,3 +4,7 @@
 *.jpeg
 cluster/model_scripts/*
 cluster/tl_2014_us_cbsa.zip
+
+*.docx
+
+written_docs/draft_cache/docx/__packages
