@@ -1,5 +1,5 @@
 ---
-title             : "Race-based disparities in allocation of discipline are associated with county-level rates of bias"
+title             : "Race-based disparities in allocation of academic disciplinary actions are associated with county-level rates of bias"
 shorttitle        : "Discipline Disparities"
 
 author: 
@@ -13,8 +13,6 @@ author:
 
 affiliation:
   - id            : "1"
-    institution   : "Princeton University"
-  - id            : "2"
     institution   : "Princeton University"
 
 author_note: >
@@ -42,7 +40,8 @@ output            : papaja::apa6_word
 
 ```{r include = FALSE}
 library("papaja")
-knitr::opts_chunk$set(echo = FALSE, cache=TRUE, message=FALSE, warning=FALSE, results='hide')
+knitr::opts_chunk$set(echo = FALSE, cache=TRUE, cache.lazy = FALSE, 
+                      message=FALSE, warning=FALSE, results='hide')
 ```
 # Introduction
 
@@ -56,24 +55,22 @@ library(tidyr)
 county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv', 
                          colClasses = 'character')
 schools_dat <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH.csv')
+model.data <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/full_model_data.csv')
 
-schools_dat %>%
-  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, SCH_ENR_HI_M:TOT_ENR_F) %>%
-  gather(group, total_number, SCH_ENR_HI_M:TOT_ENR_F) %>%
-  separate(group, into=c('group', 'gender'), -2) %>%
-  separate(group, into=c('prefix', 'group'), -4) %>%
-  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
-                          hispanic='HI_', pac_isl='HP_', total='NR_', 
-                          biracial='TR_', white='WH_')) %>%
-  group_by(COMBOKEY, group) %>%
-  mutate(total_number = sum(total_number)) %>%
-  ungroup() %>%
-  select(-prefix, -gender) %>%
-  distinct() -> enrollment
+model.data %>%
+  filter(exclude==FALSE) %>%
+  select(COMBOKEY, group, total_number) %>%
+  distinct() %>%
+  mutate(total_schools = n_distinct(COMBOKEY)) %>%
+  group_by(group) %>%
+  summarise(ns = sum(total_number),
+            n_sch = n_distinct(COMBOKEY),
+            total_schools = max(total_schools)) -> enrollment_totals
 
-enrollment %>% group_by(group) %>% summarise(sum(total_number)) -> enrollment_totals
 ```
-We used three distinct data sources for the work described here. The academic disciplinary data is part of the Civil Rights Data Collection (CRDC) through the US Department of Education. The dataset we used comes from the 2013-2014 academic year and has data on "all public local and educational agencies and schools, including long-term secure juvenile justice facilities, charter schools, alternative schools, and schools serving students with disabilities." In total, the CRDC data represents `r dim(schools_dat)[1]` institutions enrolling approximately 50 million students, of which approximately 25 million are white and 7.8 million are Black.
+We used three distinct data sources for the work described here. The academic disciplinary data is part of the Civil Rights Data Collection (CRDC) through the US Department of Education. The dataset we used comes from the 2013-2014 academic year and has data on "all public local and educational agencies and schools, including long-term secure juvenile justice facilities, charter schools, alternative schools, and schools serving students with disabilities." In total, the CRDC data represents `r dim(schools_dat)[1]` institutions enrolling approximately 50 million students, of which approximately 25 million are white and 7.8 million are Black[^1]. Previous work using these data have identified a number of districts whose data are in error, and have excluded juvenile justice facilities, as these institutions constitute dramatically different educational environments, where the meaning of disciplinary actions may be quite different [@losen2015we]. After these exclusions are applied, the final sample used for modeling consists of `r enrollment_totals$total_schools[1]` institutions, enrolling `r round(sum(enrollment_totals$ns)/1000000, 1)` million black or white students, of which `r  round(enrollment_totals$ns[2]/1000000, 1)` million are white and `r  round(enrollment_totals$ns[1]/1000000, 1)` million are black.
+
+[^1]: We note that there are a number of differences between the analyses we registered and those presented in the main text. Our general conclusions are largely the same for both sets of analyses. We opted to report the modified analyses for reasons of clarity and to remain congruent with previous research on the same topics. The registered analyses can be found, in full, in the appendix.
 
 We obtained county-level demographic information for use as covariates and state-level demographic information for use in post-stratification from the US Census Bureau. For both county-level and state-level demographics, we use 5-year estimates for the period ending in 2014 from the American Community Survey, which surveys around 295k households per month.
 
@@ -216,7 +213,7 @@ subdat %>%
 
 ```
 
-We used measurements of implicit and explicit bias available from data collected through Project Implicit [@xu2014psychology]. From this data, we used only respondents who had geographic information that would allow us to place them in a United States county, identified as White, and visited the site before 2015. This consisted of approximately 1.1 million total respondents from `r dim(county_means)[1]`.
+We used measurements of implicit and explicit bias available from data collected through Project Implicit [@xu2014psychology]. From this data, we used only respondents who had geographic information that would allow us to place them in a United States county, identified as White, and visited the site before 2015. This consisted of approximately 1.1 million total respondents from `r dim(county_means)[1]` counties.
 
 ```{r teachers-summary}
 
@@ -361,18 +358,23 @@ ps_susp %>% group_by(group) %>% summarise(n_students=sum(number)) -> susp_summ
 ps_exp %>% group_by(group) %>% summarise(n_students=sum(number)) -> exp_summ
 ps_enrollment %>% group_by(group) %>% summarise(n_students=sum(total_number)) -> enr_summ
 
+#Originally, and as specified in our preanalysis plan, our analyses focused on 13 actions - corporal punishment, in-school suspension, out-of-school suspension, expulsion with educational services, expulsion without educational services, expulsion under zero-tolerance policies, referral to law enforcement, school-related arrests, mechanical restraint, physical restraint, seclusion, preschool suspension, and preschool expulsion.  However, upon further study, we discovered reasons we thought justified excluding a number of these outcomes. In particular, seclusion, physical restraint, and mechanical restraint are not disciplinary actions, but are rather used as means to restrain students who are at risk of harming themselves or others. Additionally, the number of preschool students who are expelled or suspended is vanishingly small (`r exp_summ$n_students[8]` total expulsions and `r susp_summ$n_students[6]` total suspensions out of over 1.4 million enrolled preschool students), making reliably estimating any association across counties exceedingly unlikely. We additionally discovered that counts of one expulsion category (expulsion under zero-tolerance policies) overlapped with counts in other categories, and so excluded this category. Finally, for expository reasons, we opted to combine the remaining two expulsion categories to yield one overall count of the number of students expelled. **Results with the uncombined counts largely mirror the results here.**
+
+ #We preregistered our explicit bias as a simple feeling thermometer towards balcks (i.e. *how warm or cold do you feel towards Blacks? 0=very cold, 10=very warm*). However, past research [@leitner2016blacks; @hehman2017disproportionate] has used the difference in reported warmth towards whites and blacks, and so we also report models using this metric of explicit bias.
+
+#s, each of the two types of explicit biases (raw temperature toward blacks, and the difference in reported warmth between whites and blacks), and for teachers and general public. We also estimate models with raw and poststratified estimates.
 
 ```
-The primary outcome in this analysis is a count of the number of students by race (black and white) who received one of several types of disciplinary action. Originally, and as specified in our preanalysis plan, our analyses focused on 13 actions - corporal punishment, in-school suspension, out-of-school suspension, expulsion with educational services, expulsion without educational services, expulsion under zero-tolerance policies, referral to law enforcement, school-related arrests, mechanical restraint, physical restraint, seclusion, preschool suspension, and preschool expulsion.  However, upon further study, we discovered reasons we thought justified excluding a number of these outcomes. In particular, seclusion, physical restraint, and mechanical restraint are not disciplinary actions, but are rather used as means to restrain students who are at risk of harming themselves or others. Additionally, the number of preschool students who are expelled or suspended is vanishingly small (`r exp_summ$n_students[8]`, total expulsions and `r susp_summ$n_students[6]` total suspensions out of over 1.4 million enrolled preschool students), making reliably estimating any association across counties exceedingly unlikely. We additionally discovered that counts of one expulsion category (expulsion under zero-tolerance policies) overlapped with counts in other categories, and so excluded this category. Finally, for expository reasons, we opted to combine the remaining two expulsion categories to yield one overall count of the number of students expelled. **Results with the uncombined counts largely mirror the results here.**
+The primary outcome in this analysis is a count of the number of students by race (black and white) who received one of several types of disciplinary action. We report here rates of out-of-school suspension, in-school suspension, school-related arrests, law enforcement referrals, and total number of expulsions of any type.
 
-For both the post-stratification procedure and the actual statistical models used for inference, we used the same set of covariates. These covariates were at the state-level for post-stratification, and were at the county-level for the statistical models used for final estimation and inference. Specifically, our population based covariates were the total population count, the proportion of the population that is black, the proportion of the population that is white and the ratio of black-to-white persons. We also used socioeconomic covariates. We used the percent of individuals aged 16 or over who were in the labor force, but unemployed, the median household income, and the percentage of all families whose income is below the poverty line.
+For both the post-stratification procedure (described below) and the actual statistical models used for inference, we used the same set of covariates. These covariates were at the state-level for post-stratification and were at the county-level for the statistical models used for final estimation and inference. Specifically, our population based covariates were the total population count, the proportion of the population that is black, the proportion of the population that is white and the ratio of black-to-white persons. We also used socioeconomic covariates. We used the percent of individuals aged 16 or over who were in the labor force but unemployed, the median household income, and the percentage of all families whose income is below the poverty line.
 
-Finally, for the implicit and explicit bias measures, we relied on two primary variables from the Project Implicit data. Implicit bias was assessed via an Implicit Association Test (IAT). This test uses a speeded dual-categorization task in which individuals must quickly categorize black and white faces and "good" and "bad" words with key presses. The difference in how quickly and accurately participants are able to pair white faces with "good" words and black faces with "bad words" in comparison to the inverse is thought to reflect implicit associations between the two races and positive and negative affective reactions. This association is reflected in the IAT D-score, which we used as a measure of implicit bias. We preregistered our explicit bias as a simple feeling thermometer towards balcks (i.e. *how warm or cold do you feel towards Blacks? 0=very cold, 10=very warm). However, past research [@leitner2016blacks; @hehman2017disproportionate] has used the difference in reported warmth towards whites and blacks, and so we also report models using this metric of explicit bias.
+Finally, for the implicit and explicit bias measures, we relied on two primary variables from the Project Implicit data. Implicit bias was assessed via an Implicit Association Test (IAT). This test uses a speeded dual-categorization task in which individuals must quickly categorize black and white faces and "good" and "bad" words with key presses. The difference in how quickly and accurately participants are able to pair white faces with "good" words and black faces with "bad" words in comparison to the inverse is thought to reflect implicit associations between the two races and positive and negative affective reactions. This association is reflected in the IAT D-score, which we used as a measure of implicit bias. Our measure of explicit bias is the difference between reported warmth towards whites (i.e. *how warm or cold do you feel towards Whites? 0=very cold, 10=very warm*) and reported warmth toward blacks.
 
 ## Data analysis
-Data analysis proceded in two steps. We first estimated county-level implict and bias. These estimates took two forms - either simple county-based averages, or post-stratified estimates. Post-stratification is a valuable procedure in obtaining accurate geographical population-based estimates because it allows a non-representative sample (e.g Project Implicit) to more closely resemble the true population, and it regularizes extreme observations with little data to support them (e.g. a county with only a handful of respondents with especially high or low scores) [@park2004bayesian, @gelman1997poststratification]. Following past work [@leitner2016blacks], we identified age as one dimentions along which IAT respondents strongly differed from the general population. Our post-stratification weighting scheme is as follows: We first grouped respondents into five age group categories in each county (15-24, 25-34, 35-54, 55-75, and 75+). We next fit multilevel models estimating bias (implicit and explicit biases seperately) as a function of our state-level covariates (the "fixed" effects), and allowed the estimates to vary by age bin, county, and state (the "random" effects). Next, we determined the population of whites in each county in these age groups using the American Community Survey's 5-year estimates ending in 2014. Finally, we used our estimated models to predict the expected response for each age bin, in each county. Our final county-level estimates is the average of the values predicted for the 5 age bins, weighted by the population size of that bin in that county. As a result of this procedure, we can be confident that our county-level estimates should more closely approximate what our estimates would look like if the Project Implicit data were truly representative along the age dimension in all counties.
+Data analysis proceded in two steps. We first estimated county-level implict and explicit bias using multilevel regression and post-stratification. Post-stratification is a valuable procedure in obtaining accurate geographical population-based estimates because it allows a non-representative sample (e.g Project Implicit) to more closely resemble the true population, and it regularizes extreme observations with little data to support them (e.g. a county with only a handful of respondents with especially high or low scores) [@park2004bayesian; @gelman1997poststratification]. Following past work [@leitner2016blacks], we identified age as one dimension along which IAT respondents differed from the general population in ways that could bias our conclusions [@gonsalkorale2009aging]. Our post-stratification weighting scheme is as follows: We first grouped respondents into five age group categories (15-24, 25-34, 35-54, 55-75, and 75+). We next fit multilevel models estimating bias (implicit and explicit biases seperately) as a function of our state-level covariates (the "fixed" effects), and allowed the estimates to vary by age bin, county, and state (the "random" effects). Next, we determined the population of whites in each county in these age groups using the American Community Survey's 5-year estimates ending in 2014. Finally, we used our estimated models to predict the expected response for each age bin, in each county. Our final county-level estimates are the average of the values predicted for the 5 age bins, weighted by the population size of that bin in that county. As a result of this procedure, we can be confident that our county-level estimates should more closely approximate what our estimates would look like if the Project Implicit data were truly representative along the age dimension in all counties.
 
-After obtaining these estimates, we use them as predictors in bayesian multilevel logistic regressions. Formally, the likelihood for a given observation is written as a binomial functions:
+After obtaining these estimates, we use them as predictors in bayesian multilevel logistic regressions. Formally, the likelihood for a given observation is written as a binomial function:
 
 $$
 {n\choose y}\pi^y(1-\pi)^{n-y}
@@ -386,12 +388,11 @@ $$
 
 Where $\alpha$ is an intercept that is constant across observations, $\beta$ represents a set of effects that are also constant across observations (i.e. fixed effects), and $\gamma_{county}$ represents intercepts and effects of ethnicity that vary across the counties (i.e. random efffects).
 
-In addition to the covariates described above, we also include effects of race, implicit bias, explicit bias, and the two-way interactions between implicit bias and race and explicit bias and race. We fit separate models for each of the outcomes, each of the two types of explicit biases (raw temperature toward blacks, and the difference in reported warmth between whites and blacks), and for teachers and general public. We also estimate models with raw and poststratified estimates.
+In addition to the covariates described above, we also include effects of race, implicit bias, explicit bias, and the two-way interactions between implicit bias and race and explicit bias and race. We fit separate models for each of the outcomes.
 
-Because of the computational demands of fitting such a high-dimensional model to such a large dataset (the full model would consist of over 6k parameters to approximately 170k observations), we used a consensus monte carlo algorithm to obtain approximate posterior distributions for the parameters of interest [@scott2016bayes]. The approximate posteriors derived from this algorithm have been shown to be nearly indistinguishable from the true posterior, a result we verified using a small subset of our own data.
+Because of the computational demands of fitting such a high-dimensional model to such a large dataset (the full model for each metric would consist of over 6k parameters to approximately 170k observations), we used a consensus monte carlo algorithm to obtain approximate posterior distributions for the parameters of interest [@scott2016bayes]. The approximate posteriors derived from this algorithm have been shown to be nearly indistinguishable from the true posterior, a result we verified using a small subset of our own data.
 
-All numerical predictor variables were standardized at the appropriate level (county, state) before model estimation to help with estimation efficiency and interpretability. We set priors for the intercept and coefficients in the bayesian models to be weakly informative normal distributions centered on zero with a standard deviation of five. All other parameters were left to default values. Data analysis was done in R [@rcitation] version 3.3.2 running under OS X 10.11.6. Post-stratification was done with lme4, version 1.1.14 [@bates2015fitting]. Final model fitting was done on the university cluster running Springdale Linux, release 6.9 using rstanarm, version 2.17.2 [@rstanarm2016]. We used the implementation of the consensus monte carlo algorithm found in parallelMCMCcombine, version 1.0 [@miroshnikov2014parallel]. Figures were made with ggplot2, version 2.2.1 [@wickham2009ggplot2], with data manipulation done using dplyr version 0.7.2 [@wickham2017dplyr] and tidyr, version 0.7.1 [@wickham2017tidyr]. Full session info can be found on the OSF page (....)
-
+All numerical predictor variables were standardized at the appropriate level (county, state) before model estimation to help with estimation efficiency and interpretability. We set priors for the intercept and coefficients in the bayesian models to be weakly informative normal distributions centered on zero with a standard deviation of five. All other parameters were left to default values. Data analysis was done in R [@rcitation] version 3.3.2 running under OS X 10.11.6. Post-stratification was done with lme4, version 1.1.14 [@bates2015fitting]. Final model fitting was done on the university cluster running Springdale Linux, release 6.9 using rstanarm, version 2.17.2 [@rstanarm2016]. We used the implementation of the consensus monte carlo algorithm found in parallelMCMCcombine, version 1.0 [@miroshnikov2014parallel]. Figures were made with ggplot2, version 2.2.1 [@wickham2009ggplot2], with data manipulation done using dplyr version 0.7.2 [@wickham2017dplyr] and tidyr, version 0.7.1 [@wickham2017tidyr]. A full report of session information can be found on the OSF page (....)
 
 
 # Results
