@@ -409,10 +409,102 @@ ps_enrollment %>% group_by(group) %>% summarise(n_students=sum(total_number)) ->
 ```
 In our preanalysis plan, we specified our analyses to focus on 13 actions - corporal punishment, in-school suspension, out-of-school suspension, expulsion with educational services, expulsion without educational services, expulsion under zero-tolerance policies, referral to law enforcement, school-related arrests, mechanical restraint, physical restraint, seclusion, preschool suspension, and preschool expulsion.  However, upon further study, we discovered reasons we thought justified excluding a number of these outcomes. In particular, seclusion, physical restraint, and mechanical restraint are not disciplinary actions, but are rather used as means to restrain students who are at risk of harming themselves or others. Additionally, the number of preschool students who are expelled or suspended is vanishingly small (`r exp_summ$n_students[8]` total expulsions and `r susp_summ$n_students[6]` total suspensions out of over 1.4 million enrolled preschool students), making reliably estimating any association across counties exceedingly unlikely. We additionally discovered that counts of one expulsion category (expulsion under zero-tolerance policies) overlapped with counts in other categories, and so excluded this category. To remain consistent with previous studies, we opted to combine the remaining two expulsion categories to yield one overall count of the number of students expelled. 
 
-We also preregistered our explicit bias as a simple feeling thermometer towards balcks (i.e. *how warm or cold do you feel towards Blacks? 0=very cold, 10=very warm*). However, past research [@leitner2016blacks; @hehman2017disproportionate] has used the difference in reported warmth towards whites and blacks, and so we in the main text, we report models using this metric of explicit bias. Additionally, we preregistered analyses with poststratified estimates (as presented in the main text) along with raw, county-based means. Finally, we had not known about the issues with juvenile justice facilities, or with the school districts with reporting errors. Here, we present the results of the preregistered analyses exactly.
+We also preregistered our explicit bias as a simple feeling thermometer towards balcks (i.e. *how warm or cold do you feel towards Blacks? 0=very cold, 10=very warm*). However, past research [@leitner2016blacks; @hehman2017disproportionate] has used the difference in reported warmth towards whites and blacks, and so in the main text, we report models using this metric of explicit bias. Additionally, we preregistered analyses with poststratified estimates (as presented in the main text) along with raw, county-based means. Finally, we had not known about the issues with juvenile justice facilities, or with the school districts with reporting errors. Here, we present the results of the preregistered analyses exactly.
 
 
 #Simple county means
+```{r cross_val_county_means}
+"%ni%" <- Negate("%in%")
+df <- read.csv('/Users/travis/Documents/gits/educational_disparities/cluster/data/county_grouping.csv')
+f <- list.files('/Users/travis/Documents/gits/educational_disparities/cluster/output/metrics_raw/corporal/')
+
+test_summary_dat <- data.frame(file=f, 
+                               r_2 = NA,
+                               r_2_lower=NA,
+                               r_2_upper=NA)
+j=1
+for (i in f){
+  print(i)
+  load(paste('/Users/travis/Documents/gits/educational_disparities/cluster/output/metrics_raw/inschool_susp/', i, sep=''))
+  model <- m
+  testing_model <- sample(f[f %ni% i], 1)
+  load(paste('/Users/travis/Documents/gits/educational_disparities/cluster/output/metrics_raw/inschool_susp/', testing_model, sep=''))
+  m$data$bias <- m$data$bias[,1]
+  m$data$warmth <- m$data$warmth[,1]
+  m$data$weighted_bias <- m$data$weighted_bias[,1]
+  m$data$weighted_warmth <- m$data$weighted_warmth[,1]
+  m$data$total_pop <- m$data$total_pop[,1]
+  m$data$unemp_rate <- m$data$unemp_rate[,1]
+  m$data$med_income <- m$data$med_income[,1]
+  m$data$poverty_rate <- m$data$poverty_rate[,1]
+  m$data$col_grads <- m$data$col_grads[,1]
+  m$data$white_prop <- m$data$white_prop[,1]
+  m$data$black_prop <- m$data$black_prop[,1]
+  m$data$b.w.ratio <- m$data$b.w.ratio[,1]
+  m$data %>%
+    filter(!is.na(bias)) %>%
+    filter(!is.na(warmth)) %>%
+    filter(!is.na(weighted_bias)) %>%
+    filter(!is.na(weighted_warmth)) %>%
+    filter(!is.na(total_pop)) -> testing_data
+  y_hat <- data.frame(t(posterior_predict(m, draws = 250, newdata = testing_data)))
+  y_hat$index <- seq(1, length(y_hat$X1))
+  testing_data <- cbind(testing_data, y_hat)
+  testing_data %>%
+    gather(sample, pred, X1:X250) %>%
+    group_by(sample) %>%
+    summarise(r = cor(number, pred)^2) %>%
+    summarise(r_2 = mean(r),
+              r_2_lower = quantile(r, .25),
+              r_2_upper = quantile(r, .75)) -> r2
+  test_summary_dat[j,2:4] <- r2
+  j = j+1
+}
+
+test_summary_datweighted <- data.frame(file=f, 
+                               r_2 = NA,
+                               r_2_lower=NA,
+                               r_2_upper=NA)
+j=1
+for (i in f){
+  print(i)
+  load(paste('/Users/travis/Documents/gits/educational_disparities/cluster/output/metrics_weighted/older_run/inschool_susp/', i, sep=''))
+  model <- m
+  testing_model <- sample(f[f %ni% i], 1)
+  load(paste('/Users/travis/Documents/gits/educational_disparities/cluster/output/metrics_weighted/older_run/inschool_susp/', testing_model, sep=''))
+  m$data$bias <- m$data$bias[,1]
+  m$data$warmth <- m$data$warmth[,1]
+  m$data$weighted_bias <- m$data$weighted_bias[,1]
+  m$data$weighted_warmth <- m$data$weighted_warmth[,1]
+  m$data$total_pop <- m$data$total_pop[,1]
+  m$data$unemp_rate <- m$data$unemp_rate[,1]
+  m$data$med_income <- m$data$med_income[,1]
+  m$data$poverty_rate <- m$data$poverty_rate[,1]
+  m$data$col_grads <- m$data$col_grads[,1]
+  m$data$white_prop <- m$data$white_prop[,1]
+  m$data$black_prop <- m$data$black_prop[,1]
+  m$data$b.w.ratio <- m$data$b.w.ratio[,1]
+  m$data %>%
+    filter(!is.na(bias)) %>%
+    filter(!is.na(warmth)) %>%
+    filter(!is.na(weighted_bias)) %>%
+    filter(!is.na(weighted_warmth)) %>%
+    filter(!is.na(total_pop)) -> testing_data
+  y_hat <- data.frame(t(posterior_predict(m, draws = 250, newdata = testing_data)))
+  y_hat$index <- seq(1, length(y_hat$X1))
+  testing_data <- cbind(testing_data, y_hat)
+  testing_data %>%
+    gather(sample, pred, X1:X250) %>%
+    group_by(sample) %>%
+    summarise(r = cor(number, pred)^2) %>%
+    summarise(r_2 = mean(r),
+              r_2_lower = quantile(r, .25),
+              r_2_upper = quantile(r, .75)) -> r2
+  test_summary_datweighted[j,2:4] <- r2
+  j = j+1
+}
+
+```
 
 #Post stratified estimates
 
