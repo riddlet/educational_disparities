@@ -547,26 +547,78 @@ tempout %>%
   rbind(subdat) -> subdat
 
 #expulsion without ed
+df_school %>% 
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
+         SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWODIS_EXPWOE_F, 
+         SCH_DISCWDIS_EXPWOE_IDEA_HI_M:TOT_DISCWDIS_EXPWOE_IDEA_F) %>% 
+  gather(group, number, SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWDIS_EXPWOE_IDEA_F) %>%
+  mutate(g=group) %>%
+  separate(group, into=c('group', 'gender'), -2) %>% 
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  separate(prefix, into=c('prefix', 'disability'), -3) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='OE_', 
+                          total='EA_', biracial='TR_', white='WH_')) %>%
+  mutate(disability=fct_recode(disability, not_disabled='E_', disabled='ID',
+                               not_disabled='PW', disabled='A_')) %>%
+  select(-prefix) -> exp_wo_ed
+
+exp_wo_ed %>%
+  filter(group=='black'|group=='white') %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(enrollment) %>%
+  mutate(proportion = number/total_number) -> tempout
+
+tempout$number[which(tempout$number<0)] <- NA
+
+tempout %>% 
+  ungroup() %>%
+  filter(is.finite(proportion)) %>%
+  filter(total_number>number) %>%
+  mutate(metric='expulsion_wo_ed') %>%
+  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  distinct() %>%
+  rbind(subdat) -> subdat
 
 #in-school arrest
+df_school %>% 
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
+         SCH_DISCWODIS_ARR_HI_M:TOT_DISCWODIS_ARR_F, 
+         SCH_DISCWDIS_ARR_IDEA_HI_M:TOT_DISCWDIS_ARR_IDEA_F) %>% 
+  gather(group, number, SCH_DISCWODIS_ARR_HI_M:TOT_DISCWDIS_ARR_IDEA_F) %>%
+  mutate(g=group) %>%
+  separate(group, into=c('group', 'gender'), -2) %>% 
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  separate(prefix, into=c('prefix', 'disability'), -3) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='RR_', 
+                          total='EA_', biracial='TR_', white='WH_')) %>%
+  mutate(disability=fct_recode(disability, not_disabled='_A', disabled='ID',
+                               not_disabled='R_', disabled='A_')) %>%
+  select(-prefix) -> in_school_arrest
+
+in_school_arrest %>%
+  filter(group=='black'|group=='white') %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(enrollment) %>%
+  mutate(proportion = number/total_number) -> tempout
+
+tempout$number[which(tempout$number<0)] <- NA
+
+tempout %>% 
+  ungroup() %>%
+  filter(is.finite(proportion)) %>%
+  filter(total_number>number) %>%
+  mutate(metric='in_school_arrest') %>%
+  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  distinct() %>%
+  rbind(subdat) -> subdat
 
 #in-school suspension
-
-#law enforcement
-
-#mechanical restraint
-
-#oos suspension
-
-#physical restraint
-
-#preschool expulsion
-
-#preschool suspension
-
-#seclusion
-
-# in-school suspension
 df_school %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
          SCH_DISCWODIS_ISS_HI_M:TOT_DISCWODIS_ISS_F, 
@@ -600,7 +652,80 @@ tempout %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() -> subdat
 
-#out of school suspension
+#law enforcement
+df_school %>% 
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
+         SCH_DISCWODIS_REF_HI_M:TOT_DISCWODIS_REF_F,
+         SCH_DISCWDIS_REF_IDEA_HI_M:TOT_DISCWDIS_REF_IDEA_F) %>% 
+  gather(group, number, SCH_DISCWODIS_REF_HI_M:TOT_DISCWDIS_REF_IDEA_F) %>%
+  separate(group, into=c('group', 'gender'), -2) %>% 
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  separate(prefix, into=c('prefix', 'disability'), -3) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='EA_', 
+                          biracial='TR_', white='WH_', total='EF_')) %>%
+  mutate(disability=fct_recode(disability, not_disabled='_R', disabled='ID',
+                               not_disabled='F_', disabled='A_')) %>%
+  select(-prefix) -> law_enf
+
+law_enf %>%
+  filter(group=='black'|group=='white') %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(enrollment) %>%
+  mutate(proportion = number/total_number) -> tempout
+
+tempout %>% 
+  ungroup() %>%
+  filter(is.finite(proportion)) %>%
+  filter(number>=0) %>%
+  filter(total_number>number) %>%
+  ungroup() %>%
+  mutate(metric='law_enforcement') %>%
+  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  distinct() %>%
+  rbind(subdat) -> subdat
+
+#mechanical restraint
+df_school %>% 
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
+         SCH_RS_NONIDEA_MECH_HI_M:TOT_RS_NONIDEA_MECH_F,
+         SCH_RS_IDEA_MECH_HI_M:TOT_RS_IDEA_MECH_F) %>% 
+  gather(group, number, SCH_RS_NONIDEA_MECH_HI_M:TOT_RS_IDEA_MECH_F) %>%
+  mutate(g=group) %>%
+  separate(group, into=c('group', 'gender'), -2) %>% 
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  separate(prefix, into=c('prefix', 'disability'), -12) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='CH_', 
+                          biracial='TR_', white='WH_')) %>%
+  mutate(disability=fct_recode(disability, not_disabled='_NONIDEA_ME', 
+                               disabled='_IDEA_MECH_',
+                               not_disabled='NIDEA_MECH_', 
+                               disabled='_RS_IDEA_ME')) %>%
+  select(-prefix) -> mechanical_restraint
+
+mechanical_restraint %>%
+  filter(group=='black'|group=='white') %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(enrollment) %>%
+  mutate(proportion = number/total_number) -> tempout
+
+tempout %>% 
+  ungroup() %>%
+  filter(is.finite(proportion)) %>%
+  filter(number>=0) %>%
+  filter(total_number>number) %>%
+  ungroup() %>%
+  mutate(metric='mechanical_restraint') %>%
+  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  distinct() %>%
+  rbind(subdat) -> subdat
+
+#oos suspension
 df_school %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
          SCH_DISCWODIS_SINGOOS_HI_M:TOT_DISCWODIS_SINGOOS_F,
@@ -654,79 +779,26 @@ tempout %>%
   distinct() %>%
   rbind(subdat) -> subdat
 
-#expulsion with education
+#physical restraint
 df_school %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
-         SCH_DISCWODIS_EXPWE_HI_M:TOT_DISCWODIS_EXPWE_F,
-         SCH_DISCWDIS_EXPWE_IDEA_HI_M:TOT_DISCWDIS_EXPWE_IDEA_F) %>% 
-  gather(group, number, SCH_DISCWODIS_EXPWE_HI_M:TOT_DISCWDIS_EXPWE_IDEA_F) %>%
+         SCH_RS_NONIDEA_PHYS_HI_M:TOT_RS_NONIDEA_PHYS_F,
+         SCH_RS_IDEA_PHYS_HI_M:TOT_RS_IDEA_PHYS_F) %>% 
+  gather(group, number, SCH_RS_NONIDEA_PHYS_HI_M:TOT_RS_IDEA_PHYS_F) %>%
+  mutate(g=group) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
-  separate(prefix, into=c('prefix', 'disability'), -3) %>%
+  separate(prefix, into=c('prefix', 'disability'), -12) %>%
   mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
-                          hispanic='HI_', pac_isl='HP_', total='WE_', 
-                          biracial='TR_', white='WH_', total='EA_')) %>%
-  mutate(disability=fct_recode(disability, not_disabled='XP', disabled='ID',
-                               not_disabled='E_', disabled='A_')) %>%
-  select(-prefix) -> exp_w_ed
+                          hispanic='HI_', pac_isl='HP_', total='YS_', 
+                          biracial='TR_', white='WH_')) %>%
+  mutate(disability=fct_recode(disability, not_disabled='_NONIDEA_PH', 
+                               disabled='_IDEA_PHYS_',
+                               not_disabled='NIDEA_PHYS_', 
+                               disabled='_RS_IDEA_PH')) %>%
+  select(-prefix) -> physical_restraint
 
-#expulsion without education
-df_school %>% 
-  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
-         SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWODIS_EXPWOE_F,
-         SCH_DISCWDIS_EXPWOE_IDEA_HI_M:TOT_DISCWDIS_EXPWOE_IDEA_F) %>% 
-  gather(group, number, SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWDIS_EXPWOE_IDEA_F) %>%
-  separate(group, into=c('group', 'gender'), -2) %>% 
-  separate(group, into=c('prefix', 'group'), -4) %>%
-  separate(prefix, into=c('prefix', 'disability'), -3) %>%
-  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
-                          hispanic='HI_', pac_isl='HP_', total='OE_', 
-                          biracial='TR_', white='WH_', total='EA_')) %>%
-  mutate(disability=fct_recode(disability, not_disabled='PW', disabled='ID',
-                               not_disabled='E_', disabled='A_')) %>%
-  select(-prefix) -> exp_wo_ed
-
-exp_w_ed$number[which(exp_w_ed$number<0)] <- NA
-exp_wo_ed$number[which(exp_wo_ed$number<0)] <- NA
-
-exp_w_ed %>%
-  mutate(w_ed_number = number) %>%
-  select(-number) %>%
-  left_join(exp_wo_ed) %>%
-  mutate(number = number + w_ed_number) %>%
-  filter(group=='black'|group=='white') %>%
-  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
-           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
-  summarise(number = sum(number, na.rm=T)) %>%
-  left_join(enrollment) %>%
-  mutate(proportion = number/total_number) -> tempout
-
-tempout %>% 
-  ungroup() %>%
-  filter(is.finite(proportion)) %>%
-  filter(total_number>number) %>%
-  mutate(metric='expulsion_combined') %>%
-  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
-  distinct() %>%
-  rbind(subdat) -> subdat
-
-#law enforcement
-df_school %>% 
-  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
-         SCH_DISCWODIS_REF_HI_M:TOT_DISCWODIS_REF_F,
-         SCH_DISCWDIS_REF_IDEA_HI_M:TOT_DISCWDIS_REF_IDEA_F) %>% 
-  gather(group, number, SCH_DISCWODIS_REF_HI_M:TOT_DISCWDIS_REF_IDEA_F) %>%
-  separate(group, into=c('group', 'gender'), -2) %>% 
-  separate(group, into=c('prefix', 'group'), -4) %>%
-  separate(prefix, into=c('prefix', 'disability'), -3) %>%
-  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
-                          hispanic='HI_', pac_isl='HP_', total='EA_', 
-                          biracial='TR_', white='WH_', total='EF_')) %>%
-  mutate(disability=fct_recode(disability, not_disabled='_R', disabled='ID',
-                               not_disabled='F_', disabled='A_')) %>%
-  select(-prefix) -> law_enf
-
-law_enf %>%
+physical_restraint %>%
   filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
@@ -740,28 +812,126 @@ tempout %>%
   filter(number>=0) %>%
   filter(total_number>number) %>%
   ungroup() %>%
-  mutate(metric='law_enforcement') %>%
+  mutate(metric='physical_restraint') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
   rbind(subdat) -> subdat
 
-#inschool arrest
+## Preschool enrollment
+df_school %>%
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, SCH_PSENR_HI_M:TOT_PSENR_F) %>%
+  gather(group, total_number, SCH_PSENR_HI_M:TOT_PSENR_F) %>%
+  separate(group, into=c('group', 'gender'), -2) %>%
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='NR_', 
+                          biracial='TR_', white='WH_')) %>%
+  filter(total_number>=0) %>%
+  group_by(COMBOKEY, group) %>%
+  mutate(total_number = sum(total_number)) %>%
+  ungroup() %>%
+  select(-prefix, -gender) %>%
+  distinct() -> ps_enrollment
+
+#preschool expulsion
 df_school %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
-         SCH_DISCWODIS_ARR_HI_M:TOT_DISCWODIS_ARR_F,
-         SCH_DISCWDIS_ARR_IDEA_HI_M:TOT_DISCWDIS_ARR_IDEA_F) %>% 
-  gather(group, number, SCH_DISCWODIS_ARR_HI_M:TOT_DISCWDIS_ARR_IDEA_F) %>%
+         SCH_PSDISC_EXP_HI_M:TOT_PSDISC_EXP_F) %>% 
+  gather(group, number, SCH_PSDISC_EXP_HI_M:TOT_PSDISC_EXP_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
-  separate(prefix, into=c('prefix', 'disability'), -3) %>%
   mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
-                          hispanic='HI_', pac_isl='HP_', total='RR_', 
-                          total='EA_', biracial='TR_', white='WH_')) %>%
-  mutate(disability=fct_recode(disability, not_disabled='_A', disabled='ID',
-                               not_disabled='R_', disabled='A_')) %>%
-  select(-prefix) -> in_school_arrest
+                          hispanic='HI_', pac_isl='HP_', total='XP_', 
+                          biracial='TR_', white='WH_')) %>%
+  filter(number>=0) %>%
+  select(-prefix) -> ps_exp
 
-in_school_arrest %>%
+ps_exp %>%
+  filter(group=='black'|group=='white') %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(ps_enrollment) %>%
+  mutate(proportion = number/total_number) -> tempout
+
+tempout %>% 
+  ungroup() %>%
+  filter(is.finite(proportion)) %>%
+  filter(number>=0) %>%
+  filter(total_number>number) %>%
+  ungroup() %>%
+  mutate(metric='preschool_expulsion') %>%
+  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  distinct() %>%
+  rbind(subdat) -> subdat
+
+#preschool suspension
+df_school %>% 
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
+         SCH_GRADE_PS, SCH_PSDISC_SINGOOS_HI_M:TOT_PSDISC_SINGOOS_F) %>% 
+  filter(SCH_GRADE_PS=='YES') %>%
+  gather(group, number, SCH_PSDISC_SINGOOS_HI_M:TOT_PSDISC_SINGOOS_F) %>%
+  separate(group, into=c('group', 'gender'), -2) %>% 
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='OS_', 
+                          biracial='TR_', white='WH_')) %>%
+  select(-prefix) -> ps_susp
+
+df_school %>% 
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD,
+         SCH_GRADE_PS, SCH_PSDISC_MULTOOS_HI_M:TOT_PSDISC_MULTOOS_F) %>% 
+  filter(SCH_GRADE_PS=='YES') %>%
+  gather(group, number_2, SCH_PSDISC_MULTOOS_HI_M:TOT_PSDISC_MULTOOS_F) %>%
+  separate(group, into=c('group', 'gender'), -2) %>%
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='OS_', 
+                          biracial='TR_', white='WH_')) %>%
+  select(COMBOKEY, group, gender, number_2) %>%
+  right_join(ps_susp) %>%
+  filter(number>=0 & number_2 >= 0) %>%
+  mutate(number = number+number_2) -> ps_susp
+
+ps_susp %>%
+  filter(group=='black'|group=='white') %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(ps_enrollment) %>%
+  mutate(proportion = number/total_number) -> tempout
+
+tempout %>% 
+  ungroup() %>%
+  filter(is.finite(proportion)) %>%
+  filter(number>=0) %>%
+  filter(total_number>number) %>%
+  ungroup() %>%
+  mutate(metric='preschool_susp') %>%
+  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  distinct() %>%
+  rbind(subdat) -> subdat
+
+#seclusion
+df_school %>% 
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
+         SCH_RS_NONIDEA_SECL_HI_M:TOT_RS_NONIDEA_SECL_F,
+         SCH_RS_IDEA_SECL_HI_M:TOT_RS_IDEA_SECL_F) %>% 
+  gather(group, number, SCH_RS_NONIDEA_SECL_HI_M:TOT_RS_IDEA_SECL_F) %>%
+  mutate(g=group) %>%
+  separate(group, into=c('group', 'gender'), -2) %>% 
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  separate(prefix, into=c('prefix', 'disability'), -12) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='CL_', 
+                          biracial='TR_', white='WH_')) %>%
+  mutate(disability=fct_recode(disability, not_disabled='_NONIDEA_SE', 
+                               disabled='_IDEA_SECL_',
+                               not_disabled='NIDEA_SECL_', 
+                               disabled='_RS_IDEA_SE')) %>%
+  select(-prefix) -> seclusion
+
+seclusion %>%
   filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
@@ -769,14 +939,14 @@ in_school_arrest %>%
   left_join(enrollment) %>%
   mutate(proportion = number/total_number) -> tempout
 
-tempout$number[which(tempout$number<0)] <- NA
-
 tempout %>% 
   ungroup() %>%
   filter(is.finite(proportion)) %>%
   filter(number>=0) %>%
   filter(total_number>number) %>%
-  mutate(metric='in_school_arrest') %>%
+  ungroup() %>%
+  mutate(metric='seclusion') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
   rbind(subdat) -> subdat
+
