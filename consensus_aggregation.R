@@ -1460,7 +1460,7 @@ for (i in metrics){
   files <- list.files(pth)
   j <- 1
   posterior_combo <- array(0, dim=c(14,4000,length(files)))
-  #raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_bias=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
+  raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_bias=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
   if (length(files>1)){
     for (k in files){
       #print(i)
@@ -1471,16 +1471,16 @@ for (i in metrics){
         distinct() %>% 
         group_by(county_id) %>% 
         summarise(nschools=n()) -> n_schools
-      # m$data %>% 
-      #   group_by(county_id, group) %>% 
-      #   summarise(nincidents=sum(number), nstudents=sum(total_number)) %>% 
-      #   mutate(rate=nincidents/nstudents) -> rate
-      # n_schools %>% 
-      #   left_join(m$data[, c('county_id', 'weighted_bias')]) %>%
-      #   distinct() %>%
-      #   left_join(rate) %>%
-      #   rbind(raw_rate) %>%
-      #   filter(!is.na(county_id)) -> raw_rate
+      m$data %>%
+        group_by(county_id, group) %>%
+        summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
+        mutate(rate=nincidents/nstudents) -> rate
+      n_schools %>%
+        left_join(m$data[, c('county_id', 'weighted_bias')]) %>%
+        distinct() %>%
+        left_join(rate) %>%
+        rbind(raw_rate) %>%
+        filter(!is.na(county_id)) -> raw_rate
       posterior_combo[,,j] <- t(df[,c(1:14)])
       j <- j+1
     }
@@ -1528,7 +1528,7 @@ for (i in metrics){
                         white_prop=0,
                         black_prop=0,
                         b.w.ratio=0,
-                        weighted_bias = seq(-2,2,.25),
+                        weighted_bias = seq(-2.25,2.25,.25),
                         weighted_warmth = 0,
                         number=0,
                         total_number=1)
@@ -1576,10 +1576,10 @@ for (i in metrics){
     rbind(plot.dat2) %>% 
     filter(!is.na(weighted_bias)) -> plot.dat2
   
-  # raw_rate %>% 
-  #   select(county_id, nschools, weighted_bias, group, rate) %>% 
-  #   spread(group, rate) %>%
-  #   mutate(odds_r = black/white) -> raw_or
+  raw_rate %>%
+    select(county_id, nschools, weighted_bias, group, rate) %>%
+    spread(group, rate) %>%
+    mutate(odds_r = black/white) -> raw_or
   
   ggplot(plot.dat2, aes(x=weighted_bias, y=est)) +
     geom_line() +
@@ -1591,12 +1591,28 @@ for (i in metrics){
   
   ggsave(filename=plot_path, plot)
   
+  # raw_or$mercer_county <- FALSE
+  # raw_or$mercer_county[which(raw_or$county_id=='NJ-021')] <- TRUE
+  # 
   # ggplot(plot.dat2, aes(x=weighted_bias, y=est)) +
-  #   geom_point(data=raw_or, aes(x=weighted_bias, y=odds_r, size=nschools), alpha=.1) +
+  #   geom_point(data=raw_or, aes(x=weighted_bias, y=odds_r, size=nschools, 
+  #                               color=mercer_county, alpha=mercer_county)) +
   #   geom_line() +
   #   geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.15) +
   #   theme_classic() +
-  #   ylim(0,quantile(raw_or$odds_r, na.rm=T, .9)) +
+  #   scale_color_manual(values=c('grey', 'darkorange'), guide=F) + 
+  #   scale_alpha_manual(values=c(.1, 1), guide=F) + 
+  #   ylim(0,quantile(raw_or$odds_r, na.rm=T, .98)) +
+  #   xlab('Standardized Implicit Bias') +
+  #   ylab('Relative Risk Ratio') +
+  #   geom_hline(yintercept=1) +
+  #   theme(strip.text = element_text(size=14),
+  #         axis.title = element_text(face='bold', size=16),
+  #         axis.text = element_text(size=14),
+  #         legend.title = element_text(size=14),
+  #         legend.text = element_text(size=14)) -> plot
+  # ggsave('/Users/travis/Desktop/implicit_rr.jpeg', plot)
+  # #+
   #   facet_wrap(~metric, scales='free') -> plot
   # 
   # plot_path <- '/Users/travis/Documents/gits/educational_disparities/figs/individual_models/mw_uclaexcl/bias_OR_wdata.jpeg'
@@ -1635,7 +1651,7 @@ for (i in metrics){
   files <- list.files(pth)
   j <- 1
   posterior_combo <- array(0, dim=c(14,4000,length(files)))
-  #raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_warmth=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
+  raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_warmth=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
   if(length(files)>1){
     for (k in files){
       #print(i)
@@ -1646,16 +1662,16 @@ for (i in metrics){
         distinct() %>% 
         group_by(county_id) %>% 
         summarise(nschools=n()) -> n_schools
-      # m$data %>% 
-      #   group_by(county_id, group) %>% 
-      #   summarise(nincidents=sum(number), nstudents=sum(total_number)) %>% 
-      #   mutate(rate=nincidents/nstudents) -> rate
-      # n_schools %>% 
-      #   left_join(m$data[, c('county_id', 'weighted_warmth')]) %>%
-      #   distinct() %>%
-      #   left_join(rate) %>%
-      #   rbind(raw_rate) %>%
-      #   filter(!is.na(county_id)) -> raw_rate
+      m$data %>%
+        group_by(county_id, group) %>%
+        summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
+        mutate(rate=nincidents/nstudents) -> rate
+      n_schools %>%
+        left_join(m$data[, c('county_id', 'weighted_warmth')]) %>%
+        distinct() %>%
+        left_join(rate) %>%
+        rbind(raw_rate) %>%
+        filter(!is.na(county_id)) -> raw_rate
       posterior_combo[,,j] <- t(df[,c(1:14)])
       j <- j+1
     }
@@ -1760,10 +1776,10 @@ for (i in metrics){
     rbind(plot.dat2) %>% 
     filter(!is.na(weighted_warmth)) -> plot.dat2
   
-  # raw_rate %>% 
-  #   select(county_id, nschools, weighted_warmth, group, rate) %>% 
-  #   spread(group, rate) %>%
-  #   mutate(odds_r = black/white) -> raw_or
+  raw_rate %>%
+    select(county_id, nschools, weighted_warmth, group, rate) %>%
+    spread(group, rate) %>%
+    mutate(odds_r = black/white) -> raw_or
   
   ggplot(plot.dat2, aes(x=weighted_warmth, y=est)) +
     geom_line() +
@@ -1775,13 +1791,46 @@ for (i in metrics){
   
   ggsave(filename=plot_path, plot)
   
-  # ggplot(plot.dat2, aes(x=weighted_warmth, y=est)) +
-  #   geom_point(data=raw_or, aes(x=weighted_warmth, y=odds_r, size=nschools), alpha=.1) +
+  raw_or$mercer_county <- FALSE
+  raw_or$mercer_county[which(raw_or$county_id=='NJ-021')] <- TRUE
+  
+  # ggplot(plot.dat2, aes(x=weighted_bias, y=est)) +
+    geom_point(data=raw_or, aes(x=weighted_bias, y=odds_r, size=nschools,
+                                color=mercer_county, alpha=mercer_county)) +
   #   geom_line() +
   #   geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.15) +
   #   theme_classic() +
-  #   ylim(0,quantile(raw_or$odds_r, na.rm=T, .9)) +
-  #   facet_wrap(~metric, scales='free') -> plot
+  #   scale_color_manual(values=c('grey', 'darkorange'), guide=F) + 
+  #   scale_alpha_manual(values=c(.1, 1), guide=F) + 
+  #   ylim(0,quantile(raw_or$odds_r, na.rm=T, .98)) +
+  #   xlab('Standardized Implicit Bias') +
+  #   ylab('Relative Risk Ratio') +
+  #   geom_hline(yintercept=1) +
+  #   theme(strip.text = element_text(size=14),
+  #         axis.title = element_text(face='bold', size=16),
+  #         axis.text = element_text(size=14),
+  #         legend.title = element_text(size=14),
+  #         legend.text = element_text(size=14)) -> plot
+  # ggsave('/Users/travis/Desktop/implicit_rr.jpeg', plot)
+  
+  ggplot(plot.dat2, aes(x=weighted_warmth, y=est)) +
+      geom_point(data=raw_or, aes(x=weighted_warmth, y=odds_r, size=nschools,
+                                  color=mercer_county, alpha=mercer_county)) +
+    geom_line() +
+    geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.15) +
+    theme_classic() +
+    scale_color_manual(values=c('grey', 'darkorange'), guide=F) + 
+    scale_alpha_manual(values=c(.1, 1), guide=F) +
+    ylim(0,7) +
+    xlab('Standardized Explicit Bias') +
+    ylab('Relative Risk Ratio') +
+    geom_hline(yintercept=1) +
+    theme(strip.text = element_text(size=14),
+          axis.title = element_text(face='bold', size=16),
+          axis.text = element_text(size=14),
+          legend.title = element_text(size=14),
+          legend.text = element_text(size=14)) -> plot
+    ggsave('/Users/travis/Desktop/explicit_rr.jpeg', plot)
   # 
   # plot_path <- '/Users/travis/Documents/gits/educational_disparities/figs/individual_models/mw_uclaexcl/warmth_OR_wdata.jpeg'
   # 
