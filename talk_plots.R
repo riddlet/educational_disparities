@@ -1041,8 +1041,7 @@ ggplot(plot.dat, aes(x=weighted_bias, y=est, group=group)) +
         axis.title.x = element_text(size=14),
         axis.text = element_text(size=12),
         legend.text = element_text(size=12),
-        strip.text = element_text(size=12))
-  -> plot
+        strip.text = element_text(size=12)) -> p1
 
 posterior_distribution %>%
   select(group, weighted_warmth, sample, value) %>%
@@ -1119,7 +1118,7 @@ ggplot(plot.dat, aes(x=weighted_bias, y=est)) +
         legend.text = element_text(size=14)) +
   facet_wrap(~bias)
 
-plot$data %>% filter(weighted_bias%in%c(0,1)) %>% mutate(students = est*8000000)
+p1$data %>% filter(weighted_bias%in%c(0,1)) %>% mutate(students = est*8000000)
 
 i <- 'expulsion_combined'
 pth <- paste(base_path, i, '/', sep='')
