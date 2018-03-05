@@ -313,9 +313,10 @@ schools_loc$county_name[which(schools_loc$county_id=='VA-510')] <- 'Alexandria c
 county_means %>%
   select(-X) %>%
   right_join(schools_loc) %>%
-  select(county_id, county_name, state_abb, bias, explicit, explicit_diff, 
-         weighted_bias, weighted_explicit, weighted_explicit_diff, 
-         COMBOKEY, group, number, total_number, metric, LEAID) -> tempout
+  select(county_id, county_name, state_abb, state_fips, county_fips, bias, 
+         explicit, explicit_diff, weighted_bias, weighted_explicit, 
+         weighted_explicit_diff, COMBOKEY, group, number, total_number, metric, 
+         LEAID) -> tempout
 
 ################
 # Exclude schools #
@@ -364,32 +365,67 @@ tempout %>%
 
 df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_ethnicity/ACS_14_5YR_B02001_with_ann.csv',skip = 1)
 
-covs1 <- df_acs[,c(3, 4, 6, 8)]
-names(covs1) <- c('county', 'total_pop', 'white_pop', 'black_pop')
+covs_pop <- df_acs[,c(3, 4, 6, 8)]
+names(covs_pop) <- c('county', 'total_pop', 'white_pop', 'black_pop')
 
 df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_poverty_emp/ACS_14_5YR_DP03_with_ann.csv',skip = 1)
 
-covs2 <- df_acs[,c(3, 22, 248, 478)]
-names(covs2) <- c('county', 'unemp_rate', 'med_income', 'poverty_rate')
+covs_emp <- df_acs[,c(3, 22, 248, 478)]
+names(covs_emp) <- c('county', 'unemp_rate', 'med_income', 'poverty_rate')
 
 df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_education/ACS_14_5YR_S1501_with_ann.csv',skip=1)
-covs3 <- df_acs[,c(3, 28)]
-names(covs3) <- c('county', 'col_grads')
+covs_ed <- df_acs[,c(3, 28)]
+names(covs_ed) <- c('county', 'col_grads')
 
-covs1 %>%
-  left_join(covs2) %>%
-  left_join(covs3) %>%
+df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_mobility/ACS_14_5YR_S0701_with_ann.csv', skip=1)
+covs_mob <- df_acs[,c(3, 158, 160, 162)]
+covs_mob$mobility <- as.numeric(as.character(covs_mob[,2])) + 
+  as.numeric(as.character(covs_mob[,3])) + 
+  as.numeric(as.character(covs_mob[,4]))
+covs_mob$mobility[which(is.na(covs_mob$mobility))] <- 0
+covs_mob <- covs_mob[,c(1,5)]
+names(covs_mob)[1] <- 'county'
+
+load(file='/Users/travis/Documents/gits/Data/FBI/ICPSR_33523/DS0001/33523-0001-Data.rda')
+load(file='/Users/travis/Documents/gits/Data/FBI/ICPSR_34582/DS0001/34582-0001-Data.rda')
+load(file='/Users/travis/Documents/gits/Data/FBI/ICPSR_35019/DS0001/35019-0001-Data.rda')
+load(file='/Users/travis/Documents/gits/Data/FBI/ICPSR_36117/DS0001/36117-0001-Data.rda')
+load(file='/Users/travis/Documents/gits/Data/FBI/ICPSR_36399/DS0001/36399-0001-Data.rda')
+
+df_fbi <- rbind(da33523.0001, da34582.0001, 
+                da35019.0001, da36117.0001, da36399.0001)
+df_fbi %>%
+  select(FIPS_ST, FIPS_CTY, CPOPARST, P1VLNT) %>%
+  mutate(state_fips = formatC(FIPS_ST, width = 2, format = "d", flag = "0"),
+         county_fips = formatC(FIPS_CTY, width = 3, format = "d", flag = "0"),
+         crime_rate = P1VLNT/CPOPARST) %>%
+  group_by(state_fips, county_fips) %>%
+  summarise(crime_rate = mean(crime_rate, na.rm=T)) %>%
+  ungroup() %>%
+  mutate(county_fips = paste(state_fips, county_fips, sep='')) %>%
+  select(county_fips, crime_rate) -> covs_fbi
+
+df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_housing/DEC_10_SF1_GCTPH1.CY07_with_ann.csv',skip=1)
+covs_hous <- df_acs[,c(3, 6, 7, 14)]
+names(covs_hous) <- c('county', 'county1', 'county2', 'density')
+covs_hous %>%
+  filter(as.character(county1) == as.character(county2)) %>%
+  mutate(density = as.numeric(as.character(density))) %>%
+  select(county, density) -> covs_hous
+
+df_haley <- read.csv('/Users/travis/Documents/gits/Data/Haley_countylinks/_Master Spreadsheet.csv')
+names(df_haley)[6] <- 'county'
+
+covs_pop %>%
+  left_join(covs_ed) %>%
+  left_join(covs_emp) %>%
+  left_join(df_haley) %>%
+  left_join(covs_fbi) %>% 
+  left_join(covs_hous) %>%
+  left_join(covs_mob) %>%
   mutate(white_prop = white_pop/total_pop,
          black_prop = black_pop/total_pop) %>%
   mutate(b.w.ratio = black_prop/white_prop) -> covs
-
-covs %>%
-  separate(county, into=c('county_name', 'state'), sep=', ') %>%
-  filter(state!='Puerto Rico') %>% #no PR in the education data
-  mutate(county_name = 
-           str_replace(county_name, 
-                       ' County| Borough| Census Area| Parish| Municipality| City and Borough', '')) -> covs
-covs$county_name[1803] <- 'Doña Ana' #unicode woes
 
 #counties w/o IAT data: 
 #Aleutians East, Hoonah-Angoon, Prince of Wales-Hyder, Skagway, Wrangell, 
@@ -400,12 +436,21 @@ covs$county_name[1803] <- 'Doña Ana' #unicode woes
 #counties w/o schools:
 #kalawao, Issaquena, Mora, Divide, Loving
 
-states <- data.frame(state = c(state.name, 'District of Columbia'), 
-                     state_abb = c(state.abb, 'DC'))
-
 covs %>%
-  left_join(states) %>%
-  right_join(tempout) -> mod.dat
+  mutate(total_pop = scale(total_pop)[,1],
+         col_grads = scale(col_grads)[,1],
+         unemp_rate = scale(unemp_rate)[,1],
+         med_income = scale(med_income)[,1],
+         poverty_rate = scale(poverty_rate)[,1],
+         crime_rate = scale(crime_rate)[,1],
+         density = scale(density)[,1],
+         mobility = scale(mobility)[,1],
+         white_prop = scale(white_prop)[,1],
+         black_prop = scale(black_prop)[,1],
+         b.w.ratio = scale(b.w.ratio)[,1]) %>%
+  mutate(county_id = paste(state_code, 
+                           stringr::str_sub(county_fips, -3, -1), sep='-')) %>%
+  right_join(tempout, by='county_id') -> mod.dat
 
 # tempthis %>% 
 #   select(county_id, county_name, state_abb, state) %>%

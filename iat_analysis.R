@@ -22,8 +22,10 @@ df8 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2004.sav'
 df9 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2002-2003.sav')
 df10 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2014.sav')
 df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_age/ACS_14_5YR_DP05_with_ann.csv', skip=1)
+df_haley <- read.csv('/Users/travis/Documents/gits/Data/Haley_countylinks/_Master Spreadsheet.csv', stringsAsFactors = F)
 df_county_linking_info <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_linking_table.csv', stringsAsFactors = F)
 df_county_linking_info$county_name[1904] <- 'Doña Ana'
+df_haley[1791,6] <- 'Doña Ana County, New Mexico'
 df_states <- data.frame(state=c(state.name, 'District of Columbia'),
                         state_abb=c(state.abb, 'DC'))
 df_acs_eth <- read.csv('/Users/travis/Documents/gits/Data/ACS/state_ethnicity/ACS_14_5YR_B02001_with_ann.csv',
@@ -32,6 +34,12 @@ df_acs_ed <- read.csv('/Users/travis/Documents/gits/Data/ACS/state_education/ACS
                       skip = 1, stringsAsFactors = F)
 df_acs_pov_emp <- read.csv('/Users/travis/Documents/gits/Data/ACS/state_poverty_emp/ACS_14_5YR_DP03_with_ann.csv',
                            skip = 1, stringsAsFactors = F)
+df_acs_hous <- read.csv('/Users/travis/Documents/gits/Data/ACS/state_housing/DEC_10_SF1_GCTPH1.US04PR_with_ann.csv',
+                        skip=1, stringsAsFactors = F)
+df_acs_mob <- read.csv('/Users/travis/Documents/gits/Data/ACS/state_mobility/ACS_14_5YR_S0701_with_ann.csv',
+                       skip=1, stringsAsFactors = F)
+df_fbi <- read.csv('/Users/travis/Documents/gits/Data/FBI/state_crimes/CrimeTrendsInOneVar.csv')
+
 
 #educators <- c('25-2000', '25-3000', '25-4000', '25-9000')
 # per stacey's contact in education, limit to the following:
@@ -166,88 +174,101 @@ df_acs$Geography[1803] <- 'Doña Ana County, New Mexico'
 
 df_acs %>%
   gather(age, num, -Geography) %>%
-  mutate(county=Geography) %>%
+  mutate(name_from_census=Geography) %>%
   select(-Geography) %>%
-  separate(county, into=c('county_name', 'state'), sep=', ') %>%
-  filter(state!='Puerto Rico') %>% #no PR in the education data
-  mutate(county_name = 
-           str_replace(county_name, 
-                       ' County| Borough| Census Area| Parish| Municipality| City and Borough', '')) %>%
+  left_join(df_haley) %>%
+  #separate(county, into=c('county_name', 'state'), sep=', ') %>%
+  #filter(state!='Puerto Rico') %>% #no PR in the education data
+  #mutate(county_name = 
+  #         str_replace(county_name, 
+  #                     ' County| Borough| Census Area| Parish| Municipality| City and Borough', '')) %>%
   mutate(age = substr(age, 25, 26)) %>%
   mutate(age_bin = cut(as.numeric(age), 
                        breaks=c(14, 24, 34, 54, 75, 120))) %>%
-  group_by(county_name, age_bin) %>%
+  group_by(county_fips, age_bin) %>%
   summarise(num = sum(num)) %>%
-  left_join(df_county_linking_info) -> df_acs_counts
+  left_join(df_haley[,c('state_name', 'state_fips', 
+                        'state_code', 'county_fips')]) -> df_acs_counts
 
 covs <- df_acs_eth[,c(3, 4, 6, 8)]
-names(covs) <- c('state', 'total_pop', 'white_pop', 'black_pop')
+names(covs) <- c('state_name', 'total_pop', 'white_pop', 'black_pop')
 covs %>%
   mutate(white_prop = white_pop/total_pop,
          black_prop = black_pop/total_pop) %>%
   mutate(b.w.ratio = black_prop/white_prop) -> covs
 
 covs_ed <- df_acs_ed[,c(3, 28)]
-names(covs_ed) <- c('state', 'col_grads')
+names(covs_ed) <- c('state_name', 'col_grads')
 
 covs_income <- df_acs_pov_emp[,c(3, 21, 248, 478)]
-names(covs_income) <- c('state', 'unemp', 'income', 'poverty')
+names(covs_income) <- c('state_name', 'unemp', 'income', 'poverty')
+
+covs_hous <- df_acs_hous[,c(5, 14)]
+names(covs_hous) <- c('state_fips', 'housing_density')
+
+covs_mob <- df_acs_mob[,c(3, 10, 12)]
+names(covs_mob) <- c('state_name', 'moved_states', 'moved_abroad')
+covs_mob$mobility <- covs_mob$moved_states + covs_mob$moved_abroad
+
+df_fbi %>%
+  gather(state_name, crime, -Year) %>%
+  mutate(state_name = stringr::str_replace_all(state_name, '\\.+', ' ')) %>%
+  left_join(covs[,c('state_name', 'total_pop')]) %>%
+  mutate(crime_rate = crime/total_pop) %>%
+  group_by(state_name) %>%
+  summarise(crime_rate = mean(crime_rate, na.rm=T)) -> covs_crime
 
 df_acs_counts %>%
   left_join(covs) %>%
   left_join(covs_ed) %>%
-  left_join(covs_income) -> df_acs_counts
+  left_join(covs_income) %>%
+  left_join(covs_hous) %>%
+  left_join(covs_mob) %>%
+  left_join(covs_crime) %>%
+  mutate(county_id = paste(
+    state_code, stringr::str_sub(county_fips, -3, -1), sep='-') )-> df_acs_counts
 
+df_acs_counts %>%
+  ungroup() %>%
+  select(state_name:housing_density, mobility, crime_rate) %>%
+  distinct() %>%
+  mutate_at(vars(total_pop:crime_rate), scale) -> state_covs
 
-#df_acs_counts[which(is.na(df_acs_counts$county_id)),] -> missings
-#counties w/o IAT data: 
-#Aleutians East, Wrangell, Berkshire, Billings, Rolette,
-#Borden, Culberson, Foard, Glassock, Greensville, Calhoun, Campbell, Carter, 
-#Buffalo, Blaine, Billings, Berkshire, Banner, Douglas, Franklin, Garfield, 
-#Golden Valley, Grant, Greeley, Greensville, Hampshire, Harding, Hinsdale, 
-#Hodgeman, Hoonah-Angoon, Irion, Jackson, Kenedy, King, Loup, Petroleum, Piute, 
-#Potter, Powder River, Prairie, Prince of Wales-Hyder, Quitman, Roberts, Rock, 
-#Rolette, Sheridan (ks), Sheridan (ND), Skagway, Thomas, Treasure
-
-#counties w/o schools:
-#kalawao, Issaquena, Mora, Divide, Loving, Marion, Miller,
-names(individual_data)[2] <- 'state_abb'
+names(individual_data)[2] <- 'state_code'
 individual_data %>%
-  left_join(df_states) %>%
-  left_join(df_acs_counts[,1:4], by=c('county_id', 'age_bin')) %>%
-  left_join(covs, by='state') %>%
-  left_join(covs_ed, by='state') %>%
-  left_join(covs_income, by='state') %>%
-  mutate_at(vars(white_prop:poverty), scale) -> individual_data_base
+  left_join(state_covs) -> individual_data_base
 
-individual.model.bias <- lmer(D_biep.White_Good_all ~ white_prop + black_prop + 
-                                b.w.ratio + col_grads + unemp + income + 
-                                poverty + (1|age_bin) + (1|county_id) + 
-                                (1|state_abb), data=individual_data_base)
-individual.model.explicit <- lmer(explicit_bias ~ white_prop + black_prop + 
-                                    b.w.ratio + col_grads + unemp + income + 
-                                    poverty + (1|age_bin) + (1|county_id) + 
-                                    (1|state_abb), data=individual_data_base)
-individual_data %>%
-  left_join(df_states) %>%
-  left_join(df_acs_counts[,1:4], by=c('county_id', 'age_bin')) %>%
-  left_join(covs, by='state') %>%
-  left_join(covs_ed, by='state') %>%
-  left_join(covs_income, by='state') %>%
-  filter(!is.na(explicit_bias_diff)) %>%
-  mutate_at(vars(white_prop:poverty), scale) -> individual_data_diff
+individual.model.bias <- lmer(D_biep.White_Good_all ~ total_pop + white_prop + 
+                                black_prop + b.w.ratio + col_grads + 
+                                unemp + income + poverty + housing_density + 
+                                mobility + crime_rate + (1|age_bin) + (1|county_id) + 
+                                (1|state_code), data=individual_data_base)
 
-individual.model.explicit_diff <- lmer(explicit_bias_diff ~ white_prop + 
-                                         black_prop + b.w.ratio + col_grads + 
-                                         unemp + income + poverty + 
-                                         (1|age_bin) + (1|county_id) + 
-                                         (1|state_abb), data=individual_data_diff)
+individual.model.explicit <- lmer(explicit_bias ~ total_pop + white_prop + 
+                                    black_prop + b.w.ratio + col_grads + 
+                                    unemp + income + poverty + housing_density +
+                                    mobility + crime_rate + (1|age_bin) + 
+                                    (1|county_id) + (1|state_code), 
+                                  data=individual_data_base)
+individual_data_base %>%
+  filter(!is.na(explicit_bias_diff)) -> individual_data_diff
+
+individual.model.explicit_diff <- lmer(explicit_bias_diff ~ total_pop + 
+                                         white_prop + black_prop + b.w.ratio + 
+                                         col_grads + unemp + income + poverty + 
+                                         housing_density + mobility + 
+                                         crime_rate + (1|age_bin) + 
+                                         (1|county_id) + (1|state_code), 
+                                       data=individual_data_diff)
 
 df_acs_countstemp <- df_acs_counts[which(!is.na(df_acs_counts$county_id)),]
 #df_acs_counts <- left_join(df_acs_counts, df_states)
 df_acs_countstemp %>%
+  select(county_fips:state_code) %>%
   ungroup() %>%
-  mutate_at(vars(white_prop:poverty), scale) -> scaled_counts
+  left_join(state_covs) %>%
+  mutate(county_id = paste(state_code, 
+                           str_sub(county_fips, -3, -1), sep='-')) -> scaled_counts
 
 scaled_counts$yhat_bias <- predict(individual.model.bias, 
                                    newdata=scaled_counts, allow.new.levels=T)
