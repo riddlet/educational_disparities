@@ -41,6 +41,7 @@ knitr::opts_chunk$set(echo = FALSE, cache=TRUE, cache.lazy = FALSE,
 
 # Methods
 ## Data Sources
+### Disciplinary actions
 ```{r summary-data}
 library(dplyr)
 library(forcats)
@@ -63,12 +64,11 @@ model.data %>%
             total_schools = max(total_schools)) -> enrollment_totals
 
 ```
-We used three distinct data sources for the work described here. The academic disciplinary data is part of the Civil Rights Data Collection (CRDC) through the US Department of Education. The dataset we used comes from the 2013-2014 academic year and has data on "all public local and educational agencies and schools, including long-term secure juvenile justice facilities, charter schools, alternative schools, and schools serving students with disabilities." In total, the CRDC data represents `r dim(schools_dat)[1]` institutions enrolling approximately 50 million students, of which approximately 25 million are white and 7.8 million are Black[^1]. Previous work using these data have identified a number of districts whose data are in error, and have excluded juvenile justice facilities, as these institutions constitute dramatically different educational environments, where the meaning of disciplinary actions may be quite different [@losen2015we]. After these exclusions are applied, the final sample used for modeling consists of `r enrollment_totals$total_schools[1]` institutions, enrolling `r round(sum(enrollment_totals$ns)/1000000, 1)` million black or white students, of which `r  round(enrollment_totals$ns[2]/1000000)` million are white and `r  round(enrollment_totals$ns[1]/1000000)` million are black.
+To assess rates of disciplinary action, we used data from the Civil Rights Data Collection (CRDC) conducted by the US Department of Education. The dataset we used comes from the 2013-2014 academic year and has data on "all public local and educational agencies and schools, including long-term secure juvenile justice facilities, charter schools, alternative schools, and schools serving students with disabilities." In total, the CRDC data represents `r dim(schools_dat)[1]` institutions enrolling approximately 50 million students, of which approximately 25 million are white and 7.8 million are Black[^1]. Previous work using these data have identified a number of districts whose data are in error, and have excluded juvenile justice facilities, as these institutions constitute dramatically different educational environments, where the meaning of disciplinary actions may be quite different [@losen2015we]. After these exclusions are applied, the final sample used for modeling consists of `r enrollment_totals$total_schools[1]` institutions, enrolling `r round(sum(enrollment_totals$ns)/1000000, 1)` million black or white students, of which `r  round(enrollment_totals$ns[2]/1000000)` million are white and `r  round(enrollment_totals$ns[1]/1000000)` million are black. From these data, we focus on the number of students by race (black and white) who received one of several types of disciplinary action. We report here rates of out-of-school suspension, in-school suspension, school-related arrests, law enforcement referrals, and total number of expulsions of any type.
 
 [^1]: We note that there are a number of differences between the analyses we registered and those presented in the main text. Our general conclusions are largely the same for both sets of analyses. We opted to report the modified analyses for reasons of clarity and to remain congruent with previous research on the same topics. The registered analyses can be found, in full, in the appendix.
 
-We obtained county-level demographic information for use as covariates and state-level demographic information for use in post-stratification from the US Census Bureau. For both county-level and state-level demographics, we use 5-year estimates for the period ending in 2014 from the American Community Survey, which surveys around 295k households per month.
-
+### Racial Bias
 ```{r iat-data}
 df <- rbind(read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2013.sav'),
             read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2012.sav'),
@@ -209,17 +209,23 @@ subdat %>%
 
 ```
 
-We used measurements of implicit and explicit bias available from data collected through Project Implicit [@xu2014psychology]. From this data, we used only respondents who had geographic information that would allow us to place them in a United States county, identified as White, and visited the site before 2015. This consisted of approximately 1.1 million total respondents from `r dim(county_means)[1]` counties.
+We used measurements of implicit and explicit bias available from data collected through Project Implicit [@xu2014psychology]. For a full description of the implicit and explicit bias measures available in these data, refer to @xu2014psychology and @leitner2016blacks. From this data, we used only respondents who had geographic information that would allow us to place them in a United States county, identified as White, and visited the site before 2015. This consisted of approximately 1.1 million total respondents from `r dim(county_means)[1]` counties.
+
+Because Project Implicit is a nonrandom sample, we used multilevel regression and post-stratification to obtain accurate geographical population-based estimates of implicit and explicit bias. Multilevel regression and post-stratification corrects for biased sampling and regularizes extreme observations with little data to support them (e.g. a county with only a handful of respondents with especially high or low scores) [@park2004bayesian; @gelman1997poststratification]. Following past work [@leitner2016blacks], we identified age as one dimension along which IAT respondents differed from the general population in ways that could bias our conclusions [@gonsalkorale2009aging]. Our post-stratification weighting scheme is as follows: We first grouped respondents into five age group categories (15-24, 25-34, 35-54, 55-75, and 75+). We next fit multilevel models estimating bias (implicit and explicit biases seperately) as a function of our state-level covariates (the "fixed" effects: proportion of population that is white; proportion of the population that is black, the ratio of black to white people in the population, the percentage of college graduates, the unemployment rate, the median household income, and the poverty rate), and allowed the estimates to vary by age bin, county, and state (the "random" effects). Next, we determined the population of whites in each county in these age groups using the American Community Survey's 5-year estimates ending in 2014. Finally, we used our estimated models to predict the expected response for each age bin, in each county. Our final county-level estimates are the average of the values predicted for the 5 age bins, weighted by the population size of that bin in that county. As a result of this procedure, we can be confident that our county-level estimates should more closely approximate what our estimates would look like if the Project Implicit data were truly representative along the age dimension in all counties.
+
+### Covariates
+All county-level demographic information for use as covariates and state-level demographic information for use in post-stratification were taken from the US Census Bureau. For both county-level and state-level demographics, we use 5-year estimates for the period ending in 2014 from the American Community Survey, which surveys around 295k households per month. We additionally took an estimate of violent crime from the FBI Uniform Crime Reporting program, as made available through the National Archive of Criminal Justice Data.
+
+
 
 ## Measures
-The primary outcome in this analysis is a count of the number of students by race (black and white) who received one of several types of disciplinary action. We report here rates of out-of-school suspension, in-school suspension, school-related arrests, law enforcement referrals, and total number of expulsions of any type.
 
 For both the post-stratification procedure (described below) and the actual statistical models used for inference, we used the same set of covariates. These covariates were at the state-level for post-stratification and were at the county-level for the statistical models used for final estimation and inference. Specifically, our population based covariates were the total population count, the proportion of the population that is black, the proportion of the population that is white and the ratio of black-to-white persons. We also used socioeconomic covariates. We used the percent of individuals aged 16 or over who were in the labor force but unemployed, the median household income, and the percentage of all families whose income is below the poverty line.
 
-Finally, for the implicit and explicit bias measures, we relied on two primary variables from the Project Implicit data. Implicit bias was assessed via an Implicit Association Test (IAT). This test uses a speeded dual-categorization task in which individuals must quickly categorize black and white faces and "good" and "bad" words with key presses. The difference in how quickly and accurately participants are able to pair white faces with "good" words and black faces with "bad" words in comparison to the inverse is thought to reflect implicit associations between the two races and positive and negative affective reactions. This association is indicated in the IAT D-score, which we used as a measure of implicit bias. Our measure of explicit bias is the difference between reported warmth towards whites (i.e. *how warm or cold do you feel towards Whites? 0=very cold, 10=very warm*) and reported warmth toward blacks.
+
 
 ## Data analysis
-Data analysis proceded in two steps. We first estimated county-level implict and explicit bias using multilevel regression and post-stratification. Post-stratification is a valuable procedure in obtaining accurate geographical population-based estimates because it allows a non-representative sample (e.g Project Implicit) to more closely resemble the true population, and it regularizes extreme observations with little data to support them (e.g. a county with only a handful of respondents with especially high or low scores) [@park2004bayesian; @gelman1997poststratification]. Following past work [@leitner2016blacks], we identified age as one dimension along which IAT respondents differed from the general population in ways that could bias our conclusions [@gonsalkorale2009aging]. Our post-stratification weighting scheme is as follows: We first grouped respondents into five age group categories (15-24, 25-34, 35-54, 55-75, and 75+). We next fit multilevel models estimating bias (implicit and explicit biases seperately) as a function of our state-level covariates (the "fixed" effects), and allowed the estimates to vary by age bin, county, and state (the "random" effects). Next, we determined the population of whites in each county in these age groups using the American Community Survey's 5-year estimates ending in 2014. Finally, we used our estimated models to predict the expected response for each age bin, in each county. Our final county-level estimates are the average of the values predicted for the 5 age bins, weighted by the population size of that bin in that county. As a result of this procedure, we can be confident that our county-level estimates should more closely approximate what our estimates would look like if the Project Implicit data were truly representative along the age dimension in all counties.
+Data analysis proceded in two steps. 
 
 After obtaining these estimates, we use them as predictors in bayesian multilevel logistic regressions. Formally, the likelihood for a given observation is written as a binomial function:
 
@@ -274,7 +280,7 @@ Figure \@ref(fig:overall-associations) shows the estimate of primary interest fo
 
 ```{r overall-associations, fig.cap="Association between each metric and county-level estimates of explicit and implicit bias. Negative values indicate that the rate of increase (or decrease) for blacks is faster (or slower) than for whites. Point is the mean of the posterior and error bars represent 95% bayesian uncertainty intervals."}
 #the p_neg for oos_susp & implicit bias is 100%, so when reporting the number in-text, i just replace it with 1 to prevent it from being rendered as NA in the document.
-base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/mw_uclaexcl_diff/'
+base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/mw_uclaexcl_diff_extracovs/'
 plot.dat <- data.frame(group = NA, weighted_bias = NA, est = NA, lower = NA, upper=NA, metric = NA)
 plot.dat2 <- data.frame(weighted_bias = NA, est = NA, lower=NA, upper=NA, metric=NA)
 plot.dat3 <- data.frame(est=NA, lower=NA, upper=NA, p_neg=NA, metric=NA)
@@ -287,7 +293,7 @@ for (i in metrics){
   
   files <- list.files(pth)
   j <- 1
-  posterior_combo <- array(0, dim=c(14,4000,length(files)))
+  posterior_combo <- array(0, dim=c(16,4000,length(files)))
   raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_bias=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
   for (k in files){
     #print(i)
@@ -308,28 +314,28 @@ for (i in metrics){
       left_join(rate) %>%
       rbind(raw_rate) %>%
       filter(!is.na(county_id)) -> raw_rate
-    posterior_combo[,,j] <- t(df[,c(1:14)])
+    posterior_combo[,,j] <- t(df[,c(1:16)])
     j <- j+1
   }
   p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
   
-  for (p in 1:14){
+  for (p in 1:16){
     m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
   }
-  for (p in 1:14){
+  for (p in 1:16){
     m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
   }
-  for (p in 1:14){
+  for (p in 1:16){
     m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
   }
-  for (p in 1:14){
+  for (p in 1:16){
     m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
   }
   
-  data.frame(est=mean(p_cons[13,]),
-             lower=quantile(p_cons[13,], .025),
-             upper=quantile(p_cons[13,], .975),
-             p_neg = prop.table(table(p_cons[13,]<0))[2],
+  data.frame(est=mean(p_cons[15,]),
+             lower=quantile(p_cons[15,], .025),
+             upper=quantile(p_cons[15,], .975),
+             p_neg = prop.table(table(p_cons[15,]<0))[2],
              metric=i) %>%
     rbind(plot.dat3) %>%
     filter(!is.na(est)) %>%
@@ -346,8 +352,8 @@ plot.dat3_all <-plot.dat3
 plot.dat3_all$bias <- 'Implicit'
 
 #weighted warmth w/exclusions & explicit difference
-plot.dat <- data.frame(group = NA, weighted_warmth = NA, est = NA, lower = NA, upper=NA, metric = NA)
-plot.dat2 <- data.frame(weighted_warmth = NA, est = NA, lower=NA, upper=NA, metric=NA)
+plot.dat <- data.frame(group = NA, weighted_explicit_diff = NA, est = NA, lower = NA, upper=NA, metric = NA)
+plot.dat2 <- data.frame(weighted_explicit_diff = NA, est = NA, lower=NA, upper=NA, metric=NA)
 plot.dat3 <- data.frame(est=NA, lower=NA, upper=NA, p_neg = NA, metric=NA)
 
 for(i in metrics){
@@ -355,8 +361,8 @@ for(i in metrics){
   
   files <- list.files(pth)
   j <- 1
-  posterior_combo <- array(0, dim=c(14,4000,length(files)))
-  raw_rate_warmth <- data.frame(county_id=NA, nschools=NA, weighted_warmth=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
+  posterior_combo <- array(0, dim=c(16,4000,length(files)))
+  raw_rate_warmth <- data.frame(county_id=NA, nschools=NA, weighted_explicit_diff=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
   for (k in files){
     #print(i)
     load(paste(pth,k,sep=''))
@@ -371,33 +377,33 @@ for(i in metrics){
       summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
       mutate(rate=nincidents/nstudents) -> rate
     n_schools %>%
-      left_join(m$data[, c('county_id', 'weighted_warmth')]) %>%
+      left_join(m$data[, c('county_id', 'weighted_explicit_diff')]) %>%
       distinct() %>%
       left_join(rate) %>%
       rbind(raw_rate_warmth) %>%
       filter(!is.na(county_id)) -> raw_rate_warmth
-    posterior_combo[,,j] <- t(df[,c(1:14)])
+    posterior_combo[,,j] <- t(df[,c(1:16)])
     j <- j+1
   }
   p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
   
-  for (p in 1:14){
+  for (p in 1:16){
     m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
   }
-  for (p in 1:14){
+  for (p in 1:16){
     m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
   }
-  for (p in 1:14){
+  for (p in 1:16){
     m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
   }
-  for (p in 1:14){
+  for (p in 1:16){
     m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
   }
   
-  data.frame(est=mean(p_cons[14,]),
-             lower=quantile(p_cons[14,], .025),
-             upper=quantile(p_cons[14,], .975),
-             p_neg = prop.table(table(p_cons[14,]<0))[2],
+  data.frame(est=mean(p_cons[16,]),
+             lower=quantile(p_cons[16,], .025),
+             upper=quantile(p_cons[16,], .975),
+             p_neg = prop.table(table(p_cons[16,]<0))[2],
              metric=i) %>%
     rbind(plot.dat3) %>%
     filter(!is.na(est)) %>%
