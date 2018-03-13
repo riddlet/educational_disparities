@@ -196,31 +196,31 @@ library(rstanarm)
 
 options(mc.cores = parallel::detectCores())
 
-df <- read.csv('/home/triddle/educational_disparities/cluster/data/subcounty_grouping_diff.csv')
+df <- read.csv('/home/triddle/educational_disparities/cluster/data/county_grouping.csv')
 
-df %>% filter(metric=='"
+df %>% filter(exclude==FALSE) %>% filter(metric=='"
 
-string2 <- "') %>% select(county_id, bias:weighted_warmth, total_pop, unemp_rate:b.w.ratio) %>% distinct() %>% mutate_at(vars(-county_id), scale) -> scaled_county_level
+string2 <- "') %>% select(county_id, bias:weighted_explicit_diff) %>% distinct() %>% mutate_at(vars(-county_id), scale) -> scaled_county_level
 
 df %>% filter(grouping=="
 
-string3 <- ") %>% filter(metric=='"
-string4 <- "') %>% select(county_id, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
+string3 <- ") %>% filter(exclude==FALSE) %>% filter(metric=='"
+string4 <- "') %>% select(county_id, total_pop:poverty_rate, crime_rate:b.w.ratio, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
 
 m <- stan_glmer(cbind(number, total_number-number) ~ group + weighted_bias + 
-weighted_warmth + group:weighted_bias + group:weighted_warmth + total_pop + 
+weighted_explicit_diff + group:weighted_bias + group:weighted_explicit_diff + total_pop + 
 unemp_rate + med_income + poverty_rate + col_grads + white_prop + 
-black_prop + b.w.ratio + 
+black_prop + b.w.ratio + mobility + crime_rate + density + 
 (group|county_id), data=mod.dat, prior = normal(0,5), 
 prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
 
-save(m, file='/tigress/triddle/educational_disparities/mw_uclaexcl_diff/"
+save(m, file='/tigress/triddle/educational_disparities/mw_uclaexcl_diff_extra_covs/"
 
 
-for(i in rownames(table(dfss$metric))){
-  for (j in 1:12){
+for(i in rownames(table(dfs$metric))){
+  for (j in 1:14){
     fs <- paste(string1, i, string2, j, string3, i, string4, i, "/m", j, ".rdata')", sep='')
-    fileConn <- file(paste("model_scripts/mw_uclaexcl_diff/",i,"/m", j, ".R", sep=''))
+    fileConn <- file(paste("cluster/model_scripts/mw_uclaexcl_diff_extracovs/",i,"/m", j, ".R", sep=''))
     writeLines(fs, fileConn)
     close(fileConn)
   }
