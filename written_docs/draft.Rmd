@@ -38,6 +38,31 @@ knitr::opts_chunk$set(echo = FALSE, cache=TRUE, cache.lazy = FALSE,
                       message=FALSE, warning=FALSE, results='hide')
 ```
 # Introduction
+In comparison to White Americans, African Americans exhibit poorer educational outcomes across a range of metrics. One outcome of particular concern is the gap in disciplinary actions [@kinsler2011understanding; @okonofua2016vicious]. Research using administrative datasets and longitudinal samples clearly show that African American students are far more likely to be suspended or expelled [@aud2011america; @yeager2017loss], and conditional on an office referral, are more likely to receive stiffer punishments [@gregory1995crime]. Concerns about these disparities are exacerbated by their associations with long-term life outcomes, including prospects for employment [@pager2009sequencing], mental and physical health [@pascoe2009perceived], and involvement in the criminal justice system [@hirschfield2009another]. In this paper, we aim to establish that these disciplinary gaps are related to environmental levels of bias in predictable ways.
+
+It is perhaps not surprising that levels of bias would be associated with racial disciplinary gaps. This straightforward statement, however, is contextualized in a number of ways. First, the operationalization of bias should play a role in the association. As we describe below, levels of implicit and explicit biases should be differentially associated with disciplinary actions. This differential association should be determined, in part, by the type of disciplinary action under examination. For a given student committing a specific offense, the educational institution may opt for one of several disciplinary actions. These actions vary in severity, institutional costs, and the degree of formal administrative involvement. 
+
+To illustrate this problem in the context of previous research, we now describe research on the associations between implicit bias and explicit bias and decision making. This sets the stage for understanding what types of decisions administrators and educators make when electing a specific disciplinary action. We then describe the types of disciplinary actions that are taken and the characteristics of these actions in terms of severity, institutional costs, and formal administrative involvement. Finally, in crossing this information, we concretely specify the set of associations expected when examining bias and disciplinary actions in American schools.
+
+## Bias and decision-making
+Previous research on biased attitudes and behavior has shown that although implicit and explicit attitudes are typically correlated [@mcconnell2001relations; @hofmann2005meta], they tend to behaviorally manifest slightly differently. As a default, a naiive expectation is that explicit attitudes should guide behavior, since if people tell us they like something, we should expect that to generally correspond to their behavior. However, under some circumstances, implicit biases are more strongly associated with behavioral outcomes. @nosek2011implicit suggest that, in comparison to explicit attitudes, implicit attitudes are more strongly associated with behavior when the individual lacks motivated to explicitly respond differently than their implicit attitude would suggest, when they do not have the opportunity or ability to modify their initial response inclination, or when they do not have awareness of the implicit response, the behavior, or the link between them. In contrast, the more motivated, more able, or more aware the person is over their behavioral response, the more explicit biases should play a role. One key situational factor that determines the response is situational uncertainty. In uncertain situations, the respondent is not likely to have strong motivations to change their initial response, otherwise the situation would not be uncertain. Research supports this idea, as when the situation is characterized by greater uncertainty, implicit biases are known to be stronger determinants of behavior [@friese2009and; @gawronski2003implicit; @galdi2008automatic]. In short, when taking (or not taking) an action can be attributed to multiple reasons due to situational ambiguity, then implicit biases should result in higher rates of discriminatory behavior. 
+
+Accordingly, this research suggests that disciplinary actions that are implemented quickly, have relatively little administrative oversight, and require little in the way of insitutional resources should be characterized by strong associations with implicit bias. On the other hand, any disciplinary action that requires higher levels of oversight, resources, or lengthy time investments to complete should be more strongly associated with explicit bias. 
+
+## Types of disciplinary actions
+We report here on five different types of disciplinary actions: in-school suspensions, out-of-school suspensions, law enforcement referrals, school-related arrests, and expulsions. As described above, these actions vary in severity, required resources, and administrative oversight.
+
+The most extreme outcome, expulsion, is defined as when a student is prohibited from ever returning to the educational institution. The institution may or may not set up alternative educational services for the student. Because of the the severe nature of this punishment, it also requires considerable administrative oversight, and is often conferred for behaviors that are relatively unambiguous (e.g. bringing a gun to school). We believe similar cases can be made for law enforcement referrals and school-related arrests insofar as these actions tend to be more severe, and require resources, or occasionally the involvement of outside agencies. 
+
+Somewhat less severe than expulsions, but one of the most frequently utilized disciplinary actions, out-of-school suspensions occupy something of a middle ground. There is a substantial body of research documenting the negative associations between this particular disciplinary action and life outcome [@cuellar2015school; @matjasko2011effective], as well as their disproportionate use on stigmatized students [@haight2014ecological; @kinsler2011understanding]. Out-of-school suspensions are administered for a wide range of behaviors. Some of these behaviors are apt to be determined with a fair degree of subjectivity (e.g. defiance) [@gregory2008discipline], while others may be more unambiguous (e.g. fighting, drug use). In comparison to expulsions and arrests, this type of action demands less administrative oversight.
+
+In-school suspensions, wherein the student is removed from the classroom but remains under the direct supervision of school personnel, are also administered for a wide range of behaviors. However, in-school suspensions have been highlighted as a promising alternative to more exclusionary types of disciplinary actions (e.g. out-of-school suspensions, expulsions) partly because students remain under the supervision of school personnel, which keeps them in a structured, educational setting [@anyon2014persistent]. Like out-of-school suspensions, this type of action requires relatively little administrative oversight. But unlike out-of-school suspension, removing a student from a classroom to a *different* educational setting requires additional space and personnel, and so this represents an inherent investment in the student. 
+
+## Concrete predictions of association
+Given these disciplinary outcomes and what is known about implicit and explicit attitudes, what should we expect in examining associations between them? First, it's clear that we should expect African American students to receive higher levels of disciplinary actions. Second, we should expect the disparity in disciplinary actions to generally be positively associated with explicit bias. Finally, we should expect implicit bias to only show associations in instances where there is little administrative overhead, and where the behaviors to-be-punished are often ambiguous. By this logic, out-of-school suspensions are the only metric that meet these criteria.
+
+## The present study
+The present study uses a national dataset of disciplinary outcomes to evaluate the degree to which implicit and explicit bias are associated with each of these outcomes. After an initial, registered analytic approach, we subsequently made several adjustments to strengthen our analyses and streamlined them with respect to previous research. In general, the data support the conclusion that implicit biases are specifically associated with out-of-school suspensions, while explicit biases tend to be associated with disciplinary actions of all types.
 
 # Methods
 ## Data Sources
@@ -48,8 +73,7 @@ library(forcats)
 library(haven)
 library(tidyr)
 library(ggplot2)
-county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv', 
-                         colClasses = 'character')
+county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
 schools_dat <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH.csv')
 model.data <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/full_model_data.csv')
 
@@ -64,7 +88,7 @@ model.data %>%
             total_schools = max(total_schools)) -> enrollment_totals
 
 ```
-To assess rates of disciplinary action, we used data from the Civil Rights Data Collection (CRDC) conducted by the US Department of Education. The dataset we used comes from the 2013-2014 academic year and has data on "all public local and educational agencies and schools, including long-term secure juvenile justice facilities, charter schools, alternative schools, and schools serving students with disabilities." In total, the CRDC data represents `r dim(schools_dat)[1]` institutions enrolling approximately 50 million students, of which approximately 25 million are white and 7.8 million are Black[^1]. Previous work using these data have identified a number of districts whose data are in error, and have excluded juvenile justice facilities, as these institutions constitute dramatically different educational environments, where the meaning of disciplinary actions may be quite different [@losen2015we]. After these exclusions are applied, the final sample used for modeling consists of `r enrollment_totals$total_schools[1]` institutions, enrolling `r round(sum(enrollment_totals$ns)/1000000, 1)` million black or white students, of which `r  round(enrollment_totals$ns[2]/1000000)` million are white and `r  round(enrollment_totals$ns[1]/1000000)` million are black. From these data, we focus on the number of students by race (black and white) who received one of several types of disciplinary action. We report here rates of out-of-school suspension, in-school suspension, school-related arrests, law enforcement referrals, and total number of expulsions of any type.
+To assess rates of disciplinary action, we used data from the Civil Rights Data Collection (CRDC) conducted by the US Department of Education. The dataset we used comes from the 2013-2014 academic year and has data on "all public local and educational agencies and schools, including long-term secure juvenile justice facilities, charter schools, alternative schools, and schools serving students with disabilities." In total, the CRDC data represents `r dim(schools_dat)[1]` institutions enrolling approximately 50 million students, of which approximately 25 million are white and 7.8 million are Black[^1]. Previous work using these data have identified a number of districts whose data are in error, and have excluded juvenile justice facilities, as these institutions constitute dramatically different educational environments, where the meaning of disciplinary actions may be quite different [@losen2015we]. After these exclusions are applied, the final sample used for modeling consists of `r enrollment_totals$total_schools[1]` institutions, enrolling `r round(sum(enrollment_totals$ns)/1000000, 1)` million black or white students, of which `r  round(enrollment_totals$ns[2]/1000000,1)` million are white and `r  round(enrollment_totals$ns[1]/1000000, 1)` million are black. From these data, we focus on the number of students by race (black and white) who received one of several types of disciplinary action. We report here rates of out-of-school suspension, in-school suspension, school-related arrests, law enforcement referrals, and total number of expulsions of any type.
 
 [^1]: We note that there are a number of differences between the analyses we registered and those presented in the main text. Our general conclusions are largely the same for both sets of analyses. We opted to report the modified analyses for reasons of clarity and to remain congruent with previous research on the same topics. The registered analyses can be found, in full, in the appendix.
 
@@ -209,52 +233,41 @@ subdat %>%
 
 ```
 
-We used measurements of implicit and explicit bias available from data collected through Project Implicit [@xu2014psychology]. For a full description of the implicit and explicit bias measures available in these data, refer to @xu2014psychology and @leitner2016blacks. From this data, we used only respondents who had geographic information that would allow us to place them in a United States county, identified as White, and visited the site before 2015. This consisted of approximately 1.1 million total respondents from `r dim(county_means)[1]` counties.
-
-Because Project Implicit is a nonrandom sample, we used multilevel regression and post-stratification to obtain accurate geographical population-based estimates of implicit and explicit bias. Multilevel regression and post-stratification corrects for biased sampling and regularizes extreme observations with little data to support them (e.g. a county with only a handful of respondents with especially high or low scores) [@park2004bayesian; @gelman1997poststratification]. Following past work [@leitner2016blacks], we identified age as one dimension along which IAT respondents differed from the general population in ways that could bias our conclusions [@gonsalkorale2009aging]. Our post-stratification weighting scheme is as follows: We first grouped respondents into five age group categories (15-24, 25-34, 35-54, 55-75, and 75+). We next fit multilevel models estimating bias (implicit and explicit biases seperately) as a function of our state-level covariates (the "fixed" effects: proportion of population that is white; proportion of the population that is black, the ratio of black to white people in the population, the percentage of college graduates, the unemployment rate, the median household income, and the poverty rate), and allowed the estimates to vary by age bin, county, and state (the "random" effects). Next, we determined the population of whites in each county in these age groups using the American Community Survey's 5-year estimates ending in 2014. Finally, we used our estimated models to predict the expected response for each age bin, in each county. Our final county-level estimates are the average of the values predicted for the 5 age bins, weighted by the population size of that bin in that county. As a result of this procedure, we can be confident that our county-level estimates should more closely approximate what our estimates would look like if the Project Implicit data were truly representative along the age dimension in all counties.
+We used measurements of implicit and explicit bias available from data collected through Project Implicit [@xu2014psychology]. For a full description of the implicit and explicit bias measures available in these data, refer to @xu2014psychology and @leitner2016blacks. We note only that we used the IAT D-score as a measure of implicit bias, and the difference between reported warmth towards whites and warmth towards black (both measured from 0=very cold, 10=very warm) as a measure of explicit bias. Additionally, we used only respondents who had geographic information that would allow us to place them in a United States county, identified as White, and visited the site before 2015. This consisted of approximately 1.1 million total respondents from `r dim(county_means)[1]` counties.
 
 ### Covariates
-All county-level demographic information for use as covariates and state-level demographic information for use in post-stratification were taken from the US Census Bureau. For both county-level and state-level demographics, we use 5-year estimates for the period ending in 2014 from the American Community Survey, which surveys around 295k households per month. We additionally took an estimate of violent crime from the FBI Uniform Crime Reporting program, as made available through the National Archive of Criminal Justice Data.
+Each county-level variable used as a covariates in the final model and the corresponding state-level variable used as a predictor in the post-stratification scheme were taken from the from the same source. Population size and proportions, socioeconomic indicators, and mobility were all taken from the American Community Survey (ACS) 5-year estimates for the time period ending in 2014. Urban-rural indicators were taken from the 2010 US Census, and crime rates were taken from the FBI Uniform Crime Reporting program, as made available through the National Archive of Criminal Justice Data for each year from 2010-2014. Each of these variables is described below.
 
+#### Population size and proportions
+We obtained the total population, the proportion of the population that is white, the proportion of the population that is black, and the ratio of black-to-white people in the population from ACS table B02001.
 
+#### Socioeconomic indicators
+We obtained estimates for the percentage of population with a Bachelor's degree or higher, the percentage of the population aged 16 or over in the labor force that is unemployed, the median household income, and the percentage of families and people whose income in the last year was below the poverty line from the ACS table DP03.
 
-## Measures
+#### Urban-rural indicator
+We obtained estimates of housing density per square mile of land area from Census table GCT-PH1.
 
-For both the post-stratification procedure (described below) and the actual statistical models used for inference, we used the same set of covariates. These covariates were at the state-level for post-stratification and were at the county-level for the statistical models used for final estimation and inference. Specifically, our population based covariates were the total population count, the proportion of the population that is black, the proportion of the population that is white and the ratio of black-to-white persons. We also used socioeconomic covariates. We used the percent of individuals aged 16 or over who were in the labor force but unemployed, the median household income, and the percentage of all families whose income is below the poverty line.
+#### Mobility
+We obtained estimates of population mobility by summing the percentage of African Americans who moved from a different county, state, or country into the county of interest (county-level covariate) or who moved from a different state or country into the state of interest (state-level covariate). We took these metrics from the ACS table S0701.
 
+#### Crime
+We computed estimates of the number of violent crimes per person by taking the number of crimes reported divided by the population size for each year, and averaging the resulting proportions across the 5 years of data.
 
+# Results
 
 ## Data analysis
-Data analysis proceded in two steps. 
+Because Project Implicit is a nonrandom sample, we used multilevel regression and post-stratification to obtain accurate geographical population-based estimates of implicit and explicit bias. Multilevel regression and post-stratification corrects for biased sampling and regularizes extreme observations with little data to support them (e.g. a county with only a handful of respondents with especially high or low scores) [@park2004bayesian; @gelman1997poststratification]. Following past work [@leitner2016blacks], we identified age as one dimension along which IAT respondents differed from the general population in ways that could bias our conclusions [@gonsalkorale2009aging]. Our post-stratification weighting scheme is as follows: We first grouped respondents into five age group categories (15-24, 25-34, 35-54, 55-75, and 75+). We next fit multilevel models estimating bias (implicit and explicit biases seperately) as a function of our state-level covariates (the "fixed" effects: proportion of population that is white; proportion of the population that is black, the ratio of black to white people in the population, the percentage of college graduates, the unemployment rate, the median household income, the poverty rate, housing density, mobility rate, & crime rate; each of these is described in more detail below), and allowed the estimates to vary by age bin, county, and state (the "random" effects). Next, we determined the population of whites in each county in these age groups using the American Community Survey's 5-year estimates ending in 2014. Finally, we used our estimated models to predict the expected response for each age bin, in each county. Our final county-level estimates are the average of the values predicted for the 5 age bins, weighted by the population size of that bin in that county. As a result of this procedure, we can be confident that our county-level estimates should more closely approximate what our estimates would look like if the Project Implicit data were truly representative along the age dimension in all counties.
 
-After obtaining these estimates, we use them as predictors in bayesian multilevel logistic regressions. Formally, the likelihood for a given observation is written as a binomial function:
-
-$$
-{n\choose y}\pi^y(1-\pi)^{n-y}
-$$
-
-Where $y$ is the observed count of incidents (e.g. number of black or white students suspended), $n$ is the number of at-risk students (e.g. total number of black or white students), and $\pi = g^{-1}(\eta)$ is the probability of the incident ocurring. For this analysis, the linear predictor takes the form of a multilevel model with a set of effects that vary over county:
-
-$$
-\eta = \alpha + X\beta + \gamma_{county}
-$$
-
-Where $\alpha$ is an intercept that is constant across observations, $\beta$ represents a set of effects that are also constant across observations (i.e. fixed effects), and $\gamma_{county}$ represents intercepts and effects of ethnicity that vary across the counties (i.e. random efffects).
-
-In addition to the covariates described above, we also include effects of race, implicit bias, explicit bias, and the two-way interactions between implicit bias and race and explicit bias and race. We fit separate models for each of the outcomes.
+We analyzed these data using a series of bayesian multilevel logistic regressions. We modeled the probability that a student would be expelled as a function of a set of effects that are constant across observations (i.e. fixed effects: race (dummy coded), implicit bias, explicit bias, an interaction term between race and implicit bias, an interaction term between race and explicit bias, and all covariates described above) and a set of effects that vary across counties (i.e. random effects: overall intercept & race). We fit separate models for each of the outcomes. All numerical predictors were standardized at the appropriate level (county, state) before model estimation (for post-stratification as well as for final inference) to help with estimation efficiency and interpretability. We also set priors for the intercept and coefficients in the bayesian model to be weakly informative normal distributions centered on zero with a standard deviation of five. This corresponds to a prior belief of all parameters taking values between -15 and 15. Values outside this range are extremely unlikely given that all variables were standardized prior to estimation. All other parameters were left to default values.
 
 Because of the computational demands of fitting such a high-dimensional model to such a large dataset (the full model for each metric would consist of over 6k parameters to approximately 170k observations), we used a consensus monte carlo algorithm to obtain approximate posterior distributions for the parameters of interest [@scott2016bayes]. The approximate posteriors derived from this algorithm have been shown to be nearly indistinguishable from the true posterior, a result we verified using a small subset of our own data.
 
-All numerical predictor variables were standardized at the appropriate level (county, state) before model estimation to help with estimation efficiency and interpretability. We set priors for the intercept and coefficients in the bayesian models to be weakly informative normal distributions centered on zero with a standard deviation of five. All other parameters were left to default values. Data analysis was done in R [@rcitation] version 3.3.2 running under OS X 10.11.6. Post-stratification was done with lme4, version 1.1.14 [@bates2015fitting]. Final model fitting was done on the university cluster running Springdale Linux, release 6.9 using rstanarm, version 2.17.2 [@rstanarm2016]. We used the implementation of the consensus monte carlo algorithm found in parallelMCMCcombine, version 1.0 [@miroshnikov2014parallel]. Figures were made with ggplot2, version 2.2.1 [@wickham2009ggplot2], with data manipulation done using dplyr version 0.7.2 [@wickham2017dplyr] and tidyr, version 0.7.1 [@wickham2017tidyr]. A full report of session information can be found on the OSF page (....)
-
-
-# Results
 ## Project Implicit Estimates
 ```{r exp-diff}
 individual_data %>%
   mutate(explicit_bias_diff = twhite_0to10-tblack_0to10) -> individual_data
 ```
-We first report the results of estimating the implicit and explicit biases in from Project Implicit data. Overall, the individuals in project implicit show a pro-white bias in both implicit (*mean* = `r round(mean(individual_data$D_biep.White_Good_all), 2)`, *sd* = `r round(sd(individual_data$D_biep.White_Good_all), 2)`), and explicit measures (*mean* = `r round(mean(individual_data$explicit_bias_diff, na.rm=T), 2)` *sd* = `r round(sd(individual_data$explicit_bias_diff, na.rm=T), 2)`). When aggregated at the county level and adjusted with poststratification, the summary statistics across counties are similar in terms of their location, but as expected, the variability is much diminished ($mean_{implicit}$ = `r round(mean(as.numeric(county_means$weighted_bias), na.rm=T), 2)`, $sd_{implicit}$ = `r round(sd(as.numeric(county_means$weighted_bias), na.rm=T), 2)`; $mean_{explicit}$ = `r round(mean(as.numeric(county_means$weighted_explicit_diff), na.rm=T), 2)`, $sd_{explicit}$ = `r round(sd(as.numeric(county_means$weighted_explicit_diff), na.rm=T), 2)`, where on both scales 0 = no bias, and positive numbers indicate a pro-white bias).
+We first report the results of estimating the implicit and explicit biases in from Project Implicit data. When examining the unstandardized county-level estimates adjusted with poststratification, we see that there is a pro-white bias in both implicit ($mean$ = `r round(mean(as.numeric(county_means$weighted_bias), na.rm=T), 2)`, $sd$ = `r round(sd(as.numeric(county_means$weighted_bias), na.rm=T), 2)`) and explicit measures ($mean$ = `r round(mean(as.numeric(county_means$weighted_explicit_diff), na.rm=T), 2)`, $sd$ = `r round(sd(as.numeric(county_means$weighted_explicit_diff), na.rm=T), 2)`, where on both scales 0 = no bias, and positive numbers indicate a pro-white bias).
 
 ## Disciplinary action frequency
 
@@ -262,7 +275,10 @@ We first report the results of estimating the implicit and explicit biases in fr
 model.data %>% 
   filter(exclude==FALSE) %>%
   group_by(group, metric) %>% 
-  summarise(students = sum(number)) %>%
+  summarise(percentage = sum(number)/sum(total_number)) %>%
+  mutate(percentage = percentage*100) %>%
+  mutate(percentage = paste(round(percentage, 2), '%', sep='')) %>%
+  spread(group, percentage) %>%
   mutate(metric = fct_recode(metric, 
                              'expulsions' = 'expulsion_combined',
                              'school arrests' = 'in_school_arrest',
@@ -270,13 +286,13 @@ model.data %>%
                              'law enforcement referral' = 'law_enforcement',
                              'out-of-school suspension' = 'oos_susp')) -> counts_table
 
-apa_table(counts_table, caption = 'Count of students by race receiving each type of disciplinary action')
+papaja::apa_table(counts_table, caption = 'Percentage of students of each race receiving each type of disciplinary action')
 ```
 
-Table \@ref(tab:disc-count) shows the number of students of each race who were reported having received each of the actions under consideration. The counts range from a low of just `r counts_table$students[7]` white students arrested to a high of `r counts_table$students[5]` black students receiving an out-of-school suspension. Considering the vast differences in the overall number of black and white students, this simple count already illustrates that black students are disciplined at rates far higher than their white counterparts.
+Table \@ref(tab:disc-count) shows the percentage of students of each race who were reported having received each of the actions under consideration. Our statistical models (described below) show that these differences are extremely unlikely to be due to chance.
 
-## Associations across county
-Figure \@ref(fig:overall-associations) shows the estimate of primary interest for each of the models. The estimates displayed are the coefficients for the interaction between race and each of the two bias measurements. Given that African Americans are the baseline group, negative values for this coefficient indicate that as the bias in a county increases, the gap between the probability of a black student being disciplined and the probability of a white student being disciplined grows.
+## Associations across counties
+Figure \@ref(fig:overall-associations) shows the estimate of primary interest for each of the models. The estimates displayed are the coefficients for the interaction between race and each of the two bias measurements. Given that African Americans are the baseline group, negative values for this coefficient indicate that as one moves into counties with higher levels of bias, the gap between the probability of a black student being disciplined and the probability of a white student being disciplined grows. Table \@ref(tab:reg-coefs) displays the estimated coefficients and 95% uncertainty intervals for each of the fixed effects for each model.
 
 ```{r overall-associations, fig.cap="Association between each metric and county-level estimates of explicit and implicit bias. Negative values indicate that the rate of increase (or decrease) for blacks is faster (or slower) than for whites. Point is the mean of the posterior and error bars represent 95% bayesian uncertainty intervals."}
 #the p_neg for oos_susp & implicit bias is 100%, so when reporting the number in-text, i just replace it with 1 to prevent it from being rendered as NA in the document.
@@ -293,12 +309,12 @@ for (i in metrics){
   
   files <- list.files(pth)
   j <- 1
-  posterior_combo <- array(0, dim=c(16,4000,length(files)))
+  posterior_combo <- array(0, dim=c(17,4000,length(files)))
   raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_bias=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
   for (k in files){
     #print(i)
     load(paste(pth,k,sep=''))
-    df <- as.matrix(m)
+    dat <- as.matrix(m)
     m$data %>% 
       select(county_id, COMBOKEY) %>% 
       distinct() %>% 
@@ -314,28 +330,28 @@ for (i in metrics){
       left_join(rate) %>%
       rbind(raw_rate) %>%
       filter(!is.na(county_id)) -> raw_rate
-    posterior_combo[,,j] <- t(df[,c(1:16)])
+    posterior_combo[,,j] <- t(dat[,c(1:17)])
     j <- j+1
   }
   p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
   
-  for (p in 1:16){
+  for (p in 1:17){
     m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
   }
-  for (p in 1:16){
+  for (p in 1:17){
     m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
   }
-  for (p in 1:16){
+  for (p in 1:17){
     m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
   }
-  for (p in 1:16){
+  for (p in 1:17){
     m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
   }
   
-  data.frame(est=mean(p_cons[15,]),
-             lower=quantile(p_cons[15,], .025),
-             upper=quantile(p_cons[15,], .975),
-             p_neg = prop.table(table(p_cons[15,]<0))[2],
+  data.frame(est=mean(p_cons[16,]),
+             lower=quantile(p_cons[16,], .025),
+             upper=quantile(p_cons[16,], .975),
+             p_neg = prop.table(table(p_cons[16,]<0))[2],
              metric=i) %>%
     rbind(plot.dat3) %>%
     filter(!is.na(est)) %>%
@@ -361,12 +377,12 @@ for(i in metrics){
   
   files <- list.files(pth)
   j <- 1
-  posterior_combo <- array(0, dim=c(16,4000,length(files)))
+  posterior_combo <- array(0, dim=c(17,4000,length(files)))
   raw_rate_warmth <- data.frame(county_id=NA, nschools=NA, weighted_explicit_diff=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
   for (k in files){
     #print(i)
     load(paste(pth,k,sep=''))
-    df <- as.matrix(m)
+    dat <- as.matrix(m)
     m$data %>% 
       select(county_id, COMBOKEY) %>% 
       distinct() %>% 
@@ -382,28 +398,28 @@ for(i in metrics){
       left_join(rate) %>%
       rbind(raw_rate_warmth) %>%
       filter(!is.na(county_id)) -> raw_rate_warmth
-    posterior_combo[,,j] <- t(df[,c(1:16)])
+    posterior_combo[,,j] <- t(dat[,c(1:17)])
     j <- j+1
   }
   p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
   
-  for (p in 1:16){
+  for (p in 1:17){
     m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
   }
-  for (p in 1:16){
+  for (p in 1:17){
     m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
   }
-  for (p in 1:16){
+  for (p in 1:17){
     m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
   }
-  for (p in 1:16){
+  for (p in 1:17){
     m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
   }
   
-  data.frame(est=mean(p_cons[16,]),
-             lower=quantile(p_cons[16,], .025),
-             upper=quantile(p_cons[16,], .975),
-             p_neg = prop.table(table(p_cons[16,]<0))[2],
+  data.frame(est=mean(p_cons[17,]),
+             lower=quantile(p_cons[17,], .025),
+             upper=quantile(p_cons[17,], .975),
+             p_neg = prop.table(table(p_cons[17,]<0))[2],
              metric=i) %>%
     rbind(plot.dat3) %>%
     filter(!is.na(est)) %>%
@@ -430,402 +446,326 @@ ggplot(plot.dat3_all, aes(x=metric, y=est, group=bias, color=bias, shape=bias)) 
         legend.title = element_blank())
 ```
 
-Several patterns are apparent from this figure. First, with the exceptions of implicit bias and expulsions and law enforcement referrals, all estimates are directionally consistent with higher levels of bias leading to larger differences between groups. Second, these effects are especially consistent for the two types of suspensions. The largest effect estimated is between implicit bias and out-of-school suspensions. The difference in the slope of the association between implicit bias and the log of the odds for out-of-school suspensions between white and black students is estimated to be `r round(plot.dat3_all$est[1], 2)`, with 95% of the posterior distribution between `r round(plot.dat3_all$lower[1], 2)` and `r round(plot.dat3_all$upper[1], 2)` and a proportion `r afex::round_ps(1)` of the posterior distribution consistent with a negative effect. 
+Several patterns are apparent from this figure. First, in all cases but school-related arrests, county-level explicit biases are reliably associated with disciplinary disparities, such that counties with more bias are expected to have a larger racial gap. The effect with the largest magnitude of these is out-of-school suspensions ($M_{slope}$ = `r round(plot.dat3_all$est[6], 2)`, [`r round(plot.dat3_all$lower[6], 2)`, `r round(plot.dat3_all$upper[6], 2)`]), followed by expulsions ($M_{slope}$ = `r round(plot.dat3_all$est[10], 2)`, [`r round(plot.dat3_all$lower[10], 2)`, `r round(plot.dat3_all$upper[10], 2)`]), law enforcement referrals ($M_{slope}$ = `r round(plot.dat3_all$est[7], 2)`, [`r round(plot.dat3_all$lower[7], 2)`, `r round(plot.dat3_all$upper[7], 2)`]), and in-school suspensions ($M_{slope}$ = `r round(plot.dat3_all$est[8], 2)`, [`r round(plot.dat3_all$lower[8], 2)`, `r round(plot.dat3_all$upper[8], 2)`]). The model indicates that the evidence for school-related arrests is inconclusive ($M_{slope}$ = `r round(plot.dat3_all$est[9], 2)`, [`r round(plot.dat3_all$lower[9], 2)`, `r round(plot.dat3_all$upper[9], 2)`]).
 
-Although not nearly as large of a difference, we have similar certainty with respect to the association between out-of-school suspensions and explicit bias. The difference in the slope of the association between explicit bias and the log of the odds for out-of-school suspensions between white and black students is estimated to be `r round(plot.dat3_all$est[6], 2)`, with 95% of the posterior distribution between `r round(plot.dat3_all$lower[6], 2)` and `r round(plot.dat3_all$upper[6], 2)` and a proportion `r afex::round_ps(plot.dat3_all$p_neg[6])` of the posterior distribution consistent with a negative effect. 
+Second, the effect with the largest magnitude of all is that between implicit biases and out-of-school suspension ($M_{slope}$ = `r round(plot.dat3_all$est[1], 2)`, [`r round(plot.dat3_all$lower[1], 2)`, `r round(plot.dat3_all$upper[1], 2)`]). All other estimated parameters are inconclusive.
 
-The estimated associations for in-school suspensions are smaller still, but are generally consistent with effects of the same direction. For implicit bias, the relevant parameter is estimated at `r round(plot.dat3_all$est[3], 2)` [`r round(plot.dat3_all$lower[3], 2)`, `r round(plot.dat3_all$upper[3], 2)`] $p_{neg}$ = `r round(plot.dat3_all$p_neg[3], 2)`, and for explicit bias, the effect is slightly larger, and a positive effect is essentially not credible, given the data and model `r round(plot.dat3_all$est[8], 2)` [`r round(plot.dat3_all$lower[8], 2)`, `r round(plot.dat3_all$upper[8], 2)`] $p_{neg}$ `r afex::round_ps(plot.dat3_all$p_neg[8])`.
+```{r, reg-coefs, results='asis'}
+base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/mw_uclaexcl_diff_extracovs/'
+plot.dat <- data.frame(coef = NA, est = NA, lower = NA, upper = NA, p_neg = NA, metric = NA)
 
-Other outcomes are estimated with less precision, or with patterns that are inconsistent between implicit and explicit bias. For instance, examining the associations for expulsions, the effect of explicit biases are generally in the expected direction (*est* = `r round(plot.dat3_all$est[10], 2)`, [`r round(plot.dat3_all$lower[10], 2)`, `r round(plot.dat3_all$upper[10], 2)`], $p_{neg}$ = `r afex::round_ps(plot.dat3_all$p_neg[10])`), but the effect for implicit bias is estimated to be close to zero, with a enough uncertainty (*est* = `r round(plot.dat3_all$est[5], 2)`, [`r round(plot.dat3_all$lower[5], 2)`, `r round(plot.dat3_all$upper[5], 2)`], $p_{neg}$ = `r afex::round_ps(plot.dat3_all$p_neg[5])`) to make it difficult to claim an effect of one direction or the other. The model indicates similar uncertainty with respect to school-related arrests and both estimates of bias ($est_{explicit}$ = `r round(plot.dat3_all$est[9], 2)`, [`r round(plot.dat3_all$lower[9], 2)`, `r round(plot.dat3_all$upper[9], 2)`], $p_{neg}$ = `r afex::round_ps(plot.dat3_all$p_neg[9])`; $est_{implicit}$ = `r round(plot.dat3_all$est[4], 2)`, [`r round(plot.dat3_all$lower[4], 2)`, `r round(plot.dat3_all$upper[4], 2)`], $p_{neg}$ = `r afex::round_ps(plot.dat3_all$p_neg[4])`).
-
-```{r detail-fig-exp, fig.cap="Association between bias and expulsions. Top: Association between bias and the estimated probability of expulsion. Line is the mean of the posterior. Bands indicate 95% uncertainty intervals; Bottom: Association between bias and the relative risk ratio for black students to white students. Points represent counties, whose size are scaled to the number of schools in that county."}
-library(gridExtra)
-i <- 'expulsion_combined'
-pth <- paste(base_path, i, '/', sep='')
-
-files <- list.files(pth)
-j <- 1
-posterior_combo <- array(0, dim=c(14,4000,length(files)))
-raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_bias=NA, 
-                       weighted_warmth=NA, group=NA, nincidents=NA, 
-                       nstudents=NA, rate=NA)
-for (k in files){
-  #print(i)
-  load(paste(pth,k,sep=''))
-  df <- as.matrix(m)
-  m$data %>% 
-    select(county_id, COMBOKEY) %>% 
-    distinct() %>% 
-    group_by(county_id) %>% 
-    summarise(nschools=n()) -> n_schools
-  m$data %>%
-    group_by(county_id, group) %>%
-    summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
-    mutate(rate=nincidents/nstudents) -> rate
-  n_schools %>%
-    left_join(m$data[, c('county_id', 'weighted_bias', 'weighted_warmth')]) %>%
-    distinct() %>%
-    left_join(rate) %>%
-    rbind(raw_rate) %>%
-    filter(!is.na(county_id)) -> raw_rate
-  posterior_combo[,,j] <- t(df[,c(1:14)])
-  j <- j+1
-}
-p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
-
-for (p in 1:14){
-  m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
-}
-for (p in 1:14){
-  m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
-}
-for (p in 1:14){
-  m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
-}
-for (p in 1:14){
-  m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
+# weighted bias w/exclusions & explicit difference
+metrics <- list.files(base_path)
+#metrics <- c('expulsion_combined', 'inschool_susp', 'oos_susp')
+for (i in metrics){
+  pth <- paste(base_path, i, '/', sep='')
+  
+  files <- list.files(pth)
+  j <- 1
+  posterior_combo <- array(0, dim=c(17,4000,length(files)))
+  for (k in files){
+    #print(i)
+    load(paste(pth,k,sep=''))
+    dat <- as.matrix(m)
+    posterior_combo[,,j] <- t(dat[,c(1:17)])
+    j <- j+1
+  }
+  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
+  
+  for (p in 1:17){
+    m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
+  }
+  for (p in 1:17){
+    m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
+  }
+  for (p in 1:17){
+    m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
+  }
+  for (p in 1:17){
+    m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
+  }
+  
+  data.frame(coef=colnames(dat)[1:17],
+             est=rowMeans(p_cons),
+             lower=apply(p_cons,1,quantile, probs=.025),
+             upper=apply(p_cons,1,quantile, probs=.975),
+             p_neg = rowSums(p_cons<0)/4000,
+             metric=rep(i, 17)) %>%
+    rbind(plot.dat) %>%
+    filter(!is.na(est)) -> plot.dat
 }
 
-newdat <- expand.grid(group = rownames(table(m$data$group)),
-                      total_pop=0,
-                      unemp_rate=0,
-                      med_income=0,
-                      poverty_rate=0,
-                      col_grads=0,
-                      white_prop=0,
-                      black_prop=0,
-                      b.w.ratio=0,
-                      weighted_bias = seq(-2.5,2.5,.25),
-                      weighted_warmth = 0,
-                      number=0,
-                      total_number=1)
-y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
+plot.dat$metric <- fct_recode(plot.dat$metric, 
+                               'Out-of-School Suspension' = 'oos_susp',
+                               'In-School Suspension' = 'inschool_susp',
+                               'School-Related Arrest' = 'in_school_arrest',
+                               'Law Enf. Referral' = 'law_enforcement',
+                               'Expulsion' = 'expulsion_combined')
+plot.dat$coef <- fct_recode(plot.dat$coef,
+                            'Intercept' = '(Intercept)',
+                            'total population' = 'total_pop',
+                            'propotion black' = 'black_prop',
+                            'proportion white' = 'white_prop',
+                            'black-white ratio' = 'b.w.ratio',
+                            'college grads' = 'col_grads',
+                            'income' = 'med_income',
+                            'poverty' = 'poverty_rate',
+                            'unemployment' = 'unemp_rate',
+                            'crime' = 'crime_rate',
+                            'housing density' = 'density',
+                            'mobility' = 'mobility',
+                            'race: white' = 'groupwhite',
+                            'implicit bias' = 'weighted_bias',
+                            'explicit bias' = 'weighted_explicit_diff',
+                            'implicit bias*race: white' = 'groupwhite:weighted_bias',
+                            'explicit bias*race: white' = 'groupwhite:weighted_explicit_diff')
 
-cbind(newdat, t(y_hat)) %>% 
-  mutate(index=row_number()) %>%
-  gather(sample, value, `1`:`4000`) -> posterior_distribution
+plot.dat %>%
+  mutate(estimate=paste(round(est, 2), ', [', round(lower, 2), ',', round(upper, 2),']', sep='')) %>%
+  select(metric, estimate, coef) %>%
+  spread(metric, estimate) -> tabledata
 
+tabledata <- tabledata[c(1,13,3,17,2,4,10,12,14,5,6,11,7,15,16,8,9),]
+names(tabledata)[1] <- ''
 
-posterior_distribution %>%
-  select(group, weighted_bias, sample, value, index) %>%
-  group_by(group, weighted_bias) %>%
-  summarise(est = mean(value),
-            lower = quantile(value, .025),
-            upper = quantile(value, .975)) %>%
-  ungroup() %>%
-  mutate(bias = 'Implicit') -> plot.dat
+papaja::apa_table(tabledata, caption = 'Regression coefficient estimates for the population-level (i.e. fixed) effects, along with 95\\% uncertainty intervals for each of the disciplinary metrics.', small = T)
+```
 
-newdat <- expand.grid(group = rownames(table(m$data$group)),
-                      total_pop=0,
-                      unemp_rate=0,
-                      med_income=0,
-                      poverty_rate=0,
-                      col_grads=0,
-                      white_prop=0,
-                      black_prop=0,
-                      b.w.ratio=0,
-                      weighted_bias = 0,
-                      weighted_warmth = seq(-2.5,2.5,.25),
-                      number=0,
-                      total_number=1)
-y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
-
-cbind(newdat, t(y_hat)) %>% 
-  mutate(index=row_number()) %>%
-  gather(sample, value, `1`:`4000`) -> posterior_distribution
+The findings for other disciplinary metrics suggest a differential effect of explicit and implicit bias. For example, there is a reliable association between in-school suspensions and explicit bias. The difference in the slope of the association between explicit bias and the log of the odds for in-school suspensions between white and black students is estimated to be `r round(plot.dat3_all$est[6], 2)`, with 95% of the posterior distribution between `r round(plot.dat3_all$lower[6], 2)` and `r round(plot.dat3_all$upper[6], 2)` and a proportion `r afex::round_ps(1)` of the posterior distribution consistent with a negative effect. Similar effects can be seen for explicit bias and law enforcement referrals (`r round(plot.dat3_all$est[7], 2)`, [`r round(plot.dat3_all$lower[7],2)`, `r round(plot.dat3_all$upper[7],2)`], $p_{neg}$ `r afex::round_ps(plot.dat3_all$p_neg[7])`), and explicit bias and expulsions (`r round(plot.dat3_all$est[10], 2)`, [`r round(plot.dat3_all$lower[10],2)`, `r round(plot.dat3_all$upper[10],2)`], $p_{neg}$ = `r afex::round_ps(plot.dat3_all$p_neg[10])`). In contrast, zero is included as a plausible value for the associations between implicit bias and in-school suspensions (`r round(plot.dat3_all$est[3], 2)`, [`r round(plot.dat3_all$lower[3],2)`, `r round(plot.dat3_all$upper[3],2)`], $p_{neg}$ = `r afex::round_ps(plot.dat3_all$p_neg[3])`), law enforcement referrals (`r round(plot.dat3_all$est[2], 2)`, [`r round(plot.dat3_all$lower[2],2)`, `r round(plot.dat3_all$upper[2],2)`], $p_{neg}$ = `r afex::round_ps(plot.dat3_all$p_neg[2])`), and expulsions (`r round(plot.dat3_all$est[5], 2)`, [`r round(plot.dat3_all$lower[5],2)`, `r round(plot.dat3_all$upper[5],2)`], $p_{neg}$ = `r afex::round_ps(plot.dat3_all$p_neg[5])`).
 
 
-posterior_distribution %>%
-  select(group, weighted_warmth, sample, value, index) %>%
-  mutate(weighted_bias = weighted_warmth) %>%
-  group_by(group, weighted_bias) %>%
-  summarise(est = mean(value),
-            lower = quantile(value, .025),
-            upper = quantile(value, .975)) %>%
-  ungroup() %>%
-  mutate(bias = 'Explicit') %>%
-  rbind(plot.dat) -> plot.dat
 
-
-ggplot(plot.dat, aes(x=weighted_bias, y=est, group=group, linetype=group)) +
-  geom_line(aes(color=group)) +
-  geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.15) +
-  theme_classic() +
-  ylab('Probability \n of Expulsion') +
-  xlab('Standardized Bias') + 
-  facet_wrap(~bias, ncol=2) +
-  xlim(-3.5, 3.5) +
-  theme(legend.title = element_blank(),
-        axis.title.x = element_blank()) -> p1
-
-posterior_distribution %>%
-  select(group, weighted_warmth, sample, value) %>%
-  spread(group, value) %>%
-  mutate(ratio = black/white) %>%
-  mutate(weighted_bias = weighted_warmth) %>%
-  group_by(weighted_bias) %>%
-  summarise(est = mean(ratio),
-            lower = quantile(ratio, .025),
-            upper = quantile(ratio, .975)) %>%
-  ungroup() %>%
-  mutate(bias = 'Explicit') -> plot.dat
-
-newdat <- expand.grid(group = rownames(table(m$data$group)),
-                      total_pop=0,
-                      unemp_rate=0,
-                      med_income=0,
-                      poverty_rate=0,
-                      col_grads=0,
-                      white_prop=0,
-                      black_prop=0,
-                      b.w.ratio=0,
-                      weighted_bias = seq(-2.5,2.5,.25),
-                      weighted_warmth = 0,
-                      number=0,
-                      total_number=1)
-y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
-
-cbind(newdat, t(y_hat)) %>% 
-  mutate(index=row_number()) %>%
-  gather(sample, value, `1`:`4000`) -> posterior_distribution
-
-posterior_distribution %>%
-  select(group, weighted_bias, sample, value) %>%
-  spread(group, value) %>%
-  mutate(ratio = black/white) %>%
-  group_by(weighted_bias) %>%
-  summarise(est = mean(ratio),
-            lower = quantile(ratio, .025),
-            upper = quantile(ratio, .975)) %>%
-  ungroup() %>%
-  mutate(bias = 'Implicit') %>%
-  rbind(plot.dat) -> plot.dat
-
-raw_rate %>%
-  mutate(Implicit = weighted_bias,
-         Explicit = weighted_warmth) %>%
-  select(-weighted_bias, -weighted_warmth) %>%
-  gather(bias, value, Implicit:Explicit) %>%
-  select(county_id, nschools, bias, group, rate, value) %>%
-  spread(group, rate) %>%
-  mutate(odds_r = black/white) -> raw_or
+```{r detail-risks, fig.cap="Association between bias and relative risk ratio for black students to white students. Line is the mean of the posterior. Bands indicate 95% uncertainty intervals. Points represent counties, whose sizes are scaled to the number of schools in that county. Note that the y axis is cut at 8 for legibility despite data extending beyond."}
+plot.dat <- data.frame(group=NA, weighted_bias=NA, est=NA, 
+                       lower=NA, upper=NA, bias=NA, metric=NA)
+plot.dat2 <- data.frame(weighted_bias=NA, est=NA, 
+                        lower=NA, upper=NA, bias=NA, metric=NA)
+raw_or <- data.frame(county_id=NA, nschools=NA, bias=NA, 
+                     value=NA, black=NA, white=NA, odds_r=NA, metric=NA)
+for (i in metrics){
+  pth <- paste(base_path, i, '/', sep='')
+  
+  files <- list.files(pth)
+  j <- 1
+  posterior_combo <- array(0, dim=c(17,4000,length(files)))
+  for (k in files){
+  raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_bias=NA, 
+                         weighted_explicit_diff=NA, group=NA, nincidents=NA, 
+                         nstudents=NA, rate=NA)
+    #print(i)
+    load(paste(pth,k,sep=''))
+    df <- as.matrix(m)
+    m$data %>% 
+      select(county_id, COMBOKEY) %>% 
+      distinct() %>% 
+      group_by(county_id) %>% 
+      summarise(nschools=n()) -> n_schools
+    m$data %>%
+      group_by(county_id, group) %>%
+      summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
+      mutate(rate=nincidents/nstudents) -> rate
+    n_schools %>%
+      left_join(m$data[, c('county_id', 'weighted_bias', 'weighted_explicit_diff')]) %>%
+      distinct() %>%
+      left_join(rate) %>%
+      rbind(raw_rate) %>%
+      filter(!is.na(county_id)) -> raw_rate
+    posterior_combo[,,j] <- t(df[,c(1:17)])
+    j <- j+1
+  }
+  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
+  
+  for (p in 1:17){
+    m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
+  }
+  for (p in 1:17){
+    m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
+  }
+  for (p in 1:17){
+    m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
+  }
+  for (p in 1:17){
+    m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
+  }
   
 
-ggplot(plot.dat, aes(x=weighted_bias, y=est)) +
-  geom_point(data=raw_or, aes(x=value, y=odds_r, size=nschools), alpha=.075) +
-  geom_line() +
-  geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.25) +
-  theme_classic() +
-  #scale_color_manual(values=c('grey', 'darkorange'), guide=F) + 
-  scale_alpha_manual(values=c(.2, 1), guide=F) +
-  ylim(0,9) +
-  xlim(-3.5, 3.5) + 
-  xlab('Standardized Bias') +
-  ylab('Relative \n Risk Ratio') +
-  geom_hline(yintercept=1) +
-  facet_wrap(~bias) -> p2
+  newdat <- expand.grid(group = rownames(table(m$data$group)),
+                        total_pop=0,
+                        unemp_rate=0,
+                        med_income=0,
+                        poverty_rate=0,
+                        col_grads=0,
+                        white_prop=0,
+                        black_prop=0,
+                        b.w.ratio=0,
+                        mobility=0,
+                        crime_rate=0,
+                        density=0,
+                        weighted_bias = seq(-2.5,2.5,.25),
+                        weighted_explicit_diff = 0,
+                        number=0,
+                        total_number=1)
+  y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
+  
+  cbind(newdat, t(y_hat)) %>% 
+    mutate(index=row_number()) %>%
+    gather(sample, value, `1`:`4000`) -> posterior_distribution
+  
+  
+  posterior_distribution %>%
+    select(group, weighted_bias, sample, value, index) %>%
+    group_by(group, weighted_bias) %>%
+    summarise(est = mean(value),
+              lower = quantile(value, .025),
+              upper = quantile(value, .975)) %>%
+    ungroup() %>%
+    mutate(bias = 'Implicit',
+           metric = i) %>%
+    rbind(plot.dat) -> plot.dat
+  
+  posterior_distribution %>%
+    select(group, weighted_bias, sample, value) %>%
+    spread(group, value) %>%
+    mutate(ratio = black/white) %>%
+    group_by(weighted_bias) %>%
+    summarise(est = mean(ratio),
+              lower = quantile(ratio, .025),
+              upper = quantile(ratio, .975)) %>%
+    ungroup() %>%
+    mutate(bias = 'Implicit',
+           metric=i)  %>%
+    rbind(plot.dat2) -> plot.dat2
+
+  newdat <- expand.grid(group = rownames(table(m$data$group)),
+                        total_pop=0,
+                        unemp_rate=0,
+                        med_income=0,
+                        poverty_rate=0,
+                        col_grads=0,
+                        white_prop=0,
+                        black_prop=0,
+                        b.w.ratio=0,
+                        mobility=0,
+                        crime_rate=0,
+                        density=0,
+                        weighted_bias = 0,
+                        weighted_explicit_diff = seq(-2.5,2.5,.25),
+                        number=0,
+                        total_number=1)
+  y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
+  
+  cbind(newdat, t(y_hat)) %>% 
+    mutate(index=row_number()) %>%
+    gather(sample, value, `1`:`4000`) -> posterior_distribution
+  
+  
+  posterior_distribution %>%
+    select(group, weighted_explicit_diff, sample, value, index) %>%
+    mutate(weighted_bias = weighted_explicit_diff) %>%
+    group_by(group, weighted_bias) %>%
+    summarise(est = mean(value),
+              lower = quantile(value, .025),
+              upper = quantile(value, .975)) %>%
+    ungroup() %>%
+    mutate(bias = 'Explicit',
+           metric=i) %>%
+    rbind(plot.dat) -> plot.dat
+  
+  posterior_distribution %>%
+    select(group, weighted_explicit_diff, sample, value) %>%
+    spread(group, value) %>%
+    mutate(ratio = black/white,
+           weighted_bias = weighted_explicit_diff) %>%
+    group_by(weighted_bias) %>%
+    summarise(est = mean(ratio),
+              lower = quantile(ratio, .025),
+              upper = quantile(ratio, .975)) %>%
+    ungroup() %>%
+    mutate(bias = 'Explicit',
+           metric=i) %>%
+    rbind(plot.dat2) -> plot.dat2
+  
+  raw_rate %>%
+    mutate(Implicit = weighted_bias,
+           Explicit = weighted_explicit_diff) %>%
+    select(-weighted_bias, -weighted_explicit_diff) %>%
+    gather(bias, value, Implicit:Explicit) %>%
+    select(county_id, nschools, bias, group, rate, value) %>%
+    spread(group, rate) %>%
+    mutate(odds_r = black/white,
+           metric=i) %>%
+    rbind(raw_or) %>%
+    filter(!is.na(county_id)) -> raw_or
+}
+
+plot.dat$metric <- fct_recode(plot.dat$metric, 
+                               'Out-of-School Suspension' = 'oos_susp',
+                               'In-School Suspension' = 'inschool_susp',
+                               'School-Related Arrest' = 'in_school_arrest',
+                               'Law Enf. Referral' = 'law_enforcement',
+                               'Expulsion' = 'expulsion_combined')
+
+plot.dat2$metric <- fct_recode(plot.dat2$metric, 
+                               'Out-of-School Suspension' = 'oos_susp',
+                               'In-School Suspension' = 'inschool_susp',
+                               'School-Related Arrest' = 'in_school_arrest',
+                               'Law Enf. Referral' = 'law_enforcement',
+                               'Expulsion' = 'expulsion_combined')
+
+raw_or$metric <- fct_recode(raw_or$metric, 
+                            'Out-of-School Suspension' = 'oos_susp',
+                            'In-School Suspension' = 'inschool_susp',
+                            'School-Related Arrest' = 'in_school_arrest',
+                            'Law Enf. Referral' = 'law_enforcement',
+                            'Expulsion' = 'expulsion_combined')
+
+plot.dat %>%
+  filter(!is.na(weighted_bias)) %>%
+  ggplot(aes(x=weighted_bias, y=est, group=group, linetype=group)) +
+    geom_line(aes(color=group)) +
+    geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.15) +
+    theme_classic() +
+    ylab('Probability of \n disciplinary action') +
+    xlab('Standardized Bias') + 
+    facet_grid(metric~bias, scales='free') +
+    xlim(-3, 3) +
+    theme(legend.title = element_blank()) -> p1
+
+
+  
+plot.dat2 %>% 
+  filter(!is.na(weighted_bias)) %>%
+  ggplot(aes(x=weighted_bias, y=est)) +
+    geom_point(data=raw_or, aes(x=value, y=odds_r, size=nschools), alpha=.05) +
+    geom_line() +
+    geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.25) +
+    theme_classic() +
+    scale_size_continuous(name='Number\nof schools') + 
+    #scale_color_manual(values=c('grey', 'darkorange'), guide=F) + 
+    scale_alpha_manual(values=c(.2, 1), guide=F) +
+    ylim(0,8) +
+    xlim(-3, 3) + 
+    xlab('Standardized Bias') +
+    ylab('Relative \n Risk Ratio') +
+    geom_hline(yintercept=1) +
+    facet_grid(metric~bias) -> p2
 
 p1$data %>% filter(weighted_bias %in% c(0, 1)) -> rates
 p2$data %>% filter(weighted_bias %in% c(0, 1)) -> risks
 
-grid.arrange(p1, p2)
+#grid.arrange(p1, p2)
+p2
 ```
 
-To better illustrate the nature of these relationships, figure \@ref(fig:detail-fig-exp) shows the estimated probabilities of expulsion for black and white students as a function of bias, along with the relative risk ratio for black students. The relative risk ratio is the ratio of the probability that a black student will be expelled to the probability that a white student will get expelled. Values over 1 reflect higher levels of punishment for black students. As previously indicated in table \@ref(tab:disc-count), the top part of this figure makes plain the higher probability of expulsion for black children. In a county at the mean of the distribution of bias, approximately `r round(rates$est*100, 2)[1]`% of black students are expected to be expelled [`r round(rates$lower*100, 2)[1]`, `r round(rates$upper*100, 2)[1]`]. The corresponding rate for white students is much lower, with about `r round(rates$est*100, 2)[3]`% expected to be expelled [`r round(rates$lower*100, 2)[3]`, `r round(rates$upper*100, 2)[3]`]. Moving to a county one standard deviation above the mean of explicit bias has the effect of increasing the estimated percentage of black students expected to be expelled to `r round(rates$est*100, 2)[2]`% [`r round(rates$lower*100, 2)[2]`, `r round(rates$upper*100, 2)[2]`], while the percentage of white students expected to be expelled would decline to `r round(rates$est*100, 2)[4]`% [`r round(rates$lower*100, 2)[4]`, `r round(rates$upper*100, 2)[4]`]. The same movement for implicit bias would slightly increase the expected expulsions for black students ( `r round(rates$est*100, 2)[6]`% [`r round(rates$lower*100, 2)[6]`, `r round(rates$upper*100, 2)[6]`), and increase the expected expulsions for white students a very small amount more to (`r round(rates$est*100, 2)[8]`% [`r round(rates$lower*100, 2)[8]`, `r round(rates$upper*100, 2)[8]`). In real terms, in a county at the mean of the distributions of bias, for every white student expelled, we should expect `r round(risks$est[1], 2)` [`r round(risks$lower[1], 2)`, `r round(risks$est[1], 2)`] black students to be expelled. If we move to a county one standard deviation above the mean of explicit bias, the ratio of black to white students expelled increases to `r round(risks$est[4], 2)` [`r round(risks$lower[4], 2)`, `r round(risks$est[4], 2)`], while the same movement for implicit bias slightly decreases the ratio to `r round(risks$est[2], 2)` [`r round(risks$lower[2], 2)`, `r round(risks$est[2], 2)`].
+To better illustrate the nature of these relationships, figure \@ref(fig:detail-risks) shows the estimated relative risk ratios for each type of bias measurement and each disciplinary metric. Examining the risk ratio for out-of-school suspensions, in a hypothetical county with 0 standardized bias on both implicit and explicit, the model predicts that for every white student expelled, we should expect `r round(risks$est[1], 2)` [`r round(risks$lower[1], 2)`, `r round(risks$upper[1], 2)`] black students to be expelled. If we move to a county one standard deviation above the mean of explicit bias, the ratio of black to white students expelled increases to `r round(risks$est[4], 2)` [`r round(risks$lower[4], 2)`, `r round(risks$upper[4], 2)`], while the same movement for implicit bias increase the ratio to `r round(risks$est[2], 2)` [`r round(risks$lower[2], 2)`, `r round(risks$upper[2], 2)`].`
 
-```{r detail-fig-susp, fig.cap="Association between bias and out-of-school suspensions Top: Association between bias and the estimated probability of suspension Line is the mean of the posterior. Bands indicate 95% uncertainty intervals; Bottom: Association between bias and the relative risk ratio for black students to white students. Points represent counties, whose size are scaled to the number of schools in that county."}
-i <- 'oos_susp'
-pth <- paste(base_path, i, '/', sep='')
+```{r detail-rates, fig.cap="Association between bias and probability of receiving disciplinary action for black and white students. Lines are the means of the posterior. Bands indicate 95% uncertainty intervals."}
 
-files <- list.files(pth)
-j <- 1
-posterior_combo <- array(0, dim=c(14,4000,length(files)))
-raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_bias=NA, 
-                       weighted_warmth=NA, group=NA, nincidents=NA, 
-                       nstudents=NA, rate=NA)
-for (k in files){
-  #print(i)
-  load(paste(pth,k,sep=''))
-  df <- as.matrix(m)
-  m$data %>% 
-    select(county_id, COMBOKEY) %>% 
-    distinct() %>% 
-    group_by(county_id) %>% 
-    summarise(nschools=n()) -> n_schools
-  m$data %>%
-    group_by(county_id, group) %>%
-    summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
-    mutate(rate=nincidents/nstudents) -> rate
-  n_schools %>%
-    left_join(m$data[, c('county_id', 'weighted_bias', 'weighted_warmth')]) %>%
-    distinct() %>%
-    left_join(rate) %>%
-    rbind(raw_rate) %>%
-    filter(!is.na(county_id)) -> raw_rate
-  posterior_combo[,,j] <- t(df[,c(1:14)])
-  j <- j+1
-}
-p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
+p1
 
-for (p in 1:14){
-  m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
-}
-for (p in 1:14){
-  m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
-}
-for (p in 1:14){
-  m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
-}
-for (p in 1:14){
-  m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
-}
-
-newdat <- expand.grid(group = rownames(table(m$data$group)),
-                      total_pop=0,
-                      unemp_rate=0,
-                      med_income=0,
-                      poverty_rate=0,
-                      col_grads=0,
-                      white_prop=0,
-                      black_prop=0,
-                      b.w.ratio=0,
-                      weighted_bias = seq(-2.5,2.5,.25),
-                      weighted_warmth = 0,
-                      number=0,
-                      total_number=1)
-y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
-
-cbind(newdat, t(y_hat)) %>% 
-  mutate(index=row_number()) %>%
-  gather(sample, value, `1`:`4000`) -> posterior_distribution
-
-
-posterior_distribution %>%
-  select(group, weighted_bias, sample, value, index) %>%
-  group_by(group, weighted_bias) %>%
-  summarise(est = mean(value),
-            lower = quantile(value, .025),
-            upper = quantile(value, .975)) %>%
-  ungroup() %>%
-  mutate(bias = 'Implicit') -> plot.dat
-
-newdat <- expand.grid(group = rownames(table(m$data$group)),
-                      total_pop=0,
-                      unemp_rate=0,
-                      med_income=0,
-                      poverty_rate=0,
-                      col_grads=0,
-                      white_prop=0,
-                      black_prop=0,
-                      b.w.ratio=0,
-                      weighted_bias = 0,
-                      weighted_warmth = seq(-2.5,2.5,.25),
-                      number=0,
-                      total_number=1)
-y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
-
-cbind(newdat, t(y_hat)) %>% 
-  mutate(index=row_number()) %>%
-  gather(sample, value, `1`:`4000`) -> posterior_distribution
-
-
-posterior_distribution %>%
-  select(group, weighted_warmth, sample, value, index) %>%
-  mutate(weighted_bias = weighted_warmth) %>%
-  group_by(group, weighted_bias) %>%
-  summarise(est = mean(value),
-            lower = quantile(value, .025),
-            upper = quantile(value, .975)) %>%
-  ungroup() %>%
-  mutate(bias = 'Explicit') %>%
-  rbind(plot.dat) -> plot.dat
-
-
-ggplot(plot.dat, aes(x=weighted_bias, y=est, group=group, linetype=group)) +
-  geom_line(aes(color=group)) +
-  geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.15) +
-  theme_classic() +
-  ylab('Probability of \n out-of-school suspension') +
-  xlab('Standardized Bias') + 
-  facet_wrap(~bias, ncol=2) +
-  xlim(-3.5, 3.5) +
-  theme(legend.title = element_blank(),
-        axis.title.x = element_blank()) -> p1
-
-posterior_distribution %>%
-  select(group, weighted_warmth, sample, value) %>%
-  spread(group, value) %>%
-  mutate(ratio = black/white) %>%
-  mutate(weighted_bias = weighted_warmth) %>%
-  group_by(weighted_bias) %>%
-  summarise(est = mean(ratio),
-            lower = quantile(ratio, .025),
-            upper = quantile(ratio, .975)) %>%
-  ungroup() %>%
-  mutate(bias = 'Explicit') -> plot.dat
-
-newdat <- expand.grid(group = rownames(table(m$data$group)),
-                      total_pop=0,
-                      unemp_rate=0,
-                      med_income=0,
-                      poverty_rate=0,
-                      col_grads=0,
-                      white_prop=0,
-                      black_prop=0,
-                      b.w.ratio=0,
-                      weighted_bias = seq(-2.5,2.5,.25),
-                      weighted_warmth = 0,
-                      number=0,
-                      total_number=1)
-y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
-
-cbind(newdat, t(y_hat)) %>% 
-  mutate(index=row_number()) %>%
-  gather(sample, value, `1`:`4000`) -> posterior_distribution
-
-posterior_distribution %>%
-  select(group, weighted_bias, sample, value) %>%
-  spread(group, value) %>%
-  mutate(ratio = black/white) %>%
-  group_by(weighted_bias) %>%
-  summarise(est = mean(ratio),
-            lower = quantile(ratio, .025),
-            upper = quantile(ratio, .975)) %>%
-  ungroup() %>%
-  mutate(bias = 'Implicit') %>%
-  rbind(plot.dat) -> plot.dat
-
-raw_rate %>%
-  mutate(Implicit = weighted_bias,
-         Explicit = weighted_warmth) %>%
-  select(-weighted_bias, -weighted_warmth) %>%
-  gather(bias, value, Implicit:Explicit) %>%
-  select(county_id, nschools, bias, group, rate, value) %>%
-  spread(group, rate) %>%
-  mutate(odds_r = black/white) -> raw_or
-  
-
-ggplot(plot.dat, aes(x=weighted_bias, y=est)) +
-  geom_point(data=raw_or, aes(x=value, y=odds_r, size=nschools), alpha=.075) +
-  geom_line() +
-  geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.25) +
-  theme_classic() +
-  #scale_color_manual(values=c('grey', 'darkorange'), guide=F) + 
-  scale_alpha_manual(values=c(.2, 1), guide=F) +
-  ylim(0,9) +
-  xlim(-3.5, 3.5) + 
-  xlab('Standardized Bias') +
-  ylab('Relative \n Risk Ratio') +
-  geom_hline(yintercept=1) +
-  facet_wrap(~bias) -> p2
-
-p1$data %>% filter(weighted_bias %in% c(0, 1)) -> rates
-p2$data %>% filter(weighted_bias %in% c(0, 1)) -> risks
-
-grid.arrange(p1, p2)
 ```
 
-Figure \@ref(fig:detail-fig-susp) shows similar patterns, but for out-of-school suspensions. In a county at the mean of the distribution of bias, approximately `r round(rates$est*100, 1)[1]`% of black students are expected to be suspended [`r round(rates$lower*100, 1)[1]`, `r round(rates$upper*100, 1)[1]`]. The corresponding rate for white students is just over half that for black students, with about `r round(rates$est*100, 1)[3]`% expected to be suspended [`r round(rates$lower*100, 1)[3]`, `r round(rates$upper*100, 1)[3]`]. Moving to a county one standard deviation above the mean of explicit bias has the effect of slightly decreasing the estimated percentage of black students expected to be suspended to `r round(rates$est*100, 1)[2]`% [`r round(rates$lower*100, 1)[2]`, `r round(rates$upper*100, 1)[2]`], while the percentage of white students expected to be suspended would decrease at a faster rate to `r round(rates$est*100, 1)[4]`% [`r round(rates$lower*100, 1)[4]`, `r round(rates$upper*100, 1)[4]`]. The same movement for implicit bias would dramatically increase the expected suspensions for black students (`r round(rates$est*100, 1)[6]`% [`r round(rates$lower*100, 1)[6]`, `r round(rates$upper*100, 1)[6]`), and increase the expected suspensions for white students a much smaller amount to (`r round(rates$est*100, 1)[8]`% [`r round(rates$lower*100, 1)[8]`, `r round(rates$upper*100, 1)[8]`). In real terms, in a county at the mean of the distributions of bias, for every white student expelled, we should expect `r round(risks$est[1], 2)` [`r round(risks$lower[1], 2)`, `r round(risks$est[1], 2)`] black students to be expelled. If we move to a county one standard deviation above the mean of explicit bias, the ratio of black to white students expelled increases to `r round(risks$est[4], 2)` [`r round(risks$lower[4], 2)`, `r round(risks$est[4], 2)`], while the same movement for implicit bias slightly decreases the ratio to `r round(risks$est[2], 2)` [`r round(risks$lower[2], 2)`, `r round(risks$est[2], 2)`].`
+Figure \@ref(fig:detail-rates) unpacks these risk ratios by detailing the probabilities of receiving disciplinary action as a function of race, bias, and type of action. In a hypotheticl county with 0 standardized bias on both implicit and explicit, the model predicts that `r round(rates$est*100, 1)[1]`% [`r round(rates$lower*100, 1)[1]`, `r round(rates$upper*100, 1)[1]`] of black students will receive an out-of-school suspension . The corresponding rate for white students is just over half that for black students, with about `r round(rates$est*100, 1)[3]`% [`r round(rates$lower*100, 1)[3]`, `r round(rates$upper*100, 1)[3]`] expected to be suspended. Holding all other variables constant, moving to a hypothetical county one standard deviation above the mean of explicit bias has the effect of slightly decreasing the estimated percentage of black students expected to be suspended to `r round(rates$est*100, 1)[2]`% [`r round(rates$lower*100, 1)[2]`, `r round(rates$upper*100, 1)[2]`], while the percentage of white students expected to be suspended would decrease at a faster rate to `r round(rates$est*100, 1)[4]`% [`r round(rates$lower*100, 1)[4]`, `r round(rates$upper*100, 1)[4]`]. The same movement for implicit bias would dramatically increase the expected suspensions for black students (`r round(rates$est*100, 1)[6]`% [`r round(rates$lower*100, 1)[6]`, `r round(rates$upper*100, 1)[6]`), and increase the expected suspensions for white students a much smaller amount to (`r round(rates$est*100, 1)[8]`% [`r round(rates$lower*100, 1)[8]`, `r round(rates$upper*100, 1)[8]`). 
 
 # Discussion
 
@@ -839,6 +779,9 @@ r_refs(file = "r-references.bib")
 
 \newpage
 # Appendix
+## Session details
+Data analysis was done in R [@rcitation] version 3.3.2 running under OS X 10.11.6. Post-stratification was done with lme4, version 1.1.14 [@bates2015fitting]. Final model fitting was done on the university cluster running Springdale Linux, release 6.9 using rstanarm, version 2.17.2 [@rstanarm2016]. We used the implementation of the consensus monte carlo algorithm found in parallelMCMCcombine, version 1.0 [@miroshnikov2014parallel]. Figures were made with ggplot2, version 2.2.1 [@wickham2009ggplot2], with data manipulation done using dplyr version 0.7.2 [@wickham2017dplyr] and tidyr, version 0.7.1 [@wickham2017tidyr]. A full report of session information can be found on the OSF page (....)
+
 ## Preregistered analysis
 ```{r summary_counts}
 
@@ -902,517 +845,82 @@ ps_exp %>% group_by(group) %>% summarise(n_students=sum(number)) -> exp_summ
 ps_enrollment %>% group_by(group) %>% summarise(n_students=sum(total_number)) -> enr_summ
 
 
+schools_dat %>%
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, SCH_ENR_HI_M:TOT_ENR_F) %>%
+  gather(group, total_number, SCH_ENR_HI_M:TOT_ENR_F) %>%
+  separate(group, into=c('group', 'gender'), -2) %>%
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='NR_', 
+                          biracial='TR_', white='WH_')) %>%
+  group_by(COMBOKEY, group) %>%
+  mutate(total_number = sum(total_number)) %>%
+  ungroup() %>%
+  select(-prefix, -gender) %>%
+  distinct() -> enrollment
 
-#s, 
+
+schools_dat %>% 
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
+         SCH_DISCWODIS_CORP_HI_M:TOT_DISCWODIS_CORP_F, 
+         SCH_DISCWDIS_CORP_IDEA_HI_M:TOT_DISCWDIS_CORP_IDEA_F) %>% 
+  gather(group, number, SCH_DISCWODIS_CORP_HI_M:TOT_DISCWDIS_CORP_IDEA_F) %>%
+  mutate(g=group) %>%
+  separate(group, into=c('group', 'gender'), -2) %>% 
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  separate(prefix, into=c('prefix', 'disability'), -3) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='RP_', 
+                          total='EA_', biracial='TR_', white='WH_')) %>%
+  mutate(disability=fct_recode(disability, not_disabled='P_', disabled='ID',
+                               not_disabled='CO', disabled='A_')) %>%
+  select(-prefix) -> corp
+
+corp %>%
+  filter(group=='black'|group=='white') %>%
+  group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
+           CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
+  summarise(number = sum(number, na.rm=T)) %>%
+  left_join(enrollment) %>%
+  mutate(proportion = number/total_number) -> corp_stats
+
+corp %>% 
+  select(COMBOKEY, LEA_STATE, number) %>% 
+  group_by(COMBOKEY, LEA_STATE) %>% 
+  summarise(number=sum(number, na.rm=T)) -> corp_stats
+
+schools_dat$south <- schools_dat$LEA_STATE %in% c('AL', 'AR', 'FL', 'GA', 'LA', 'MO', 'MS', 'OK', 'TN', 'TX')
+corp_stats %>% filter(number>0) -> uses_corp
+uses_corp$south <- uses_corp$LEA_STATE %in% c('AL', 'AR', 'FL', 'GA', 'LA', 'MO', 'MS', 'OK', 'TN', 'TX')
 
 ```
-In our preanalysis plan, we specified our analyses to focus on 13 actions - corporal punishment, in-school suspension, out-of-school suspension, expulsion with educational services, expulsion without educational services, expulsion under zero-tolerance policies, referral to law enforcement, school-related arrests, mechanical restraint, physical restraint, seclusion, preschool suspension, and preschool expulsion.  However, upon further study, we discovered reasons we thought justified excluding a number of these outcomes. In particular, seclusion, physical restraint, and mechanical restraint are not disciplinary actions, but are rather used as means to restrain students who are at risk of harming themselves or others. Additionally, the number of preschool students who are expelled or suspended is vanishingly small (`r exp_summ$n_students[8]` total expulsions and `r susp_summ$n_students[6]` total suspensions out of over 1.4 million enrolled preschool students), making reliably estimating any association across counties exceedingly unlikely. We additionally discovered that counts of one expulsion category (expulsion under zero-tolerance policies) overlapped with counts in other categories, and so excluded this category. Finally, to remain consistent with previous studies, we opted to combine the remaining two expulsion categories to yield one overall count of the number of students expelled. 
+Here, we describe, in detail, the differences between the registered analysis plan and that presented in the main text, along with our reasons for making the alterations.
 
-We also preregistered our explicit bias as a simple feeling thermometer towards balcks (i.e. *how warm or cold do you feel towards Blacks? 0=very cold, 10=very warm*). However, past research [@leitner2016blacks; @hehman2017disproportionate] has used the difference in reported warmth towards whites and blacks, and so in the main text, we report models using this metric of explicit bias. Additionally, we preregistered analyses with poststratified estimates (as presented in the main text) along with raw, county-based means. We also had not known about the issues with juvenile justice facilities, or with the school districts with reporting errors, and so excluded these schools from analyses in the main text. Finally, we also registered an exploratory analysis using the responses of people who visited Project Implicit and identified themselves as teachers. Ultimately, we believe that there were too few individuals in the data to obtain reliable county-level estimates for this subgroup, and so this analysis is also limited to the appendix. Here, we present the results of the preregistered analyses exactly. Table \@ref(tab:all-results) presents the estimates (operationalized as the mean of the posterior), 95% uncertainty intervals, and the proportion of the posterior that is consistent with a negative effect for all of the outcomes for each of these models (*Model A*: raw county means estimates; *Model B*: post-stratified estimates using simple warmth score, *Model C*: teacher analyses).
+### Data exclusions
+In our preanalysis plan, we specified our analyses to focus on 13 actions - corporal punishment, in-school suspension, out-of-school suspension, expulsion with educational services, expulsion without educational services, expulsion under zero-tolerance policies, referral to law enforcement, school-related arrests, mechanical restraint, physical restraint, seclusion, preschool suspension, and preschool expulsion.  However, upon further study, we discovered reasons we thought justified excluding a number of these outcomes. 
 
-```{r all-results, results='asis'}
-base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/metrics_raw/'
-plot.dat <- data.frame(group = NA, weighted_bias = NA, est = NA, lower = NA, upper=NA, metric = NA)
-plot.dat2 <- data.frame(weighted_bias = NA, est = NA, lower=NA, upper=NA, metric=NA)
-plot.dat3 <- data.frame(est=NA, lower=NA, upper=NA, p_neg=NA, metric=NA)
+First, seclusion, physical restraint, and mechanical restraint are not disciplinary actions, but are rather used as means to restrain students who are at risk of harming themselves or others. 
 
-metrics <- list.files(base_path)
-#metrics <- c('expulsion_combined', 'inschool_susp', 'oos_susp')
-for (i in metrics){
-  pth <- paste(base_path, i, '/', sep='')
-  
-  files <- list.files(pth)
-  j <- 1
-  posterior_combo <- array(0, dim=c(14,4000,length(files)))
-  raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_bias=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
-  for (k in files){
-    #print(i)
-    load(paste(pth,k,sep=''))
-    df <- as.matrix(m)
-    m$data %>% 
-      select(county_id, COMBOKEY) %>% 
-      distinct() %>% 
-      group_by(county_id) %>% 
-      summarise(nschools=n()) -> n_schools
-    m$data %>%
-      group_by(county_id, group) %>%
-      summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
-      mutate(rate=nincidents/nstudents) -> rate
-    n_schools %>%
-      left_join(m$data[, c('county_id', 'weighted_bias')]) %>%
-      distinct() %>%
-      left_join(rate) %>%
-      rbind(raw_rate) %>%
-      filter(!is.na(county_id)) -> raw_rate
-    posterior_combo[,,j] <- t(df[,c(1:14)])
-    j <- j+1
-  }
-  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
-  
-  for (p in 1:14){
-    m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
-  }
-  
-  data.frame(est=mean(p_cons[13,]),
-             lower=quantile(p_cons[13,], .025),
-             upper=quantile(p_cons[13,], .975),
-             p_neg = prop.table(table(p_cons[13,]<0))[2],
-             metric=i) %>%
-    rbind(plot.dat3) %>%
-    filter(!is.na(est)) %>%
-    mutate(metric=reorder(metric, est)) -> plot.dat3
-}
+Next, we discovered that the administration of corporal punishment was extremely irregular across counties, with almost all cases ocurring in the South. Specifically, Alabama, Arkansas, Florida, Georgia, Louisiana, Missouri, Mississippi, Oklahoma, Tennessee, and Texas accounted for `r round((table(uses_corp$south)[2]/dim(uses_corp)[1])*100, 1)`% of all educational institutions that administered corporal punishment at least once, despite containing only `r round((table(schools_dat$south)[2]/dim(schools_dat)[1])*100, 1)`% of the educational institutions in the full dataset. It is not clear whether this uneven distribution is due to legal prohibitions, cultural differences, or some combination of the two. Because this makes interpretation of the parameters uncertain, this analysis is also placed in the appendix.
 
-plot.dat3$metric <- fct_recode(plot.dat3$metric, 
-                               'Out-of-School Suspension' = 'oos_susp',
-                               'In-School Suspension' = 'inschool_susp',
-                               'School-Related Arrest' = 'in_school_arrest',
-                               'Law Enf. Referral' = 'law_enforcement',
-                               'Corporal Punishment' = 'corporal',
-                               'Expulsion Under Zero-Tolerance' = 'expulsion_0_tolerance',
-                               'Expulsion with Educational Services' = 'expulsion_w_ed',
-                               'Expulsion without Educational Services' = 'expulsion_wo_ed',
-                               'Mechanical Restraint' = 'mechanical_restraint',
-                               'Physical Restraint' = 'physical_restraint',
-                               'Preschool Expulsion' = 'preschool_expulsion',
-                               'Preschool Suspension' = 'preschool_susp',
-                               'Seclusion' = 'seclusion')
-plot.dat3$model <- 'A'
-plot.dat3_all <-plot.dat3
-plot.dat3_all$bias <- 'Implicit'
+We also found that the number of preschool students who are expelled or suspended is vanishingly small (`r exp_summ$n_students[8]` total expulsions and `r susp_summ$n_students[6]` total suspensions out of over 1.4 million enrolled preschool students), making reliably estimating any association across counties exceedingly unlikely. We additionally discovered that counts of one expulsion category (expulsion under zero-tolerance policies) overlapped with counts in other categories, and so excluded this category from the main text. We also decided to combine the remaining two expulsion categories to yield one overall count of the number of students expelled. We did this to remain consistent with previous research, and to obtain district-level rates of expulsion that were slightly higher, and therefore more amenable to exploring variation across counties.
 
-#weighted warmth w/exclusions & explicit difference
-plot.dat <- data.frame(group = NA, weighted_warmth = NA, est = NA, lower = NA, upper=NA, metric = NA)
-plot.dat2 <- data.frame(weighted_warmth = NA, est = NA, lower=NA, upper=NA, metric=NA)
-plot.dat3 <- data.frame(est=NA, lower=NA, upper=NA, p_neg = NA, metric=NA)
+When preparing the preregistration, we also had not known about the issues with juvenile justice facilities, or with the school districts with reporting errors, and so excluded these schools from analyses in the main text.
 
-for(i in metrics){
-  pth <- paste(base_path, i, '/', sep='')
-  
-  files <- list.files(pth)
-  j <- 1
-  posterior_combo <- array(0, dim=c(14,4000,length(files)))
-  raw_rate_warmth <- data.frame(county_id=NA, nschools=NA, weighted_warmth=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
-  for (k in files){
-    #print(i)
-    load(paste(pth,k,sep=''))
-    df <- as.matrix(m)
-    m$data %>% 
-      select(county_id, COMBOKEY) %>% 
-      distinct() %>% 
-      group_by(county_id) %>% 
-      summarise(nschools=n()) -> n_schools
-    m$data %>%
-      group_by(county_id, group) %>%
-      summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
-      mutate(rate=nincidents/nstudents) -> rate
-    n_schools %>%
-      left_join(m$data[, c('county_id', 'weighted_warmth')]) %>%
-      distinct() %>%
-      left_join(rate) %>%
-      rbind(raw_rate_warmth) %>%
-      filter(!is.na(county_id)) -> raw_rate_warmth
-    posterior_combo[,,j] <- t(df[,c(1:14)])
-    j <- j+1
-  }
-  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
-  
-  for (p in 1:14){
-    m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
-  }
-  
-  data.frame(est=mean(p_cons[14,]),
-             lower=quantile(p_cons[14,], .025),
-             upper=quantile(p_cons[14,], .975),
-             p_neg = prop.table(table(p_cons[14,]<0))[2],
-             metric=i) %>%
-    rbind(plot.dat3) %>%
-    filter(!is.na(est)) %>%
-    mutate(metric=reorder(metric, est)) -> plot.dat3
-}
+### Changes in measurement & estimation of bias
+We preregistered our explicit bias as a simple feeling thermometer towards balcks (i.e. *how warm or cold do you feel towards Blacks? 0=very cold, 10=very warm*). However, the majority of past research (see for example @leitner2016blacks and @hehman2017disproportionate)  has used the difference in reported warmth towards whites and blacks, and so in the main text, we report models using this metric of explicit bias. 
 
-plot.dat3$bias <- 'Explicit'
-plot.dat3$metric <- fct_recode(plot.dat3$metric, 
-                               'Out-of-School Suspension' = 'oos_susp',
-                               'In-School Suspension' = 'inschool_susp',
-                               'School-Related Arrest' = 'in_school_arrest',
-                               'Law Enf. Referral' = 'law_enforcement',
-                               'Corporal Punishment' = 'corporal',
-                               'Expulsion Under Zero-Tolerance' = 'expulsion_0_tolerance',
-                               'Expulsion with Educational Services' = 'expulsion_w_ed',
-                               'Expulsion without Educational Services' = 'expulsion_wo_ed',
-                               'Mechanical Restraint' = 'mechanical_restraint',
-                               'Physical Restraint' = 'physical_restraint',
-                               'Preschool Expulsion' = 'preschool_expulsion',
-                               'Preschool Suspension' = 'preschool_susp',
-                               'Seclusion' = 'seclusion')
-plot.dat3$model <- 'A'
-table_dat <- rbind(plot.dat3_all, plot.dat3)
+Our main text presents analyses with poststratified estimates of bias. Our registered analysis also described analyses with raw, county-based means. Unlike previous papers that used poststratification, we see substantial differences in results between the two estimation methods. Because post-stratification is known to yield better estimates, we suspect that the difference in results is largely driven by extreme county-level observations with little data to support these extreme estimates. Nevertheless, in the interest of completion, we present the model using raw county-level means as well.
 
-base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/metrics_weighted/older_run/'
-plot.dat <- data.frame(group = NA, weighted_bias = NA, est = NA, lower = NA, upper=NA, metric = NA)
-plot.dat2 <- data.frame(weighted_bias = NA, est = NA, lower=NA, upper=NA, metric=NA)
-plot.dat3 <- data.frame(est=NA, lower=NA, upper=NA, p_neg=NA, metric=NA)
+We also registered an exploratory analysis using the responses of people who visited Project Implicit and identified themselves as teachers. Unfortunately, without population-level data on the demographic characteristics of teachers, we are not able to post-stratify these estimates. Additionally, there were relatively few teachers in the Project Implicit from which to derive estimates. Ultimately, we have little confidence that this analysis tells us anything about whether the biases of teachers specifically contribute to disparities in disciplinary actions, and so this analysis is also limited to the appendix. 
 
-# weighted bias w/exclusions & explicit difference
-metrics <- list.files(base_path)
+### Additional covariates
+We included three covariates that were not specified in the registered analysis. Specifically, the mobility, housing density, and crime rate covariates. These covariates were included in order to cover more of the covariates that were included in previous papers [@leitner2016blacks].
 
-for (i in metrics){
-  pth <- paste(base_path, i, '/', sep='')
-  
-  files <- list.files(pth)
-  j <- 1
-  posterior_combo <- array(0, dim=c(14,4000,length(files)))
-  raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_bias=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
-  for (k in files){
-    #print(i)
-    load(paste(pth,k,sep=''))
-    df <- as.matrix(m)
-    m$data %>% 
-      select(county_id, COMBOKEY) %>% 
-      distinct() %>% 
-      group_by(county_id) %>% 
-      summarise(nschools=n()) -> n_schools
-    m$data %>%
-      group_by(county_id, group) %>%
-      summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
-      mutate(rate=nincidents/nstudents) -> rate
-    n_schools %>%
-      left_join(m$data[, c('county_id', 'weighted_bias')]) %>%
-      distinct() %>%
-      left_join(rate) %>%
-      rbind(raw_rate) %>%
-      filter(!is.na(county_id)) -> raw_rate
-    posterior_combo[,,j] <- t(df[,c(1:14)])
-    j <- j+1
-  }
-  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
-  
-  for (p in 1:14){
-    m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
-  }
-  
-  data.frame(est=mean(p_cons[13,]),
-             lower=quantile(p_cons[13,], .025),
-             upper=quantile(p_cons[13,], .975),
-             p_neg = prop.table(table(p_cons[13,]<0))[2],
-             metric=i) %>%
-    rbind(plot.dat3) %>%
-    filter(!is.na(est)) %>%
-    mutate(metric=reorder(metric, est)) -> plot.dat3
-}
+## Registered analysis results
+Here, we present the results of the preregistered analyses exactly. Though we described a number of changes above, it is not practical to run all possible combination of changes, as each set of models takes four to five days to just to estimate, and there are at least several dozen possible combinations of decisions to test, depending on how fine-grained one wishes to be with the decisions. Accordingly, we limit the presentation of results below to just the three models that we registered. 
 
-plot.dat3$metric <- fct_recode(plot.dat3$metric, 
-                               'Out-of-School Suspension' = 'oos_susp',
-                               'In-School Suspension' = 'inschool_susp',
-                               'School-Related Arrest' = 'in_school_arrest',
-                               'Law Enf. Referral' = 'law_enforcement',
-                               'Corporal Punishment' = 'corporal',
-                               'Expulsion Under Zero-Tolerance' = 'expulsion_0_tolerance',
-                               'Expulsion with Educational Services' = 'expulsion_w_ed',
-                               'Expulsion without Educational Services' = 'expulsion_wo_ed',
-                               'Mechanical Restraint' = 'mechanical_restraint',
-                               'Physical Restraint' = 'physical_restraint',
-                               'Preschool Expulsion' = 'preschool_expulsion',
-                               'Preschool Suspension' = 'preschool_susp',
-                               'Seclusion' = 'seclusion')
-plot.dat3$model <- 'B'
-plot.dat3_all <-plot.dat3
-plot.dat3_all$bias <- 'Implicit'
-
-#weighted warmth w/exclusions & explicit difference
-plot.dat <- data.frame(group = NA, weighted_warmth = NA, est = NA, lower = NA, upper=NA, metric = NA)
-plot.dat2 <- data.frame(weighted_warmth = NA, est = NA, lower=NA, upper=NA, metric=NA)
-plot.dat3 <- data.frame(est=NA, lower=NA, upper=NA, p_neg = NA, metric=NA)
-
-for(i in metrics){
-  pth <- paste(base_path, i, '/', sep='')
-  
-  files <- list.files(pth)
-  j <- 1
-  posterior_combo <- array(0, dim=c(14,4000,length(files)))
-  raw_rate_warmth <- data.frame(county_id=NA, nschools=NA, weighted_warmth=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
-  for (k in files){
-    #print(i)
-    load(paste(pth,k,sep=''))
-    df <- as.matrix(m)
-    m$data %>% 
-      select(county_id, COMBOKEY) %>% 
-      distinct() %>% 
-      group_by(county_id) %>% 
-      summarise(nschools=n()) -> n_schools
-    m$data %>%
-      group_by(county_id, group) %>%
-      summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
-      mutate(rate=nincidents/nstudents) -> rate
-    n_schools %>%
-      left_join(m$data[, c('county_id', 'weighted_warmth')]) %>%
-      distinct() %>%
-      left_join(rate) %>%
-      rbind(raw_rate_warmth) %>%
-      filter(!is.na(county_id)) -> raw_rate_warmth
-    posterior_combo[,,j] <- t(df[,c(1:14)])
-    j <- j+1
-  }
-  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
-  
-  for (p in 1:14){
-    m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
-  }
-  
-  data.frame(est=mean(p_cons[14,]),
-             lower=quantile(p_cons[14,], .025),
-             upper=quantile(p_cons[14,], .975),
-             p_neg = prop.table(table(p_cons[14,]<0))[2],
-             metric=i) %>%
-    rbind(plot.dat3) %>%
-    filter(!is.na(est)) %>%
-    mutate(metric=reorder(metric, est)) -> plot.dat3
-}
-
-plot.dat3$bias <- 'Explicit'
-plot.dat3$metric <- fct_recode(plot.dat3$metric, 
-                               'Out-of-School Suspension' = 'oos_susp',
-                               'In-School Suspension' = 'inschool_susp',
-                               'School-Related Arrest' = 'in_school_arrest',
-                               'Law Enf. Referral' = 'law_enforcement',
-                               'Corporal Punishment' = 'corporal',
-                               'Expulsion Under Zero-Tolerance' = 'expulsion_0_tolerance',
-                               'Expulsion with Educational Services' = 'expulsion_w_ed',
-                               'Expulsion without Educational Services' = 'expulsion_wo_ed',
-                               'Mechanical Restraint' = 'mechanical_restraint',
-                               'Physical Restraint' = 'physical_restraint',
-                               'Preschool Expulsion' = 'preschool_expulsion',
-                               'Preschool Suspension' = 'preschool_susp',
-                               'Seclusion' = 'seclusion')
-plot.dat3$model <- 'B'
-plot.dat3 %>%
-  rbind(plot.dat3_all) %>%
-  rbind(table_dat) -> table_dat
-
-base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/teacher_metrics/'
-plot.dat <- data.frame(group = NA, county_bias = NA, est = NA, lower = NA, upper=NA, metric = NA)
-plot.dat2 <- data.frame(county_bias = NA, est = NA, lower=NA, upper=NA, metric=NA)
-plot.dat3 <- data.frame(est=NA, lower=NA, upper=NA, p_neg=NA, metric=NA)
-
-# weighted bias w/exclusions & explicit difference
-metrics <- list.files(base_path)
-
-for (i in metrics){
-  pth <- paste(base_path, i, '/', sep='')
-  
-  files <- list.files(pth)
-  j <- 1
-  posterior_combo <- array(0, dim=c(14,4000,length(files)))
-  raw_rate <- data.frame(county_id=NA, nschools=NA, county_bias=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
-  for (k in files){
-    #print(i)
-    load(paste(pth,k,sep=''))
-    df <- as.matrix(m)
-    m$data %>% 
-      select(county_id, COMBOKEY) %>% 
-      distinct() %>% 
-      group_by(county_id) %>% 
-      summarise(nschools=n()) -> n_schools
-    m$data %>%
-      group_by(county_id, group) %>%
-      summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
-      mutate(rate=nincidents/nstudents) -> rate
-    n_schools %>%
-      left_join(m$data[, c('county_id', 'county_bias')]) %>%
-      distinct() %>%
-      left_join(rate) %>%
-      rbind(raw_rate) %>%
-      filter(!is.na(county_id)) -> raw_rate
-    posterior_combo[,,j] <- t(df[,c(1:14)])
-    j <- j+1
-  }
-  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
-  
-  for (p in 1:14){
-    m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
-  }
-  
-  data.frame(est=mean(p_cons[13,]),
-             lower=quantile(p_cons[13,], .025),
-             upper=quantile(p_cons[13,], .975),
-             p_neg = prop.table(table(p_cons[13,]<0))[2],
-             metric=i) %>%
-    rbind(plot.dat3) %>%
-    filter(!is.na(est)) %>%
-    mutate(metric=reorder(metric, est)) -> plot.dat3
-}
-
-plot.dat3$metric <- fct_recode(plot.dat3$metric, 
-                               'Out-of-School Suspension' = 'oos_susp',
-                               'In-School Suspension' = 'inschool_susp',
-                               'School-Related Arrest' = 'in_school_arrest',
-                               'Law Enf. Referral' = 'law_enforcement',
-                               'Corporal Punishment' = 'corporal',
-                               'Expulsion Under Zero-Tolerance' = 'expulsion_0_tolerance',
-                               'Expulsion with Educational Services' = 'expulsion_w_ed',
-                               'Expulsion without Educational Services' = 'expulsion_wo_ed',
-                               'Mechanical Restraint' = 'mechanical_restraint',
-                               'Physical Restraint' = 'physical_restraint',
-                               'Preschool Expulsion' = 'preschool_expulsion',
-                               'Preschool Suspension' = 'preschool_susp',
-                               'Seclusion' = 'seclusion')
-plot.dat3$model <- 'C'
-plot.dat3_all <-plot.dat3
-plot.dat3_all$bias <- 'Implicit'
-
-plot.dat <- data.frame(group = NA, county_warmth = NA, est = NA, lower = NA, upper=NA, metric = NA)
-plot.dat2 <- data.frame(county_warmth = NA, est = NA, lower=NA, upper=NA, metric=NA)
-plot.dat3 <- data.frame(est=NA, lower=NA, upper=NA, p_neg = NA, metric=NA)
-
-for(i in metrics){
-  pth <- paste(base_path, i, '/', sep='')
-  
-  files <- list.files(pth)
-  j <- 1
-  posterior_combo <- array(0, dim=c(14,4000,length(files)))
-  raw_rate_warmth <- data.frame(county_id=NA, nschools=NA, county_warmth=NA, group=NA, nincidents=NA, nstudents=NA, rate=NA)
-  for (k in files){
-    #print(i)
-    load(paste(pth,k,sep=''))
-    df <- as.matrix(m)
-    m$data %>% 
-      select(county_id, COMBOKEY) %>% 
-      distinct() %>% 
-      group_by(county_id) %>% 
-      summarise(nschools=n()) -> n_schools
-    m$data %>%
-      group_by(county_id, group) %>%
-      summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
-      mutate(rate=nincidents/nstudents) -> rate
-    n_schools %>%
-      left_join(m$data[, c('county_id', 'county_warmth')]) %>%
-      distinct() %>%
-      left_join(rate) %>%
-      rbind(raw_rate_warmth) %>%
-      filter(!is.na(county_id)) -> raw_rate_warmth
-    posterior_combo[,,j] <- t(df[,c(1:14)])
-    j <- j+1
-  }
-  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
-  
-  for (p in 1:14){
-    m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
-  }
-  for (p in 1:14){
-    m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
-  }
-  
-  data.frame(est=mean(p_cons[14,]),
-             lower=quantile(p_cons[14,], .025),
-             upper=quantile(p_cons[14,], .975),
-             p_neg = prop.table(table(p_cons[14,]<0))[2],
-             metric=i) %>%
-    rbind(plot.dat3) %>%
-    filter(!is.na(est)) %>%
-    mutate(metric=reorder(metric, est)) -> plot.dat3
-}
-
-plot.dat3$bias <- 'Explicit'
-plot.dat3$metric <- fct_recode(plot.dat3$metric, 
-                               'Out-of-School Suspension' = 'oos_susp',
-                               'In-School Suspension' = 'inschool_susp',
-                               'School-Related Arrest' = 'in_school_arrest',
-                               'Law Enf. Referral' = 'law_enforcement',
-                               'Corporal Punishment' = 'corporal',
-                               'Expulsion Under Zero-Tolerance' = 'expulsion_0_tolerance',
-                               'Expulsion with Educational Services' = 'expulsion_w_ed',
-                               'Expulsion without Educational Services' = 'expulsion_wo_ed',
-                               'Mechanical Restraint' = 'mechanical_restraint',
-                               'Physical Restraint' = 'physical_restraint',
-                               'Preschool Expulsion' = 'preschool_expulsion',
-                               'Preschool Suspension' = 'preschool_susp',
-                               'Seclusion' = 'seclusion')
-plot.dat3$model <- 'C'
-plot.dat3 %>%
-  rbind(plot.dat3_all) %>%
-  rbind(table_dat) -> table_dat
-# ggplot(table_dat, aes(x=metric, y=est, group=model, color=model, shape=model)) +
-#   geom_point(position=position_dodge(width=.5), size=2) +
-#   geom_errorbar(aes(ymin=lower, ymax=upper), 
-#                 width=.5, position=position_dodge(width=.5)) +
-#   theme_classic() +
-#   coord_flip() +
-#   geom_hline(yintercept=0) +
-#   ylab('Black-White Difference in log-odds slope') +
-#   theme(axis.title.y = element_blank(),
-#         legend.title = element_blank(),
-#         axis.title.x = element_text(size=14),
-#         axis.text = element_text(size=12),
-#         legend.text = element_text(size=12),
-#         strip.text = element_text(size=12)) +
-#   facet_wrap(~bias)
-table_dat$p_neg[which(is.na(table_dat$p_neg))] <- 1
-table_dat %>%
-  mutate(UI = paste('[', round(lower, 2), ', ', round(upper, 2), ']', sep='')) %>%
-  select(est, UI, p_neg, metric, bias, model) %>%
-  mutate(val = paste(round(est, 2), ', ', UI, sep=''),
-         model = paste('Model ', model, sep='')) %>%
-  select(val, metric, bias, model) %>%
-  spread(model, val) %>%
-  arrange(bias, metric) -> tabdat
-
-papaja::apa_table(tabdat, caption = 'Effect estimates (operationalized as the mean of the posterior distribution for the difference in log-odds slope between black and white students) and 95% uncertainty intervals for all of the outcomes for each model (*Model A*: raw county means estimates; *Model B*: post-stratified estimates using simple warmth score, *Model C*: teacher analyses)', small = T)
-```
-
-#County-level estimates
-
+### County-level estimates
 ```{r raw-county-estimates, fig.cap='Difference in raw county means and post-stratifed estimates of implicit bias as a function of the number of observations in each county. The X axis is on the log scale.'}
 individual_data %>%
   group_by(county_id) %>%
@@ -1430,7 +938,7 @@ cm %>%
 
 ```
 
-Examining the models fit with simple county means, we find that the county-level estimates vary more than with the post-stratified estimates. This pattern is expected, as one desireable feature of post-stratification is that it regularizes extreme observations without a large amount of data to suppor them. This phenomena is illustrated in figure \@ref(fig:raw-county-estimates), which shows the distribution of differences between the raw county means and the post-stratified estimates of implicit bias as a function of the number of observations in each county. More specifically, while the mean of the county-level means does not meaningfully differ from the post-stratified estimates, the standard deviation is much larger ($M_{implicit}$ = `r round(mean(as.numeric(cm$bias), na.rm=T), 2)`, $SD_{implicit}$ = `r round(sd(as.numeric(cm$bias), na.rm=T), 2)`; $M_{explicit}$ = `r round(mean(as.numeric(cm$explicit), na.rm=T), 2)`, $SD_{explicit}$ = `r round(sd(as.numeric(cm$explicit), na.rm=T), 2)`)[^2]
+Examining the models fit with simple county means, we find that the county-level estimates vary more than with the post-stratified estimates. This pattern is expected, as one desireable feature of post-stratification is that it regularizes extreme observations without a large amount of data to support them. This phenomena is illustrated in figure \@ref(fig:raw-county-estimates), which shows the distribution of differences between the raw county means and the post-stratified estimates of implicit bias as a function of the number of observations in each county. More specifically, while the mean of the county-level means does not meaningfully differ from the post-stratified estimates, the standard deviation is much larger ($M_{implicit}$ = `r round(mean(as.numeric(cm$bias), na.rm=T), 2)`, $SD_{implicit}$ = `r round(sd(as.numeric(cm$bias), na.rm=T), 2)`; $M_{explicit}$ = `r round(mean(as.numeric(cm$explicit), na.rm=T), 2)`, $SD_{explicit}$ = `r round(sd(as.numeric(cm$explicit), na.rm=T), 2)`)[^2]
 
 [^2]: This explicit estimate is based on the simple warmth towards blacks question, and not the difference between warmth towards whites and warmth twoards blacks.
 
@@ -1518,6 +1026,282 @@ teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_disparit
 ```
 
 A subset of years in the Project Implicit data also collected occupational information from respondents. As identified in our pre-analysis plan, we took advantage of the presence of primary and secondary educators in these data to test whether any associations between bias and race-based differences in the rates of disciplinary action were stronger among these respondents. Filtering for only white individuals who identified as primary, secondary, special education, and other teachers and instructors (occupation codes 25-2000 and 25-3000) reduced the dataset to `r dim(individual_data_teachers)[1]` respondents. In order to assure that our estimates were reasonably stable, we limited analysis to only counties that had at least 50 respondents. As such, our teacher analysis is limited to just `r dim(teacher_estimates)[1]` counties. Additionally, because we do not know of any state-level demographic estimates for teachers, we were unable to perform post-stratification for these data. Nonetheless, across these limited counties, the overall estimate of implicit and explicit bias are similar to those for the whole dataset ($M_{implicit}$ = `r round(mean(as.numeric(teacher_estimates$teacher_bias), na.rm=T), 2)`, $SD_{implicit}$ = `r round(sd(as.numeric(teacher_estimates$teacher_bias), na.rm=T), 2)`; $M_{explicit}$ = `r round(mean(as.numeric(teacher_estimates$teacher_explicit), na.rm=T), 2)`, $SD_{explicit}$ = `r round(sd(as.numeric(teacher_estimates$teacher_explicit), na.rm=T), 2)`)
+
+### Model estimates
+
+Table \@ref(tab:mod-raw) presents results from the model fit to the raw, county-level means. The table presents parameter estimates (operationalized as the mean of the posterior) and 95% uncertainty intervals for each of the population-level effects for each of the outcomes. Table \@ref(tab:mod-post) and table \@ref(tab:mod-teach) present the corresponding results for the post-stratified and teacher models, respectively.
+
+
+```{r mod-raw, results='asis'}
+base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/metrics_raw/'
+plot.dat <- data.frame(coef = NA, est = NA, lower = NA, upper = NA, p_neg = NA, metric = NA, model=NA)
+
+metrics <- list.files(base_path)
+#metrics <- c('expulsion_combined', 'inschool_susp', 'oos_susp')
+for (i in metrics){
+  pth <- paste(base_path, i, '/', sep='')
+  
+  files <- list.files(pth)
+  j <- 1
+  posterior_combo <- array(0, dim=c(14,4000,length(files)))
+  
+  
+  for (k in files){
+    #print(i)
+    load(paste(pth,k,sep=''))
+    dat <- as.matrix(m)
+    posterior_combo[,,j] <- t(dat[,c(1:14)])
+    j <- j+1
+  }
+  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
+  
+  for (p in 1:14){
+    m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
+  }
+  for (p in 1:14){
+    m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
+  }
+  for (p in 1:14){
+    m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
+  }
+  for (p in 1:14){
+    m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
+  }
+  
+  data.frame(coef=colnames(dat)[1:14],
+             est=rowMeans(p_cons),
+             lower=apply(p_cons,1,quantile, probs=.025),
+             upper=apply(p_cons,1,quantile, probs=.975),
+             p_neg = rowSums(p_cons<0)/4000,
+             metric=rep(i, 14),
+             model = rep('A', 14)) %>%
+    rbind(plot.dat) %>%
+    filter(!is.na(est)) -> plot.dat
+}
+plot.dat$metric <- fct_recode(plot.dat$metric, 
+                               'Out-of-School Suspension' = 'oos_susp',
+                               'In-School Suspension' = 'inschool_susp',
+                               'School-Related Arrest' = 'in_school_arrest',
+                               'Law Enf. Referral' = 'law_enforcement',
+                               'Corporal Punishment' = 'corporal',
+                               'Expulsion Under Zero-Tolerance' = 'expulsion_0_tolerance',
+                               'Expulsion with Educational Services' = 'expulsion_w_ed',
+                               'Expulsion without Educational Services' = 'expulsion_wo_ed',
+                               'Mechanical Restraint' = 'mechanical_restraint',
+                               'Physical Restraint' = 'physical_restraint',
+                               'Preschool Expulsion' = 'preschool_expulsion',
+                               'Preschool Suspension' = 'preschool_susp',
+                               'Seclusion' = 'seclusion')
+plot.dat %>%
+  mutate(estimate=paste(round(est, 2), ', [', round(lower, 2), ',', round(upper, 2),']', sep='')) %>%
+  select(metric, estimate, coef) %>%
+  spread(metric, estimate) -> tabledata_raw
+  
+tabledata_raw$coef <- fct_recode(tabledata_raw$coef,
+                            'Intercept' = '(Intercept)',
+                            'total population' = 'total_pop',
+                            'propotion black' = 'black_prop',
+                            'proportion white' = 'white_prop',
+                            'black-white ratio' = 'b.w.ratio',
+                            'college grads' = 'col_grads',
+                            'income' = 'med_income',
+                            'poverty' = 'poverty_rate',
+                            'unemployment' = 'unemp_rate',
+                            'race: white' = 'groupwhite',
+                            'implicit bias' = 'bias',
+                            'explicit bias' = 'warmth',
+                            'implicit bias*race: white' = 'groupwhite:bias',
+                            'explicit bias*race: white' = 'groupwhite:warmth')
+tabledata_raw <- tabledata_raw[c(1,11,4,14,2,5,9,10,12,6,3,13,7,8),]
+names(tabledata_raw)[1] <- ''
+
+
+
+papaja::apa_table(tabledata_raw, caption = 'Regression coefficient estimates for the population-level (i.e. fixed) effects, along with 95\\% uncertainty intervals for each of the disciplinary metrics. Model uses raw, county-level means as estimates of implicit and explicit bias.', landscape=T, small=T)
+  
+```
+
+
+
+```{r mod-post, results='asis'}
+base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/metrics_weighted/'
+plot.dat <- data.frame(coef = NA, est = NA, lower = NA, upper = NA, p_neg = NA, metric = NA, model=NA)
+
+metrics <- list.files(base_path)
+#metrics <- c('expulsion_combined', 'inschool_susp', 'oos_susp')
+for (i in metrics){
+  pth <- paste(base_path, i, '/', sep='')
+  
+  files <- list.files(pth)
+  j <- 1
+  posterior_combo <- array(0, dim=c(14,4000,length(files)))
+  
+  
+  for (k in files){
+    #print(i)
+    load(paste(pth,k,sep=''))
+    dat <- as.matrix(m)
+    posterior_combo[,,j] <- t(dat[,c(1:14)])
+    j <- j+1
+  }
+  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
+  
+  for (p in 1:14){
+    m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
+  }
+  for (p in 1:14){
+    m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
+  }
+  for (p in 1:14){
+    m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
+  }
+  for (p in 1:14){
+    m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
+  }
+  
+  data.frame(coef=colnames(dat)[1:14],
+             est=rowMeans(p_cons),
+             lower=apply(p_cons,1,quantile, probs=.025),
+             upper=apply(p_cons,1,quantile, probs=.975),
+             p_neg = rowSums(p_cons<0)/4000,
+             metric=rep(i, 14),
+             model = rep('A', 14)) %>%
+    rbind(plot.dat) %>%
+    filter(!is.na(est)) -> plot.dat
+}
+plot.dat$metric <- fct_recode(plot.dat$metric, 
+                               'Out-of-School Suspension' = 'oos_susp',
+                               'In-School Suspension' = 'inschool_susp',
+                               'School-Related Arrest' = 'in_school_arrest',
+                               'Law Enf. Referral' = 'law_enforcement',
+                               'Corporal Punishment' = 'corporal',
+                               'Expulsion Under Zero-Tolerance' = 'expulsion_0_tolerance',
+                               'Expulsion with Educational Services' = 'expulsion_w_ed',
+                               'Expulsion without Educational Services' = 'expulsion_wo_ed',
+                               'Mechanical Restraint' = 'mechanical_restraint',
+                               'Physical Restraint' = 'physical_restraint',
+                               'Preschool Expulsion' = 'preschool_expulsion',
+                               'Preschool Suspension' = 'preschool_susp',
+                               'Seclusion' = 'seclusion')
+plot.dat %>%
+  mutate(estimate=paste(round(est, 2), ', [', round(lower, 2), ',', round(upper, 2),']', sep='')) %>%
+  select(metric, estimate, coef) %>%
+  spread(metric, estimate) -> tabledata_post
+
+tabledata_post$coef <- fct_recode(tabledata_post$coef,
+                            'Intercept' = '(Intercept)',
+                            'total population' = 'total_pop',
+                            'propotion black' = 'black_prop',
+                            'proportion white' = 'white_prop',
+                            'black-white ratio' = 'b.w.ratio',
+                            'college grads' = 'col_grads',
+                            'income' = 'med_income',
+                            'poverty' = 'poverty_rate',
+                            'unemployment' = 'unemp_rate',
+                            'race: white' = 'groupwhite',
+                            'implicit bias' = 'weighted_bias',
+                            'explicit bias' = 'weighted_warmth',
+                            'implicit bias*race: white' = 'groupwhite:weighted_bias',
+                            'explicit bias*race: white' = 'groupwhite:weighted_warmth')
+  
+tabledata_post <- tabledata_post[c(1,11,4,14,2,5,9,10,12,6,3,13,7,8),]
+names(tabledata_post)[1] <- ''
+
+papaja::apa_table(tabledata_post, caption = 'Regression coefficient estimates for the population-level (i.e. fixed) effects, along with 95\\% uncertainty intervals for each of the disciplinary metrics. Model uses poststratified estimates of implicit and explicit bias.', landscape=T, small=T)
+  
+```
+
+
+
+```{r mod-teach, results='asis'}
+base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/teacher_metrics/'
+plot.dat <- data.frame(coef = NA, est = NA, lower = NA, upper = NA, p_neg = NA, metric = NA, model=NA)
+
+metrics <- list.files(base_path)
+#metrics <- c('expulsion_combined', 'inschool_susp', 'oos_susp')
+for (i in metrics){
+  pth <- paste(base_path, i, '/', sep='')
+  
+  files <- list.files(pth)
+  j <- 1
+  posterior_combo <- array(0, dim=c(14,4000,length(files)))
+  
+  
+  for (k in files){
+    #print(i)
+    load(paste(pth,k,sep=''))
+    dat <- as.matrix(m)
+    posterior_combo[,,j] <- t(dat[,c(1:14)])
+    j <- j+1
+  }
+  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
+  
+  for (p in 1:14){
+    m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
+  }
+  for (p in 1:14){
+    m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
+  }
+  for (p in 1:14){
+    m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
+  }
+  for (p in 1:14){
+    m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
+  }
+  
+  data.frame(coef=colnames(dat)[1:14],
+             est=rowMeans(p_cons),
+             lower=apply(p_cons,1,quantile, probs=.025),
+             upper=apply(p_cons,1,quantile, probs=.975),
+             p_neg = rowSums(p_cons<0)/4000,
+             metric=rep(i, 14),
+             model = rep('A', 14)) %>%
+    rbind(plot.dat) %>%
+    filter(!is.na(est)) -> plot.dat
+}
+plot.dat$metric <- fct_recode(plot.dat$metric, 
+                               'Out-of-School Suspension' = 'oos_susp',
+                               'In-School Suspension' = 'inschool_susp',
+                               'School-Related Arrest' = 'in_school_arrest',
+                               'Law Enf. Referral' = 'law_enforcement',
+                               'Corporal Punishment' = 'corporal',
+                               'Expulsion Under Zero-Tolerance' = 'expulsion_0_tolerance',
+                               'Expulsion with Educational Services' = 'expulsion_w_ed',
+                               'Expulsion without Educational Services' = 'expulsion_wo_ed',
+                               'Mechanical Restraint' = 'mechanical_restraint',
+                               'Physical Restraint' = 'physical_restraint',
+                               'Preschool Expulsion' = 'preschool_expulsion',
+                               'Preschool Suspension' = 'preschool_susp',
+                               'Seclusion' = 'seclusion')
+plot.dat %>%
+  mutate(estimate=paste(round(est, 2), ', [', round(lower, 2), ',', round(upper, 2),']', sep='')) %>%
+  select(metric, estimate, coef) %>%
+  spread(metric, estimate) -> tabledata_teachers
+
+tabledata_teachers$coef <- fct_recode(tabledata_teachers$coef,
+                            'Intercept' = '(Intercept)',
+                            'total population' = 'total_pop',
+                            'propotion black' = 'black_prop',
+                            'proportion white' = 'white_prop',
+                            'black-white ratio' = 'b.w.ratio',
+                            'college grads' = 'col_grads',
+                            'income' = 'med_income',
+                            'poverty' = 'poverty_rate',
+                            'unemployment' = 'unemp_rate',
+                            'race: white' = 'groupwhite',
+                            'implicit bias' = 'county_bias',
+                            'explicit bias' = 'county_warmth',
+                            'implicit bias*race: white' = 'groupwhite:county_bias',
+                            'explicit bias*race: white' = 'groupwhite:county_warmth')
+  
+tabledata_teachers <- tabledata_teachers[c(1,11,4,14,2,5,9,10,12,6,3,13,7,8),]
+names(tabledata_teachers)[1] <- ''
+
+papaja::apa_table(tabledata_teachers, caption = 'Regression coefficient estimates for the population-level (i.e. fixed) effects, along with 95\\% uncertainty intervals for each of the disciplinary metrics. Model uses only data from Project Implicit respondents who identified as teachers.', landscape=T, small=T)
+  
+```
+
+
 
 \setlength{\parindent}{-0.5in}
 \setlength{\leftskip}{0.5in}
