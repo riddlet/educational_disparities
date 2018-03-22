@@ -434,8 +434,8 @@ plot.dat3$metric <- fct_recode(plot.dat3$metric,
                                'Law Enf. Referral' = 'law_enforcement',
                                'Expulsion' = 'expulsion_combined')
 plot.dat3_all <- rbind(plot.dat3_all, plot.dat3)
-ggplot(plot.dat3_all, aes(x=metric, y=est, group=bias, color=bias, shape=bias)) +
-  geom_point(position=position_dodge(width=.5), size=2) +
+p <- ggplot(plot.dat3_all, aes(x=metric, y=est, group=bias, color=bias, shape=bias)) +
+  geom_point(position=position_dodge(width=.5), size=3) +
   geom_errorbar(aes(ymin=lower, ymax=upper), 
                 width=.5, position=position_dodge(width=.5)) +
   theme_classic() +
@@ -443,7 +443,11 @@ ggplot(plot.dat3_all, aes(x=metric, y=est, group=bias, color=bias, shape=bias)) 
   geom_hline(yintercept=0) +
   ylab('Black-White Difference in log-odds slope') +
   theme(axis.title.y = element_blank(),
-        legend.title = element_blank())
+        legend.title = element_blank(),
+        axis.text = element_text(size=12),
+        axis.title.x = element_text(size=14, face='bold'),
+        legend.text = element_text(size=12))
+ggsave('/Users/travis/Documents/gits/educational_disparities/figs/slope_ests.jpeg', p, width = 11, height = 6)
 ```
 
 Several patterns are apparent from this figure. First, in all cases but school-related arrests, county-level explicit biases are reliably associated with disciplinary disparities, such that counties with more bias are expected to have a larger racial gap. The effect with the largest magnitude of these is out-of-school suspensions ($M_{slope}$ = `r round(plot.dat3_all$est[6], 2)`, [`r round(plot.dat3_all$lower[6], 2)`, `r round(plot.dat3_all$upper[6], 2)`]), followed by expulsions ($M_{slope}$ = `r round(plot.dat3_all$est[10], 2)`, [`r round(plot.dat3_all$lower[10], 2)`, `r round(plot.dat3_all$upper[10], 2)`]), law enforcement referrals ($M_{slope}$ = `r round(plot.dat3_all$est[7], 2)`, [`r round(plot.dat3_all$lower[7], 2)`, `r round(plot.dat3_all$upper[7], 2)`]), and in-school suspensions ($M_{slope}$ = `r round(plot.dat3_all$est[8], 2)`, [`r round(plot.dat3_all$lower[8], 2)`, `r round(plot.dat3_all$upper[8], 2)`]). The model indicates that the evidence for school-related arrests is inconclusive ($M_{slope}$ = `r round(plot.dat3_all$est[9], 2)`, [`r round(plot.dat3_all$lower[9], 2)`, `r round(plot.dat3_all$upper[9], 2)`]).
@@ -536,10 +540,10 @@ The findings for other disciplinary metrics suggest a differential effect of exp
 
 
 ```{r detail-risks, fig.cap="Association between bias and relative risk ratio for black students to white students. Line is the mean of the posterior. Bands indicate 95% uncertainty intervals. Points represent counties, whose sizes are scaled to the number of schools in that county. Note that the y axis is cut at 8 for legibility despite data extending beyond."}
-plot.dat <- data.frame(group=NA, weighted_bias=NA, est=NA, 
-                       lower=NA, upper=NA, bias=NA, metric=NA)
-plot.dat2 <- data.frame(weighted_bias=NA, est=NA, 
-                        lower=NA, upper=NA, bias=NA, metric=NA)
+plot.dat <- data.frame(group=NA, weighted_bias=NA, est=NA, lower=NA, 
+                       upper=NA, bias=NA, metric=NA, p_neg_black=NA, p_neg_white=NA)
+plot.dat2 <- data.frame(weighted_bias=NA, est=NA, lower=NA, 
+                        upper=NA, bias=NA, metric=NA, p_neg=NA)
 raw_or <- data.frame(county_id=NA, nschools=NA, bias=NA, 
                      value=NA, black=NA, white=NA, odds_r=NA, metric=NA)
 for (i in metrics){
@@ -611,6 +615,10 @@ for (i in metrics){
     mutate(index=row_number()) %>%
     gather(sample, value, `1`:`4000`) -> posterior_distribution
   
+  p_neg_blackimp <- sum(p_cons[3,]>0)/4000
+  p_neg_blackexp <- sum(p_cons[4,]>0)/4000
+  p_neg_whiteimp <- sum((p_cons[3,]+p_cons[16,])>0)/4000
+  p_neg_whiteexp <- sum((p_cons[4,]+p_cons[17,])>0)/4000
   
   posterior_distribution %>%
     select(group, weighted_bias, sample, value, index) %>%
@@ -620,9 +628,13 @@ for (i in metrics){
               upper = quantile(value, .975)) %>%
     ungroup() %>%
     mutate(bias = 'Implicit',
-           metric = i) %>%
+           metric = i,
+           p_neg_black=p_neg_blackimp,
+           p_neg_white=p_neg_whiteimp) %>%
     rbind(plot.dat) -> plot.dat
-  
+ 
+  p_neg <- sum(p_cons[16,]<0)/4000
+   
   posterior_distribution %>%
     select(group, weighted_bias, sample, value) %>%
     spread(group, value) %>%
@@ -633,7 +645,8 @@ for (i in metrics){
               upper = quantile(ratio, .975)) %>%
     ungroup() %>%
     mutate(bias = 'Implicit',
-           metric=i)  %>%
+           metric=i,
+           p_neg = p_neg)  %>%
     rbind(plot.dat2) -> plot.dat2
 
   newdat <- expand.grid(group = rownames(table(m$data$group)),
@@ -668,8 +681,12 @@ for (i in metrics){
               upper = quantile(value, .975)) %>%
     ungroup() %>%
     mutate(bias = 'Explicit',
-           metric=i) %>%
+           metric=i,
+           p_neg_black=p_neg_blackexp,
+           p_neg_white=p_neg_whiteexp) %>%
     rbind(plot.dat) -> plot.dat
+ 
+  p_neg <- sum(p_cons[17,]<0)/4000   
   
   posterior_distribution %>%
     select(group, weighted_explicit_diff, sample, value) %>%
@@ -682,7 +699,8 @@ for (i in metrics){
               upper = quantile(ratio, .975)) %>%
     ungroup() %>%
     mutate(bias = 'Explicit',
-           metric=i) %>%
+           metric=i,
+           p_neg=p_neg) %>%
     rbind(plot.dat2) -> plot.dat2
   
   raw_rate %>%
@@ -699,25 +717,44 @@ for (i in metrics){
 }
 
 plot.dat$metric <- fct_recode(plot.dat$metric, 
-                               'Out-of-School Suspension' = 'oos_susp',
-                               'In-School Suspension' = 'inschool_susp',
-                               'School-Related Arrest' = 'in_school_arrest',
-                               'Law Enf. Referral' = 'law_enforcement',
+                               'Out-of-School \n Suspension' = 'oos_susp',
+                               'In-School \n Suspension' = 'inschool_susp',
+                               'School-Related \n Arrest' = 'in_school_arrest',
+                               'Law Enf. \n Referral' = 'law_enforcement',
                                'Expulsion' = 'expulsion_combined')
 
 plot.dat2$metric <- fct_recode(plot.dat2$metric, 
-                               'Out-of-School Suspension' = 'oos_susp',
-                               'In-School Suspension' = 'inschool_susp',
-                               'School-Related Arrest' = 'in_school_arrest',
-                               'Law Enf. Referral' = 'law_enforcement',
+                               'Out-of-School \n Suspension' = 'oos_susp',
+                               'In-School \n Suspension' = 'inschool_susp',
+                               'School-Related \n Arrest' = 'in_school_arrest',
+                               'Law Enf. \n Referral' = 'law_enforcement',
                                'Expulsion' = 'expulsion_combined')
 
 raw_or$metric <- fct_recode(raw_or$metric, 
-                            'Out-of-School Suspension' = 'oos_susp',
-                            'In-School Suspension' = 'inschool_susp',
-                            'School-Related Arrest' = 'in_school_arrest',
-                            'Law Enf. Referral' = 'law_enforcement',
+                            'Out-of-School \n Suspension' = 'oos_susp',
+                            'In-School \n Suspension' = 'inschool_susp',
+                            'School-Related \n Arrest' = 'in_school_arrest',
+                            'Law Enf. \n Referral' = 'law_enforcement',
                             'Expulsion' = 'expulsion_combined')
+
+plot.dat <- plot.dat[!is.na(plot.dat$weighted_bias),]
+
+plot.dat %>%
+  filter(weighted_bias==2.5) %>%
+  mutate(text_y = est,
+         text_x = 2.75) %>%
+  select(group, text_y, text_x, metric, p_neg_black, p_neg_white, bias) %>%
+  distinct() %>%
+  gather(group1, p_neg, p_neg_black, p_neg_white) %>%
+  mutate(group1 = str_sub(group1, 7, -1)) %>%
+  filter(group==group1) %>%
+  select(-group1) -> text_data
+
+text_data$text_comp <- '=='
+text_data$text_comp[text_data$p_neg>.99] <- '>'
+text_data$text_comp[text_data$p_neg<.01] <- '<'
+text_data$p_neg[text_data$p_neg>.99] <- .99
+text_data$p_neg[text_data$p_neg<.01] <- .01
 
 plot.dat %>%
   filter(!is.na(weighted_bias)) %>%
@@ -725,30 +762,47 @@ plot.dat %>%
     geom_line(aes(color=group)) +
     geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.15) +
     theme_classic() +
+    geom_text(data=text_data, parse=T, size=2.5, 
+              aes(x=2.8, y=text_y, vjust=0,
+                  label=paste0('p[pos]', text_comp, round(p_neg,2)))) +
     ylab('Probability of \n disciplinary action') +
     xlab('Standardized Bias') + 
     facet_grid(metric~bias, scales='free') +
-    xlim(-3, 3) +
+    xlim(-2.75, 3.25) +
     theme(legend.title = element_blank()) -> p1
 
-
+plot.dat2$text_x <- -2.75
+plot.dat2$text_y <- 5
+plot.dat2$text_comp <- '=='
+plot.dat2$text_comp[plot.dat2$p_neg>.99] <- '>'
+plot.dat2 %>%
+  select(text_x, text_y, text_comp, p_neg, metric, bias) %>%
+  distinct() %>%
+  mutate(p_neg = round(p_neg, 2)) %>%
+  filter(!is.na(p_neg)) -> text_data
+text_data$p_neg[text_data$p_neg==1] <- .99
   
 plot.dat2 %>% 
   filter(!is.na(weighted_bias)) %>%
   ggplot(aes(x=weighted_bias, y=est)) +
-    geom_point(data=raw_or, aes(x=value, y=odds_r, size=nschools), alpha=.05) +
+    geom_point(data=raw_or, aes(x=value, y=odds_r, size=nschools), alpha=.1) +
     geom_line() +
     geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.25) +
     theme_classic() +
     scale_size_continuous(name='Number\nof schools') + 
+    geom_text(data=text_data, parse=T, size=3,
+              aes(x=-2.75, y=4, label=paste0('p[pos]', text_comp, round(p_neg,2)))) +
     #scale_color_manual(values=c('grey', 'darkorange'), guide=F) + 
     scale_alpha_manual(values=c(.2, 1), guide=F) +
-    ylim(0,8) +
+    ylim(0,6) +
     xlim(-3, 3) + 
     xlab('Standardized Bias') +
     ylab('Relative \n Risk Ratio') +
     geom_hline(yintercept=1) +
-    facet_grid(metric~bias) -> p2
+    facet_grid(metric~bias) +
+    theme(legend.position = 'top',
+          strip.text.y=element_text(size=6)) -> p2
+ggsave('/Users/travis/Documents/gits/educational_disparities/figs/rel_risk.jpeg', p2, width = 11, height = 6)
 
 p1$data %>% filter(weighted_bias %in% c(0, 1)) -> rates
 p2$data %>% filter(weighted_bias %in% c(0, 1)) -> risks
@@ -761,7 +815,7 @@ To better illustrate the nature of these relationships, figure \@ref(fig:detail-
 
 ```{r detail-rates, fig.cap="Association between bias and probability of receiving disciplinary action for black and white students. Lines are the means of the posterior. Bands indicate 95% uncertainty intervals."}
 
-p1
+ggsave('/Users/travis/Documents/gits/educational_disparities/figs/rates.jpeg', p1, width = 11, height = 6)
 
 ```
 
