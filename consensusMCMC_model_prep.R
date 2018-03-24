@@ -214,13 +214,13 @@ black_prop + b.w.ratio + mobility + crime_rate + density +
 (group|county_id), data=mod.dat, prior = normal(0,5), 
 prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
 
-save(m, file='/tigress/triddle/educational_disparities/mw_uclaexcl_diff_extra_covs/"
+save(m, file='/tigress/triddle/educational_disparities/mw_uclaexcl_diff_extra_covs_extra_excl/"
 
 
 for(i in rownames(table(dfs$metric))){
   for (j in 1:15){
     fs <- paste(string1, i, string2, j, string3, i, string4, i, "/m", j, ".rdata')", sep='')
-    fileConn <- file(paste("/Users/travis/Documents/gits/educational_disparities/cluster/model_scripts/mw_uclaexcl_diff_extracovs/",i,"/m", j, ".R", sep=''))
+    fileConn <- file(paste("/Users/travis/Documents/gits/educational_disparities/cluster/model_scripts/mw_uclaexcl_diff_extracovs_extra_excl/",i,"/m", j, ".R", sep=''))
     writeLines(fs, fileConn)
     close(fileConn)
   }
