@@ -52,20 +52,24 @@ df_school %>%
                                not_disabled='S_', disabled='A_')) %>%
   select(-prefix) -> susp_inschool
 
+susp_inschool$number[which(susp_inschool$number<0)] <- NA
+
 susp_inschool %>%
-  filter(group=='black'|group=='white') %>%
+  #filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T)) %>%
   left_join(enrollment) %>%
   mutate(proportion = number/total_number) -> tempout
 
-tempout$number[which(tempout$number<0)] <- NA
-
 tempout %>% 
   ungroup() %>%
-  filter(is.finite(proportion)) %>%
-  filter(total_number>=number) %>%
+  mutate(impossible = number>total_number) %>%
+  group_by(COMBOKEY) %>%
+  mutate(impossible_school = sum(impossible)>0) %>%
+  ungroup() %>%
+  filter(impossible_school==F) %>%
+  filter(group=='black'|group=='white') %>%
   mutate(metric='inschool_susp') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() -> subdat
@@ -104,21 +108,24 @@ df_school %>%
   filter(number>=0 & number_2 >= 0) %>%
   mutate(number = number+number_2) -> oos_susp
 
+oos_susp$number[which(oos_susp$number<0)] <- NA
+
 oos_susp %>%
-  filter(group=='black'|group=='white') %>%
+  #filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T)) %>%
   left_join(enrollment) %>%
   mutate(proportion = number/total_number) -> tempout
 
-tempout$number[which(tempout$number<0)] <- NA
-
 tempout %>% 
   ungroup() %>%
-  filter(is.finite(proportion)) %>%
-  filter(number>=0) %>%
-  filter(total_number>=number) %>%
+  mutate(impossible = number>total_number) %>%
+  group_by(COMBOKEY) %>%
+  mutate(impossible_school = sum(impossible)>0) %>%
+  ungroup() %>%
+  filter(impossible_school==F) %>%
+  filter(group=='black'|group=='white') %>%
   mutate(metric='oos_susp') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
@@ -164,7 +171,7 @@ exp_w_ed %>%
   select(-number) %>%
   left_join(exp_wo_ed) %>%
   mutate(number = number + w_ed_number) %>%
-  filter(group=='black'|group=='white') %>%
+  #filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T)) %>%
@@ -173,8 +180,12 @@ exp_w_ed %>%
 
 tempout %>% 
   ungroup() %>%
-  filter(is.finite(proportion)) %>%
-  filter(total_number>=number) %>%
+  mutate(impossible = number>total_number) %>%
+  group_by(COMBOKEY) %>%
+  mutate(impossible_school = sum(impossible)>0) %>%
+  ungroup() %>%
+  filter(impossible_school==F) %>%
+  filter(group=='black'|group=='white') %>%
   mutate(metric='expulsion_combined') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
@@ -196,8 +207,10 @@ df_school %>%
                                not_disabled='F_', disabled='A_')) %>%
   select(-prefix) -> law_enf
 
+law_enf$number[which(law_enf$number<0)] <- NA
+
 law_enf %>%
-  filter(group=='black'|group=='white') %>%
+  #filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T)) %>%
@@ -206,10 +219,12 @@ law_enf %>%
 
 tempout %>% 
   ungroup() %>%
-  filter(is.finite(proportion)) %>%
-  filter(number>=0) %>%
-  filter(total_number>=number) %>%
+  mutate(impossible = number>total_number) %>%
+  group_by(COMBOKEY) %>%
+  mutate(impossible_school = sum(impossible)>0) %>%
   ungroup() %>%
+  filter(impossible_school==F) %>%
+  filter(group=='black'|group=='white') %>%
   mutate(metric='law_enforcement') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
@@ -231,21 +246,24 @@ df_school %>%
                                not_disabled='R_', disabled='A_')) %>%
   select(-prefix) -> in_school_arrest
 
+in_school_arrest$number[which(in_school_arrest$number<0)] <- NA
+
 in_school_arrest %>%
-  filter(group=='black'|group=='white') %>%
+  #filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T)) %>%
   left_join(enrollment) %>%
   mutate(proportion = number/total_number) -> tempout
 
-tempout$number[which(tempout$number<0)] <- NA
-
 tempout %>% 
   ungroup() %>%
-  filter(is.finite(proportion)) %>%
-  filter(number>=0) %>%
-  filter(total_number>=number) %>%
+  mutate(impossible = number>total_number) %>%
+  group_by(COMBOKEY) %>%
+  mutate(impossible_school = sum(impossible)>0) %>%
+  ungroup() %>%
+  filter(impossible_school==F) %>%
+  filter(group=='black'|group=='white') %>%
   mutate(metric='in_school_arrest') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
