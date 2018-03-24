@@ -65,7 +65,7 @@ tempout$number[which(tempout$number<0)] <- NA
 tempout %>% 
   ungroup() %>%
   filter(is.finite(proportion)) %>%
-  filter(total_number>number) %>%
+  filter(total_number>=number) %>%
   mutate(metric='inschool_susp') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() -> subdat
@@ -118,7 +118,7 @@ tempout %>%
   ungroup() %>%
   filter(is.finite(proportion)) %>%
   filter(number>=0) %>%
-  filter(total_number>number) %>%
+  filter(total_number>=number) %>%
   mutate(metric='oos_susp') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
@@ -174,7 +174,7 @@ exp_w_ed %>%
 tempout %>% 
   ungroup() %>%
   filter(is.finite(proportion)) %>%
-  filter(total_number>number) %>%
+  filter(total_number>=number) %>%
   mutate(metric='expulsion_combined') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
@@ -208,7 +208,7 @@ tempout %>%
   ungroup() %>%
   filter(is.finite(proportion)) %>%
   filter(number>=0) %>%
-  filter(total_number>number) %>%
+  filter(total_number>=number) %>%
   ungroup() %>%
   mutate(metric='law_enforcement') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
@@ -245,7 +245,7 @@ tempout %>%
   ungroup() %>%
   filter(is.finite(proportion)) %>%
   filter(number>=0) %>%
-  filter(total_number>number) %>%
+  filter(total_number>=number) %>%
   mutate(metric='in_school_arrest') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
@@ -329,35 +329,33 @@ df_school %>%
   mutate(LEAID = droplevels(LEAID))-> exclude
 
 # these are LEAID numbers of schools to exclude
-error_elem <- c('06CC088', '06CC027', '0623340', '0625470', '0629370', '0633600', 
-                '0634410', '0637050', '1201710', '1500030', '2802580', '3620580', 
-                '4218990', '5308700', '1201860', '0500394') #taken from elementary spreadsheet at:
+# error_elem <- c('06CC088', '06CC027', '0623340', '0625470', '0629370', '0633600', 
+#                 '0634410', '0637050', '1201710', '1500030', '2802580', '3620580', 
+#                 '4218990', '5308700', '1201860', '0500394') #taken from elementary spreadsheet at:
 #https://civilrightsproject.ucla.edu/resources/projects/center-for-civil-rights-remedies/school-to-prison-folder/federal-reports/are-we-closing-the-school-discipline-gap
 
-error_second <- c('0100002', '0500394', '0500390', '0409734', '0400144', 
-                  '0400617', '0691007', '06CC087', '06CC121', '0623340',
-                  '0625470', '0629370', '0691025', '0600094', '0633600',
-                  '0634410', '0691037', '0637050', '0638640', '08SOP01',
-                  '11DOJ02', '1200030', '1200120', '1200510', '1200002',
-                  '1200960', '1200990', '1201200', '1201710', '1201860',
-                  '1202011', '1300026', '1500030', '9999088', '19SOP03',
-                  '1600148', '1600016', '1600144', '1709810', '1712060',
-                  '1700006', '18DOJ15', '2000352', '2000008', '22DOJ06',
-                  '2400060', '24SOP02', '2300056', '2600166', '2604290',
-                  '26DOJ08', '2600316', '2600968', '2700272', '2700260',
-                  '28DOJ01', '2802580', '3000091', '3700157', '3800005',
-                  '3100051', '3100046', '33SOP01', '3303271', '35DOJ03',
-                  '32SOP01', '3620580', '3600131', '3900488', '40SOP01',
-                  '4100043', '4200091', '42DOJ26', '4209960', '4289110',
-                  '4209932', '4289280', '4218990', '4200028', '4209934',
-                  '4503420', '4600035', '47SOP04', '4800196', '4800189',
-                  '4800223', '4800250', '4800048', '4800182', '5100070',
-                  '5000005', '5308700', '5500035', '5600015', '5680251')
+# error_second <- c('0100002', '0500394', '0500390', '0409734', '0400144', 
+#                   '0400617', '0691007', '06CC087', '06CC121', '0623340',
+#                   '0625470', '0629370', '0691025', '0600094', '0633600',
+#                   '0634410', '0691037', '0637050', '0638640', '08SOP01',
+#                   '11DOJ02', '1200030', '1200120', '1200510', '1200002',
+#                   '1200960', '1200990', '1201200', '1201710', '1201860',
+#                   '1202011', '1300026', '1500030', '9999088', '19SOP03',
+#                   '1600148', '1600016', '1600144', '1709810', '1712060',
+#                   '1700006', '18DOJ15', '2000352', '2000008', '22DOJ06',
+#                   '2400060', '24SOP02', '2300056', '2600166', '2604290',
+#                   '26DOJ08', '2600316', '2600968', '2700272', '2700260',
+#                   '28DOJ01', '2802580', '3000091', '3700157', '3800005',
+#                   '3100051', '3100046', '33SOP01', '3303271', '35DOJ03',
+#                   '32SOP01', '3620580', '3600131', '3900488', '40SOP01',
+#                   '4100043', '4200091', '42DOJ26', '4209960', '4289110',
+#                   '4209932', '4289280', '4218990', '4200028', '4209934',
+#                   '4503420', '4600035', '47SOP04', '4800196', '4800189',
+#                   '4800223', '4800250', '4800048', '4800182', '5100070',
+#                   '5000005', '5308700', '5500035', '5600015', '5680251')
 
 tempout %>%
-  mutate(exclude = COMBOKEY %in% exclude$COMBOKEY | 
-           LEAID %in% error_elem |
-           LEAID %in% error_second) -> tempout
+  mutate(exclude = COMBOKEY %in% exclude$COMBOKEY ) -> tempout
 
 ################
 # append covariates #
