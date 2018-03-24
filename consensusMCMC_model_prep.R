@@ -13,7 +13,7 @@ dft %>%
   distinct() -> teacher_counties
 
 counties %>% 
-  mutate(grouping=sample(1:14, n(), replace=T)) -> county_assignments
+  mutate(grouping=sample(1:15, n(), replace=T)) -> county_assignments
 
 teacher_counties %>%
   mutate(grouping=sample(1:12, n(), replace=T)) -> teacher_county_assignments
@@ -218,9 +218,9 @@ save(m, file='/tigress/triddle/educational_disparities/mw_uclaexcl_diff_extra_co
 
 
 for(i in rownames(table(dfs$metric))){
-  for (j in 1:14){
+  for (j in 1:15){
     fs <- paste(string1, i, string2, j, string3, i, string4, i, "/m", j, ".rdata')", sep='')
-    fileConn <- file(paste("cluster/model_scripts/mw_uclaexcl_diff_extracovs/",i,"/m", j, ".R", sep=''))
+    fileConn <- file(paste("/Users/travis/Documents/gits/educational_disparities/cluster/model_scripts/mw_uclaexcl_diff_extracovs/",i,"/m", j, ".R", sep=''))
     writeLines(fs, fileConn)
     close(fileConn)
   }
