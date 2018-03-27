@@ -68,7 +68,7 @@ tempout %>%
   group_by(COMBOKEY) %>%
   mutate(impossible_school = sum(impossible)>0) %>%
   ungroup() %>%
-  filter(impossible_school==F) %>%
+  #filter(impossible_school==F) %>%
   filter(group=='black'|group=='white') %>%
   mutate(metric='inschool_susp') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
@@ -124,7 +124,7 @@ tempout %>%
   group_by(COMBOKEY) %>%
   mutate(impossible_school = sum(impossible)>0) %>%
   ungroup() %>%
-  filter(impossible_school==F) %>%
+  #filter(impossible_school==F) %>%
   filter(group=='black'|group=='white') %>%
   mutate(metric='oos_susp') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
@@ -184,7 +184,7 @@ tempout %>%
   group_by(COMBOKEY) %>%
   mutate(impossible_school = sum(impossible)>0) %>%
   ungroup() %>%
-  filter(impossible_school==F) %>%
+  #filter(impossible_school==F) %>%
   filter(group=='black'|group=='white') %>%
   mutate(metric='expulsion_combined') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
@@ -223,7 +223,7 @@ tempout %>%
   group_by(COMBOKEY) %>%
   mutate(impossible_school = sum(impossible)>0) %>%
   ungroup() %>%
-  filter(impossible_school==F) %>%
+  #filter(impossible_school==F) %>%
   filter(group=='black'|group=='white') %>%
   mutate(metric='law_enforcement') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
@@ -262,7 +262,7 @@ tempout %>%
   group_by(COMBOKEY) %>%
   mutate(impossible_school = sum(impossible)>0) %>%
   ungroup() %>%
-  filter(impossible_school==F) %>%
+  #filter(impossible_school==F) %>%
   filter(group=='black'|group=='white') %>%
   mutate(metric='in_school_arrest') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
@@ -344,7 +344,8 @@ county_means %>%
 df_school %>%
   select(COMBOKEY, LEAID, JJ) %>%
   filter(JJ == 'YES') %>%
-  mutate(LEAID = droplevels(LEAID))-> exclude
+  mutate(LEAID = droplevels(LEAID)) %>%
+  select(COMBOKEY) -> exclude
 
 # these are LEAID numbers of schools to exclude
 # error_elem <- c('06CC088', '06CC027', '0623340', '0625470', '0629370', '0633600', 
@@ -372,8 +373,20 @@ df_school %>%
 #                   '4800223', '4800250', '4800048', '4800182', '5100070',
 #                   '5000005', '5308700', '5500035', '5600015', '5680251')
 
+subdat %>%
+  select(COMBOKEY, impossible_school, metric) %>%
+  distinct() %>%
+  group_by(COMBOKEY) %>%
+  summarise(exclude=sum(impossible_school)>2) %>%
+  filter(exclude==T) %>%
+  select(COMBOKEY) %>%
+  rbind(exclude) %>%
+  distinct() %>%
+  ungroup() -> exclude
+
 tempout %>%
-  mutate(exclude = COMBOKEY %in% exclude$COMBOKEY ) -> tempout
+  filter(number<=total_number) %>%
+  mutate(exclude = COMBOKEY %in% exclude$COMBOKEY) -> tempout
 
 ################
 # append covariates #
