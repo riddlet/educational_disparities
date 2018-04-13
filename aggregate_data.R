@@ -7,18 +7,15 @@ library(lme4)
 library(httr)
 library(stringr)
 
-options(mc.cores = parallel::detectCores())
 
 "%ni%" <- Negate("%in%")
 
-district_content <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_LEA_content.csv')
-df_district <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_LEA.csv')
-school_content <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH_content.csv')
+#read in data
 df_school <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH.csv')
-county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv', 
-                         colClasses = 'character')
+county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
+df_haley <- read.csv('/Users/travis/Documents/gits/Data/Haley_countylinks/_Master Spreadsheet.csv')
 
-# Get enrollment figures
+# Get enrollment figures by race for all schools
 df_school %>%
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, SCH_ENR_HI_M:TOT_ENR_F) %>%
   gather(group, total_number, SCH_ENR_HI_M:TOT_ENR_F) %>%
@@ -34,109 +31,122 @@ df_school %>%
   distinct() -> enrollment
 
 # relevant metrics #
-################ 
+#################### 
 
 # in-school suspension
 df_school %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
          SCH_DISCWODIS_ISS_HI_M:TOT_DISCWODIS_ISS_F, 
-         SCH_DISCWDIS_ISS_IDEA_HI_M:TOT_DISCWDIS_ISS_IDEA_F) %>% 
-  gather(group, number, SCH_DISCWODIS_ISS_HI_M:TOT_DISCWDIS_ISS_IDEA_F) %>%
+         SCH_DISCWDIS_ISS_IDEA_HI_M:TOT_DISCWDIS_ISS_IDEA_F) %>%  #get relevant columns
+  gather(group, number, SCH_DISCWODIS_ISS_HI_M:TOT_DISCWDIS_ISS_IDEA_F) %>% #"tidy"
+  #separate out gender, group, & disability from column names
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
-  separate(prefix, into=c('prefix', 'disability'), -3) %>%
+  separate(prefix, into=c('prefix', 'disability'), -3) %>% 
+  #rename nonsensical "groups"
   mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
                           hispanic='HI_', pac_isl='HP_', total='SS_', 
-                          total='EA_', biracial='TR_', white='WH_')) %>%
+                          total='EA_', biracial='TR_', white='WH_')) %>% 
+  #rename nonsensical "disabled"
   mutate(disability=fct_recode(disability, not_disabled='_I', disabled='ID',
-                               not_disabled='S_', disabled='A_')) %>%
+                               not_disabled='S_', disabled='A_')) %>% 
   select(-prefix) -> susp_inschool
 
-susp_inschool$number[which(susp_inschool$number<0)] <- NA
+susp_inschool$number[which(susp_inschool$number<0)] <- NA #-9 & -5 is code for missing
 
 susp_inschool %>%
-  #filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
+  #total number of incidents at each school for each group
   summarise(number = sum(number, na.rm=T)) %>%
+  #join with enrollment totals
   left_join(enrollment) %>%
-  mutate(proportion = number/total_number) -> tempout
+  mutate(proportion = number/total_number) -> susp_inschool #proportions just because
 
-tempout %>% 
+
+susp_inschool %>% 
   ungroup() %>%
-  mutate(impossible = number>total_number) %>%
+  mutate(impossible = number>total_number) %>% #mark impossible observations
   group_by(COMBOKEY) %>%
-  mutate(impossible_school = sum(impossible)>0) %>%
+  mutate(impossible_school = sum(impossible)>0) %>% #any impossible numbers?
   ungroup() %>%
-  #filter(impossible_school==F) %>%
-  filter(group=='black'|group=='white') %>%
-  mutate(metric='inschool_susp') %>%
-  mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
+  filter(group=='black'|group=='white') %>% #only keep black and white students
+  mutate(metric='inschool_susp') %>% #label all these with their metric
+  mutate(LEA_STATE = droplevels(LEA_STATE)) %>% #housekeeping
   distinct() -> subdat
 
 #out of school suspension
+# these are grouped into students who were suspended once, and those who were 
+# suspended multiple times
+#first, the single offenders
 df_school %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
          SCH_DISCWODIS_SINGOOS_HI_M:TOT_DISCWODIS_SINGOOS_F,
-         SCH_DISCWDIS_SINGOOS_IDEA_HI_M:TOT_DISCWDIS_SINGOOS_IDEA_F) %>% 
-  gather(group, number, SCH_DISCWODIS_SINGOOS_HI_M:TOT_DISCWDIS_SINGOOS_IDEA_F) %>%
+         SCH_DISCWDIS_SINGOOS_IDEA_HI_M:TOT_DISCWDIS_SINGOOS_IDEA_F) %>%  #get relevant columns
+  gather(group, number, SCH_DISCWODIS_SINGOOS_HI_M:TOT_DISCWDIS_SINGOOS_IDEA_F) %>% #"tidy"
   separate(group, into=c('group', 'gender'), -2) %>%
   separate(group, into=c('prefix', 'group'), -4) %>%
-  separate(prefix, into=c('prefix', 'disability'), -3) %>%
+  separate(prefix, into=c('prefix', 'disability'), -3) %>% #separate out gender, group, & disab.
   mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
                           hispanic='HI_', pac_isl='HP_', total='OS_', 
-                          total='EA_', biracial='TR_', white='WH_')) %>%
+                          total='EA_', biracial='TR_', white='WH_')) %>% #rename nonsensical groups
   mutate(disability=fct_recode(disability, not_disabled='GO', disabled='ID',
-                               not_disabled='S_', disabled='A_')) %>%
+                               not_disabled='S_', disabled='A_')) %>% #rename nonsensical disab.
   select(-prefix) -> oos_susp
 
+#do the same for the multi-offenders
 df_school %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
          SCH_DISCWODIS_MULTOOS_HI_M:TOT_DISCWODIS_MULTOOS_F,
-         SCH_DISCWDIS_MULTOOS_IDEA_HI_M:TOT_DISCWDIS_MULTOOS_IDEA_F) %>% 
+         SCH_DISCWDIS_MULTOOS_IDEA_HI_M:TOT_DISCWDIS_MULTOOS_IDEA_F) %>% #gather relevant columns
   gather(group, number_2, SCH_DISCWODIS_MULTOOS_HI_M:TOT_DISCWDIS_MULTOOS_IDEA_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>%
   separate(group, into=c('prefix', 'group'), -4) %>%
   separate(prefix, into=c('prefix', 'disability'), -3) %>%
   mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
                           hispanic='HI_', pac_isl='HP_', total='OS_', 
-                          biracial='TR_', white='WH_')) %>%
+                          biracial='TR_', white='WH_', total='EA_')) %>%
   mutate(disability=fct_recode(disability, not_disabled='TO', disabled='ID',
                                not_disabled='S_', disabled='A_')) %>%
-  select(COMBOKEY, group, gender, number_2) %>%
-  right_join(oos_susp) %>%
-  filter(number>=0 & number_2 >= 0) %>%
-  mutate(number = number+number_2) -> oos_susp
+  select(COMBOKEY, group, gender, disability, number_2) %>%
+  right_join(oos_susp) -> oos_susp
 
+#there are 16 instances (across groups, genders & schools) where they report one 
+#but not the other. because it does not make sense to aggregate single & 
+#multiple for all schools but these, we need to remove these schools
 oos_susp$number[which(oos_susp$number<0)] <- NA
+oos_susp$number_2[which(oos_susp$number_2<0)] <- NA
+oos_susp$number <- oos_susp$number+oos_susp_number_2
+#the 16 (along with the others who don't report any) now have NA
 
+#summarise across gender
 oos_susp %>%
-  #filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T)) %>%
   left_join(enrollment) %>%
-  mutate(proportion = number/total_number) -> tempout
+  mutate(proportion = number/total_number) -> oos_susp
 
-tempout %>% 
+#mark impossible schools
+oos_susp %>% 
   ungroup() %>%
-  mutate(impossible = number>total_number) %>%
+  mutate(impossible = number>total_number) %>% #mark impossible groups
   group_by(COMBOKEY) %>%
-  mutate(impossible_school = sum(impossible)>0) %>%
+  mutate(impossible_school = sum(impossible)>0) %>% #any impossible groups in each school?
   ungroup() %>%
-  #filter(impossible_school==F) %>%
-  filter(group=='black'|group=='white') %>%
-  mutate(metric='oos_susp') %>%
+  filter(group=='black'|group=='white') %>% #now limit the data to target group
+  mutate(metric='oos_susp') %>% #mark which metric this is
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
-  rbind(subdat) -> subdat
+  rbind(subdat) -> subdat #housecleaning & append
 
-#expulsion with education
+#### expulsion with education
 df_school %>% 
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
          SCH_DISCWODIS_EXPWE_HI_M:TOT_DISCWODIS_EXPWE_F,
          SCH_DISCWDIS_EXPWE_IDEA_HI_M:TOT_DISCWDIS_EXPWE_IDEA_F) %>% 
-  gather(group, number, SCH_DISCWODIS_EXPWE_HI_M:TOT_DISCWDIS_EXPWE_IDEA_F) %>%
+  gather(group, w_ed_number, 
+         SCH_DISCWODIS_EXPWE_HI_M:TOT_DISCWDIS_EXPWE_IDEA_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
   separate(prefix, into=c('prefix', 'disability'), -3) %>%
@@ -152,7 +162,8 @@ df_school %>%
   select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, 
          SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWODIS_EXPWOE_F,
          SCH_DISCWDIS_EXPWOE_IDEA_HI_M:TOT_DISCWDIS_EXPWOE_IDEA_F) %>% 
-  gather(group, number, SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWDIS_EXPWOE_IDEA_F) %>%
+  gather(group, wo_ed_number, 
+         SCH_DISCWODIS_EXPWOE_HI_M:TOT_DISCWDIS_EXPWOE_IDEA_F) %>%
   separate(group, into=c('group', 'gender'), -2) %>% 
   separate(group, into=c('prefix', 'group'), -4) %>%
   separate(prefix, into=c('prefix', 'disability'), -3) %>%
@@ -163,33 +174,34 @@ df_school %>%
                                not_disabled='E_', disabled='A_')) %>%
   select(-prefix) -> exp_wo_ed
 
-exp_w_ed$number[which(exp_w_ed$number<0)] <- NA
-exp_wo_ed$number[which(exp_wo_ed$number<0)] <- NA
+exp_w_ed$w_ed_number[which(exp_w_ed$w_ed_number<0)] <- NA
+exp_wo_ed$wo_ed_number[which(exp_wo_ed$wo_ed_number<0)] <- NA
+
+#combine w and wo ed, then sum over gender
+#as above with suspensions, there are a number of instances in which the data 
+#is missing for one, but not the other. The counts here are much higher 
+#(18,577 observations across all groups, genders, and schools)
 
 exp_w_ed %>%
-  mutate(w_ed_number = number) %>%
-  select(-number) %>%
   left_join(exp_wo_ed) %>%
-  mutate(number = number + w_ed_number) %>%
-  #filter(group=='black'|group=='white') %>%
+  mutate(number = wo_ed_number + w_ed_number) %>% #combined
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T)) %>%
   left_join(enrollment) %>%
-  mutate(proportion = number/total_number) -> tempout
+  mutate(proportion = number/total_number) -> expulsions
 
-tempout %>% 
+expulsions %>% 
   ungroup() %>%
-  mutate(impossible = number>total_number) %>%
+  mutate(impossible = number>total_number) %>% #mark impossible groups
   group_by(COMBOKEY) %>%
-  mutate(impossible_school = sum(impossible)>0) %>%
+  mutate(impossible_school = sum(impossible)>0) %>% #any groups impossible?
   ungroup() %>%
-  #filter(impossible_school==F) %>%
-  filter(group=='black'|group=='white') %>%
-  mutate(metric='expulsion_combined') %>%
+  filter(group=='black'|group=='white') %>% #keep target groups
+  mutate(metric='expulsion_combined') %>% #mark\ the metric
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
-  rbind(subdat) -> subdat
+  rbind(subdat) -> subdat #housekeeping & append
 
 #law enforcement
 df_school %>% 
@@ -207,28 +219,27 @@ df_school %>%
                                not_disabled='F_', disabled='A_')) %>%
   select(-prefix) -> law_enf
 
+#missing data/na's
 law_enf$number[which(law_enf$number<0)] <- NA
 
 law_enf %>%
-  #filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
-  summarise(number = sum(number, na.rm=T)) %>%
+  summarise(number = sum(number, na.rm=T)) %>% #sum over genders
   left_join(enrollment) %>%
-  mutate(proportion = number/total_number) -> tempout
+  mutate(proportion = number/total_number) -> law_enf
 
-tempout %>% 
+law_enf %>% 
   ungroup() %>%
-  mutate(impossible = number>total_number) %>%
+  mutate(impossible = number>total_number) %>% #mark impossible groups
   group_by(COMBOKEY) %>%
-  mutate(impossible_school = sum(impossible)>0) %>%
+  mutate(impossible_school = sum(impossible)>0) %>% #any impossible groups?
   ungroup() %>%
-  #filter(impossible_school==F) %>%
-  filter(group=='black'|group=='white') %>%
+  filter(group=='black'|group=='white') %>% #filter to target groups
   mutate(metric='law_enforcement') %>%
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
-  rbind(subdat) -> subdat
+  rbind(subdat) -> subdat #housekeeping & append
 
 #inschool arrest
 df_school %>% 
@@ -246,28 +257,29 @@ df_school %>%
                                not_disabled='R_', disabled='A_')) %>%
   select(-prefix) -> in_school_arrest
 
+#missing/NA's
 in_school_arrest$number[which(in_school_arrest$number<0)] <- NA
 
+#sum over gender
 in_school_arrest %>%
-  #filter(group=='black'|group=='white') %>%
   group_by(COMBOKEY, LEA_STATE, LEA_NAME, LEAID,
            CCD_LATCOD, CCD_LONCOD, SCH_NAME, group) %>%
   summarise(number = sum(number, na.rm=T)) %>%
   left_join(enrollment) %>%
-  mutate(proportion = number/total_number) -> tempout
+  mutate(proportion = number/total_number) -> in_school_arrest
 
-tempout %>% 
+
+in_school_arrest %>% 
   ungroup() %>%
-  mutate(impossible = number>total_number) %>%
+  mutate(impossible = number>total_number) %>% #mark impossible groups
   group_by(COMBOKEY) %>%
-  mutate(impossible_school = sum(impossible)>0) %>%
+  mutate(impossible_school = sum(impossible)>0) %>% #any impossible groups?
   ungroup() %>%
-  #filter(impossible_school==F) %>%
-  filter(group=='black'|group=='white') %>%
-  mutate(metric='in_school_arrest') %>%
+  filter(group=='black'|group=='white') %>% #filter to target group
+  mutate(metric='in_school_arrest') %>% #mark the metric
   mutate(LEA_STATE = droplevels(LEA_STATE)) %>%
   distinct() %>%
-  rbind(subdat) -> subdat
+  rbind(subdat) -> subdat #housekeeping & append
 
 
 ################
@@ -276,14 +288,16 @@ tempout %>%
 
 rm(exp_w_ed, exp_wo_ed, in_school_arrest, law_enf, oos_susp, susp_inschool)
 
-subdat %>%
+#just get lat, long & identifying info
+df_school %>%
   select(COMBOKEY, LEA_STATE, LEA_NAME, CCD_LATCOD, CCD_LONCOD, LEAID) %>%
   filter(!is.na(CCD_LATCOD)) %>%
   distinct() -> schools_loc
 
+#function to retrieve FIPS code
 get_fips_code <- function(lat, long) {
-  url <- paste('http://data.fcc.gov/api/block/find?latitude=',
-               lat, '&longitude=', long, sep='')
+  url <- paste('https://geo.fcc.gov/api/census/block/find?latitude=',
+               lat, '&longitude=', long, '&format=xml', sep='')
   r <- httr::GET(url)
   suppressMessages(out <- xml2::as_list(content(r)))
   out <- paste(attr(out$County, "FIPS"),
@@ -293,40 +307,29 @@ get_fips_code <- function(lat, long) {
                sep='||')
   return(out)
 }
+#it takes forever to run, so I ran it once, and saved the results
+#schools_loc$fips_api <- NA
+#for(i in 1:length(schools_loc$CCD_LATCOD)){
+# schools_loc$fips_api[i] <- get_fips_code(schools_loc$CCD_LATCOD[i],
+#                                          schools_loc$CCD_LONCOD[i])
+# print(i)
+# Sys.sleep(.05)
+#}
 
-# schools_loc$fips_api <- NA
-# for(i in 1:length(schools_loc$CCD_LATCOD)){
-#   schools_loc$fips_api[i] <- get_fips_code(schools_loc$CCD_LATCOD[i],
-#                                            schools_loc$CCD_LONCOD[i])
-#   print(i)
-#   Sys.sleep(.1)
-# }
-
-#write.csv(schools_loc, file='output/schools_w_fips.csv', row.names = F)
+#write.csv(schools_loc, file='/Users/travis/Documents/gits/educational_disparities/output/schools_w_fips.csv', row.names = F)
 schools_loc <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/schools_w_fips.csv')
 schools_loc <- left_join(subdat, schools_loc)  
 schools_loc %>%
   filter(!is.na(fips_api)) %>%
-  separate(fips_api, into = c('full_fips', 'county_name', 
+  separate(fips_api, into = c('county_fips', 'co_name', 
                               'state_fips', 'state_abb'), sep='\\|\\|') %>%
-  mutate(county_fips = substr(full_fips, 3, 5)) %>%
-  mutate(county_id = paste(state_abb, county_fips, sep='-')) -> schools_loc
+  mutate(co_fips = substr(county_fips, 3, 5)) %>%
+  mutate(county_id = paste(state_abb, co_fips, sep='-')) -> schools_loc
 
-schools_loc$county_name[which(schools_loc$county_id=='MD-510')] <- 'Baltimore city'
-schools_loc$county_name[which(schools_loc$county_id=='VA-600')] <- 'Fairfax city'
-schools_loc$county_name[which(schools_loc$county_id=='VA-620')] <- 'Franklin city'
-schools_loc$county_name[which(schools_loc$county_id=='VA-760')] <- 'Richmond city'
-schools_loc$county_name[which(schools_loc$county_id=='VA-770')] <- 'Roanoke city'
-schools_loc$county_name[which(schools_loc$county_id=='MO-510')] <- 'St. Louis city'
-schools_loc$county_name[which(schools_loc$county_id=='VA-510')] <- 'Alexandria city'
-
-# counties that are also cities
-# 1   Baltimore        MD     2 MD-510/MD-005
-# 2     Fairfax        VA     2 VA-600/VA-059
-# 3    Franklin        VA     2 VA-620/VA-067
-# 4    Richmond        VA     2 VA-760/VA-159
-# 5     Roanoke        VA     2 VA-770/VA-161
-# 6   St. Louis        MO     2 MO-510/MO-189
+df_haley %>%
+  mutate(state_fips = formatC(state_fips, width = 2, format = "d", flag = "0")) %>%
+  right_join(schools_loc) %>%
+  select(-co_name, -co_fips) -> schools_loc
 
 county_means %>%
   select(-X) %>%
@@ -334,7 +337,7 @@ county_means %>%
   select(county_id, county_name, state_abb, state_fips, county_fips, bias, 
          explicit, explicit_diff, weighted_bias, weighted_explicit, 
          weighted_explicit_diff, COMBOKEY, group, number, total_number, metric, 
-         LEAID) -> tempout
+         LEAID) -> full_data
 
 ################
 # Exclude schools #
@@ -377,20 +380,22 @@ subdat %>%
   select(COMBOKEY, impossible_school, metric) %>%
   distinct() %>%
   group_by(COMBOKEY) %>%
-  summarise(exclude=sum(impossible_school)>2) %>%
-  filter(exclude==T) %>%
+  summarise(exclude=sum(impossible_school)>2) %>% #exclude any that have problems at more than 2 metrics
+  filter(exclude==T) %>% #keep the excluded ones only
   select(COMBOKEY) %>%
   rbind(exclude) %>%
   distinct() %>%
   ungroup() -> exclude
 
-tempout %>%
+full_data %>%
   filter(number<=total_number) %>%
-  mutate(exclude = COMBOKEY %in% exclude$COMBOKEY) -> tempout
+  mutate(exclude = COMBOKEY %in% exclude$COMBOKEY) -> full_data
 
 ################
 # append covariates #
 ################
+df_haley <- read.csv('/Users/travis/Documents/gits/Data/Haley_countylinks/_Master Spreadsheet.csv')
+names(df_haley)[6] <- 'county'
 
 df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_ethnicity/ACS_14_5YR_B02001_with_ann.csv',skip = 1)
 
@@ -442,8 +447,34 @@ covs_hous %>%
   mutate(density = as.numeric(as.character(density))) %>%
   select(county, density) -> covs_hous
 
-df_haley <- read.csv('/Users/travis/Documents/gits/Data/Haley_countylinks/_Master Spreadsheet.csv')
-names(df_haley)[6] <- 'county'
+df_seg <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_segregation/ACS_14_5YR_B02001_with_ann.csv', 
+                   skip=1, stringsAsFactors = F)
+#state-level segregation index
+df_seg <- df_seg[,c(1:4, 6,8)]
+names(df_seg) <- c('ID', 'ID2', 'Geo', 'Total', 'White', 'Black')
+df_seg %>%
+  mutate(FIPS = stringr::str_sub(ID, -11, -1)) %>%
+  mutate(state_fips = stringr::str_sub(FIPS, 1, 2),
+         county_fips = stringr::str_sub(FIPS, 3, 5),
+         census_fips = stringr::str_sub(FIPS, 6, 12)) %>%
+  select(-ID, -ID2) %>%
+  group_by(state_fips, county_fips) %>%
+  mutate(county_total = sum(Total, na.rm=T),
+         county_white = sum(White, na.rm=T),
+         county_black = sum(Black, na.rm=T)) %>%
+  mutate(black_prop = Black/county_black,
+         white_prop = White/county_white) %>%
+  mutate(bw_diff = abs(black_prop-white_prop)) %>% 
+  group_by(state_fips, county_fips) %>%
+  mutate(dissim = sum(bw_diff, na.rm=T)*.5) %>% 
+  separate(Geo, c('tract', 'county', 'state_name'), sep=',') %>%
+  ungroup() %>%
+  select(state_name, county, county_fips, state_fips, dissim) %>%
+  mutate(state_name = stringr::str_trim(state_name)) %>%
+  left_join(df_haley[,c('state_code', 'state_name')]) %>%
+  distinct() %>%
+  arrange(desc(dissim)) %>%
+  mutate(county_id = paste(state_code, county_fips, sep='-')) -> covs_seg
 
 covs_pop %>%
   left_join(covs_ed) %>%
@@ -466,6 +497,9 @@ covs_pop %>%
 #kalawao, Issaquena, Mora, Divide, Loving
 
 covs %>%
+  mutate(county_id = paste(state_code, 
+                           stringr::str_sub(county_fips, -3, -1), sep='-')) %>%
+  left_join(covs_seg[,c('county_id', 'dissim')]) %>%
   mutate(total_pop = scale(total_pop)[,1],
          col_grads = scale(col_grads)[,1],
          unemp_rate = scale(unemp_rate)[,1],
@@ -476,15 +510,10 @@ covs %>%
          mobility = scale(mobility)[,1],
          white_prop = scale(white_prop)[,1],
          black_prop = scale(black_prop)[,1],
-         b.w.ratio = scale(b.w.ratio)[,1]) %>%
-  mutate(county_id = paste(state_code, 
-                           stringr::str_sub(county_fips, -3, -1), sep='-')) %>%
-  right_join(tempout, by='county_id') -> mod.dat
+         b.w.ratio = scale(b.w.ratio)[,1],
+         dissim = scale(dissim)[,1]) %>%
+  right_join(full_data, by='county_id') -> mod.dat
 
-# tempthis %>% 
-#   select(county_id, county_name, state_abb, state) %>%
-#   distinct() %>%
-#   write.csv(., file='output/county_linking_table.csv', row.names=FALSE)
 
 ################
 # write file #
@@ -501,12 +530,26 @@ county_teacher_estimates <- read.csv('/Users/travis/Documents/gits/educational_d
 
 schools_loc %>%
   left_join(county_teacher_estimates) %>%
-  filter(!is.na(teacher_bias)) %>%
-  left_join(states) %>%
-  left_join(covs) %>%
-  mutate(exclude = COMBOKEY %in% exclude$COMBOKEY | 
-           LEAID %in% error_elem |
-           LEAID %in% error_second) -> out
+  filter(!is.na(teacher_bias)) -> teacher_data
+
+covs %>%
+  mutate(total_pop = scale(total_pop)[,1],
+         col_grads = scale(col_grads)[,1],
+         unemp_rate = scale(unemp_rate)[,1],
+         med_income = scale(med_income)[,1],
+         poverty_rate = scale(poverty_rate)[,1],
+         crime_rate = scale(crime_rate)[,1],
+         density = scale(density)[,1],
+         mobility = scale(mobility)[,1],
+         white_prop = scale(white_prop)[,1],
+         black_prop = scale(black_prop)[,1],
+         b.w.ratio = scale(b.w.ratio)[,1]) %>%
+  mutate(county_id = paste(state_code, 
+                           stringr::str_sub(county_fips, -3, -1), sep='-')) %>%
+  select(county_id, total_pop, col_grads, unemp_rate, med_income, poverty_rate,
+         crime_rate, density, mobility, white_prop, black_prop, b.w.ratio) %>%
+  right_join(teacher_data) %>%
+  mutate(exclude = COMBOKEY %in% exclude$COMBOKEY) -> out
 
 write.csv(out, file='/Users/travis/Documents/gits/educational_disparities/output/teacher_model_data.csv', row.names=FALSE)
 
