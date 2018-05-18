@@ -2,10 +2,14 @@
 *.csv
 *.Rhistory
 *.jpeg
+*.sty
+*.cls
 cluster/model_scripts/*
+figs/*
 cluster/tl_2014_us_cbsa.zip
 
 *.docx
+*.png
 
-written_docs/draft_cache/docx/__packages
-written_docs/draft_files/*
+written_docs/draft_cache/*/*
+written_docs/draft_files/*/*
