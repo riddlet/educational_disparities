@@ -1,0 +1,12 @@
+base
+dplyr
+forcats
+haven
+tidyr
+ggplot2
+stringr
+bindrcpp
+sp
+rgdal
+viridisLite
+viridis
