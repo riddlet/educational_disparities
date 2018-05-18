@@ -10,6 +10,14 @@ cluster/tl_2014_us_cbsa.zip
 
 *.docx
 *.png
+*.tex
 
-written_docs/draft_cache/*/*
-written_docs/draft_files/*/*
+written_docs/*.tex
+written_docs/draft_cache/*
+written_docs/draft_files/*
+written_docs/Riddle_Sinclair_PNAS/*.xwm
+written_docs/Riddle_Sinclair_PNAS/*.tex
+written_docs/Riddle_Sinclair_PNAS/latex/*
+written_docs/Riddle_Sinclair_PNAS_files/*
+written_docs/Riddle_Sinclair_PNAS/osf_supplement_files/*
+written_docs/Riddle_Sinclair_PNAS/pnas_supporting_files/*
