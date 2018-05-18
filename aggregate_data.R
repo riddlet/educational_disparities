@@ -13,7 +13,8 @@ library(stringr)
 #read in data
 df_school <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH.csv')
 county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
-df_haley <- read.csv('/Users/travis/Documents/gits/Data/Haley_countylinks/_Master Spreadsheet.csv')
+df_haley <- read.csv('/Users/travis/Documents/gits/Data/linking_files/_Master Spreadsheet.csv')
+county_means_sex <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means_sexuality.csv')
 
 # Get enrollment figures by race for all schools
 df_school %>%
@@ -116,7 +117,7 @@ df_school %>%
 #multiple for all schools but these, we need to remove these schools
 oos_susp$number[which(oos_susp$number<0)] <- NA
 oos_susp$number_2[which(oos_susp$number_2<0)] <- NA
-oos_susp$number <- oos_susp$number+oos_susp_number_2
+oos_susp$number <- oos_susp$number+oos_susp$number_2
 #the 16 (along with the others who don't report any) now have NA
 
 #summarise across gender
@@ -339,6 +340,16 @@ county_means %>%
          weighted_explicit_diff, COMBOKEY, group, number, total_number, metric, 
          LEAID) -> full_data
 
+county_means_sex %>%
+  select(-X) %>%
+  mutate(sex_bias = bias,
+         sex_explicit = explicit,
+         weighted_bias_sex = weighted_bias,
+         weighted_explicit_sex = weighted_explicit) %>%
+  select(county_id, sex_bias, sex_explicit, 
+         weighted_bias_sex, weighted_explicit_sex) %>%
+  right_join(full_data) -> full_data
+
 ################
 # Exclude schools #
 ################
@@ -485,7 +496,13 @@ covs_pop %>%
   left_join(covs_mob) %>%
   mutate(white_prop = white_pop/total_pop,
          black_prop = black_pop/total_pop) %>%
-  mutate(b.w.ratio = black_prop/white_prop) -> covs
+  mutate(b.w.ratio = black_prop/white_prop) %>%
+  mutate(county_id = paste(state_code, 
+                           stringr::str_sub(county_fips, -3, -1), sep='-')) %>%
+  left_join(covs_seg[,c('county_id', 'dissim')]) -> covs
+
+write.csv(covs, file='/Users/travis/Documents/gits/educational_disparities/output/covariates.csv', row.names = FALSE)
+
 
 #counties w/o IAT data: 
 #Aleutians East, Hoonah-Angoon, Prince of Wales-Hyder, Skagway, Wrangell, 
@@ -497,9 +514,6 @@ covs_pop %>%
 #kalawao, Issaquena, Mora, Divide, Loving
 
 covs %>%
-  mutate(county_id = paste(state_code, 
-                           stringr::str_sub(county_fips, -3, -1), sep='-')) %>%
-  left_join(covs_seg[,c('county_id', 'dissim')]) %>%
   mutate(total_pop = scale(total_pop)[,1],
          col_grads = scale(col_grads)[,1],
          unemp_rate = scale(unemp_rate)[,1],

@@ -1,54 +1,86 @@
 ---
 title: Race-based disparities in academic disciplinary actions are associated
   with county-level rates of racial bias
+
+# Use letters for affiliations, numbers to show equal authorship (if applicable) and to indicate the corresponding author
 author:
-- address: ''
-  affiliation: '1'
-  corresponding: yes
-  email: triddle@princeton.edu
-  name: Travis Riddle
-- affiliation: '1'
-  name: Stacey Sinclair
-affiliation:
-- id: '1'
-  institution: Princeton University
-output:
-  papaja::apa6_word: default
-  papaja::apa6_pdf: default
-bibliography: ref.bib
-class: man
-figsintext: yes
-figurelist: no
-footnotelist: no
-keywords: keywords
-lang: english
-lineno: yes
-author_note: |
-  Enter author note here.
-shorttitle: Discipline Disparities
-tablelist: no
+  - name: Travis Riddle
+    affiliation: a
+  - name: Stacey Sinclair
+    affiliation: a,b
+address:
+  - code: a
+    address: Princeton University, Department of Psychology, Princeton, NJ, 08544
+  - code: b
+    address: African American Studies
+
+corresponding_author:
+  - code: 1
+    text: "To whom correspondence should be addressed. E-mail: triddle@princeton.edu"
+
+# For footer text
+lead_author_surname: Riddle
+
+author_contributions: |
+  TR and SS designed the research and wrote the paper. TR analyzed the data.
+
+## Remove this if not required
+conflict_of_interest: |
+  Authors have no known conflicts of interest
+
 abstract: |
-  Make sure to say something here about covering over 32 million students at nearly 93k schools.
-wordcount: X
+  There are substantial gaps in educational outcomes between black and white students in the United States. Recently, increased attention has focused on differences in the rates at which black and white students are disciplined, finding that black students are more likely to be seen as problematic and more likely to be punished than white students are for the same offense. Although these disparities suggest that racial biases are a contributor, no previous research has shown associations with psychological measurements of bias and disciplinary outcomes. We show that county-level estimates of explicit racial bias, as measured using data from approximately 1.3 million visitors to the Project Implicit website, are associated with racial disciplinary disparities across approximately 93k schools in the United States, covering around 32 million white and black students. These associations do not extend to explicit or implicit sexuality biases, showing the specificity of the effect. These findings suggest that reducing racial disparities in education may require efforts to reduce explicit racial bias.
+
+
+significance: |
+  Black students in the United States are subject to disciplinary action at rates much higher than their white counterparts. These disciplinary actions put students at higher risk for negative life outcomes, including involvement in the criminal justice system. Using government data covering over 32 million students at nearly 93k schools, our research demonstrates that the disciplinary gap between black and white students across 5 different types of disciplinary actions is associated with county-level rates of explicit racial bias, and suggests solving racial disparities in education must involve combating explicit racial bias.
+
+acknowledgements: |
+  Please include your acknowledgments here, set in a single paragraph. Please do not include any acknowledgments in the Supporting Information, or anywhere else in the manuscript.
+
+keywords:
+  - one
+  - two
+  - optional
+  - optional
+  - optional
+
+## must be one of: pnasresearcharticle (usual two-column layout), pnasmathematics (one column layout), or pnasinvited (invited submissions only)
+pnas_type: pnasresearcharticle
+
+bibliography: ref.bib
+csl: pnas.csl
+
+## change to true to add optional line numbering
+lineno: true
+
+output: rticles::pnas_article
 ---
 
-```{r include = FALSE}
-library("papaja")
-knitr::opts_chunk$set(echo = FALSE, cache=TRUE, cache.lazy = FALSE, 
-                      message=FALSE, warning=FALSE, results='hide')
+```{r load-libs, echo=FALSE, message=FALSE, results='hide'}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, 
+                      message = FALSE, cache.lazy = FALSE)
+library(dplyr)
+library(forcats)
+library(haven)
+library(tidyr)
+library(ggplot2)
+library(stringr)
 ```
-# Introduction
+
 In comparison to White Americans, Black Americans exhibit poorer educational outcomes across a range of metrics. One outcome of particular concern is the gap in disciplinary actions [@kinsler2011understanding; @okonofua2016vicious]. Research using administrative datasets and longitudinal samples clearly show that Black American students are far more likely to be suspended or expelled [@aud2011america; @yeager2017loss], and conditional on an office referral, are more likely to receive stiffer punishments [@gregory1995crime; @skiba2011race]. These disparities are particularly concerning as they are associated with long-term life outcomes, including prospects for employment [@pager2009sequencing] and involvement in the criminal justice system [@hirschfield2009another]. 
 
 As complex social phenomena, these racial differences in disciplinary outcomes are multiply determined [@okonofua2016vicious]. There are clear structural and socieconomic contributors such as the practice of segregating students into achievement-based "tracks" of low and high performers [@togut2011gestalt] or racial differences in socioeconomic status [@skiba2002color]. However, racial bias is also thought to contribute to the problem. For instance, in a controlled study, @okonofua2015two found that in comparison to white students, teachers were more likely to view the same behavior from black students as being indicative of a long term problem and deserving of suspension. Similarly, using discipline data from an urban high school, @gregory2008discipline showed that black students were especially likely to be referred to the office for disciplinary action on the basis of defiant behavior - a relatively subjective category of misbehavior in comparison to others they examined, including truancy or fighting. Overall, there has been consistent evidence that black students' behaviors are both perceived as more problematic and are punished more harshly as compared to white students'. However, to our knowledge, there has been no work assessing whether racial bias is directly associated with disciplinary disparities. Additionally, there has been no work assessing how racial bias at the community level is associated with educational disparities.
 
-Psychological measurements of racial bias most typically occur through one of two ways. Either individuals are asked to explicitly self-report their relative attitudes toward different racial groups, or via methods designed to assess automatic associations with people of different races. The latter is thought to reflect the associations learned by early and frequent exposure to environmental stimuli, whereas the former reflects top-down modulation of those associations [@rudman2004sources]. Recently, researchers have begun aggregating these measures up to geographical regions such as counties or states. Although much work remains to be done on how measurement of bias differs at this community level from measurment at the individual level [@payne2017bias], other work has found that community-level measures of implicit and explicit racial bias are associated with racial disparities in key social outcomes, although the relative contributions are not consistent across studies [@leitner2016blacks; @orchard2017county; @hehman2017disproportionate]. For example, @leitner2016blacks found that Black Americans had reduced access to health care and increased rates of death due to circulatory disease in comparison to whites in counties with higher levels of explicit racial bias against blacks. They found no such associations for implicit racial bias. In contrast, @hehman2017disproportionate, found that the disproportionate use of lethal force by police on Black Americans was associated with regional implicit biases, but were not associated with explicit biases. As such, it is important to assess both types of bias when seeking to understand the relationship between regional-level bias and behavioral outcomes.
+Psychological measurements of racial bias typically occur through one of two ways. Either individuals are asked to self-report their relative attitudes toward different racial groups, or via methods designed to assess automatic associations with people of different races. The latter is thought to reflect the associations learned by early and frequent exposure to environmental stimuli, whereas the former reflects top-down modulation of those associations [@rudman2004sources]. Recently, researchers have begun aggregating these measures up to geographical regions such as counties or states, finding that regional-level measures of implicit and explicit racial bias are associated with racial disparities in key social outcomes, although the relative contributions are not consistent across studies [@leitner2016blacks; @orchard2017county; @hehman2017disproportionate]. For example, @leitner2016blacks found that Black Americans had reduced access to health care and increased rates of death due to circulatory disease in comparison to whites in counties with higher levels of explicit racial bias against blacks. They found no such associations for implicit racial bias. In contrast, @hehman2017disproportionate, found that the disproportionate use of lethal force by police on Black Americans was associated with regional implicit biases, but were not associated with explicit biases. As such, it is important to assess both types of bias when seeking to understand the relationship between regional-level bias and behavioral outcomes.
 
-Regional levels of bias could be associated with the size of racial student disciplinary disparities for a number of reasons. First, being in an area characterized by higher racial bias likely means encountering individuals who have negative feelings and beliefs about one’s group. The actions of such individuals within and/or outside of an educational setting could contribute to disciplinary disparities. For example, if teachers and administrators are biased, then they may be more likely to make decisions that are unfavorable to black students, such as deciding that a given misbehavior is worthy of official disciplinary action. Biased administrators or local voters might also support school or district policies thought to disproportionally punish students of color, such as zero-tolerance policies or implementation of random drug sweeps [@verdugo2002race]. Additionally, Black students who live in high bias areas may be more apt to engage in behavior that warrants disciplinary action due to behavior confirmation of the negative expectancies held by area peers and adults [@cadinu2003stereotype; @darley1980expectancy; @major2005social]. Second, the norms and structural factors (e.g., laws, policies) that characterize regions higher in bias may constrain even those individuals who are not biased themselves into engaging in or suborning actions that negatively impact students of color [@jetten1996intergroup; @pettigrew1958personality]. Third, biases assessed at the regional level might reflect affordances of the local environment (e.g., confederate statues, biased media) that undergird both these biases and prime behaviors that contribute to disciplinary disparities [@payne2017bias]. Overall, these reasons, and the likely possibility that they work in concert to inform behavior [@markus2010cultures], substantiate the possibility that there will be a relationship between regional bias and disciplinary outcomes.
+Regional levels of bias could be associated with the size of racial student disciplinary disparities for a number of reasons. First, being in an area characterized by higher racial bias likely means encountering individuals who have negative feelings and beliefs about one’s group. The actions of such individuals within and/or outside of an educational setting could contribute to disciplinary disparities. For example, if teachers and administrators are biased, then they may be more likely to make decisions that are unfavorable to black students, such as deciding that a given misbehavior is worthy of official disciplinary action. Biased administrators or local voters might also support school or district policies thought to disproportionally punish students of color, such as zero-tolerance policies or implementation of random drug sweeps [@verdugo2002race]. Second, Black students who live in high bias areas may be more apt to engage in behavior that warrants disciplinary action due to behavior confirmation of the negative expectancies held by area peers and adults [@cadinu2003stereotype; @darley1980expectancy; @major2005social]. Third, the norms and structural factors (e.g., laws, policies) that characterize regions higher in bias may constrain even those individuals who are not biased themselves into engaging in or suborning actions that negatively impact students of color [@jetten1996intergroup; @pettigrew1958personality]. Fourth, biases assessed at the regional level might reflect affordances of the local environment (e.g., confederate statues, biased media) that undergird these biases and prime behaviors that contribute to disciplinary disparities [@payne2017bias]. Overall, these reasons, and the likely possibility that they work in concert to inform behavior [@markus2010cultures], substantiate the possibility that there will be a relationship between regional bias and disciplinary outcomes.
 
-Most previous research has focused on out-of-school suspensions - likely because they are the most frequently used and are regularly found to be associated with negative outcomes [@cuellar2015school; @matjasko2011effective]. However, other disciplinary outcomes, though used less often, may be at least as damaging to students as out-of-school suspensions [@rausch2005academic]. For instance school arrests have been associated with increased likelihood of engaging in anti-social behavior [@hemphill2006effect], and with increased risk of dropping out [@hirschfield2009another]. In addition, though alternative forms of discipline (e.g., in-school suspension) are intended to insulate students from potential negative consequences exclusionary discipline, the criteria by which students are assigned the former kind of discipline often remain vulnerable to bias [@anyon2014persistent]. Thus, examining the presence and basis of disparities in the application of a wide range of disciplinary actions is warranted. 
+Most previous research has focused on out-of-school suspensions - likely because they are the most frequently used and are regularly found to be associated with negative outcomes [@cuellar2015school; @matjasko2011effective]. However, other disciplinary outcomes, though used less often, may be at least as damaging to students as out-of-school suspensions [@rausch2005academic]. For instance school arrests have been associated with increased likelihood of engaging in anti-social behavior [@hemphill2006effect], and with increased risk of dropping out [@hirschfield2009another]. In addition, though alternative forms of discipline (e.g., in-school suspension) are intended to insulate students from the negative consequences of exclusionary discipline, the criteria by which students are assigned the former kind of discipline often remain vulnerable to bias [@anyon2014persistent]. As such, examining the presence and basis of disparities in the application of a wide range of disciplinary actions is warranted. 
 
-```{r iat-data}
+```{r iat-data, echo=FALSE, results='hide', message=FALSE, cache=TRUE}
+
+
 df <- rbind(read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2013.sav'),
             read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2012.sav'),
             read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2010.sav'))
@@ -190,210 +222,22 @@ subdat %>%
 
 The present analyses combine regionally-coded implicit and explicit racial bias measures from approximately `r round(dim(individual_data)[1]/1000000, 1)` million respondents who visited Project Implicit [@xu2014psychology] with the most recent available data from the Civil Rights Data Collection (CRDC) conducted by the US Department of Education, a mandated census of disciplinary action in all US public k-12 schools. The CRDC allowed well-powered examinations of five different disciplinary metrics: in-school suspensions, out-of-school suspensions, law enforcement referrals, school-related arrests, and expulsions. We designed the analyses to determine whether, and if so the extent to which regional estimates of pro-White/anti-Black implicit and explicit bias are associated with black-white outcomes in disciplinary gaps. We also use regional estimates of sexuality bias from Project Implicit to determine whether demonstrated patterns are distinct to racial bias, or an epiphenomenal associate of bias measures in general.
 
-# Methods
-## Data Sources
-### Disciplinary actions
-```{r summary-data}
-library(dplyr)
-library(forcats)
-library(haven)
-library(tidyr)
-library(ggplot2)
-library(stringr)
+## Results
+
+### Project Implicit estimates
+```{r exp-diff, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
 county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
 schools_dat <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH.csv')
 model.data <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/full_model_data.csv')
 
-schools_dat %>%
-  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, SCH_ENR_HI_M:TOT_ENR_F) %>%
-  gather(group, total_number, SCH_ENR_HI_M:TOT_ENR_F) %>%
-  separate(group, into=c('group', 'gender'), -2) %>%
-  separate(group, into=c('prefix', 'group'), -4) %>%
-  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
-                          hispanic='HI_', pac_isl='HP_', total='NR_', 
-                          biracial='TR_', white='WH_')) %>%
-  group_by(COMBOKEY, group) %>%
-  mutate(total_number = sum(total_number)) %>%
-  ungroup() %>%
-  select(-prefix, -gender) %>%
-  distinct() -> enrollment_sample
-
-enrollment_sample %>%
-  group_by(group) %>%
-  summarise(ns = sum(total_number)) -> enrollment_totals
-
-model.data %>% 
-  filter(exclude==FALSE) -> kept_schools
-
-model.data %>%
-  filter(exclude==FALSE) %>%
-  select(COMBOKEY, group, total_number) %>%
-  distinct() %>%
-  mutate(total_schools = n_distinct(COMBOKEY)) %>%
-  group_by(group) %>%
-  summarise(ns = sum(total_number),
-            n_sch = n_distinct(COMBOKEY),
-            total_schools = max(total_schools)) -> enrollment_mod_data
-
-enrollment_sample %>%
-  filter(COMBOKEY %in% kept_schools$COMBOKEY) %>%
-  group_by(group) %>%
-  summarise(ns = sum(total_number),
-            n_sch = n_distinct(COMBOKEY)) -> filtered_dat
-
-```
-To assess rates of disciplinary action, we used data from the Civil Rights Data Collection (CRDC) conducted by the US Department of Education. The dataset we used comes from the 2013-2014 academic year and has data on "all public local and educational agencies and schools, including long-term secure juvenile justice facilities, charter schools, alternative schools, and schools serving students with disabilities." In total, the CRDC data represents `r dim(schools_dat)[1]` institutions enrolling approximately `r round(enrollment_totals$ns[6]/1000000, 1)` million students, of which approximately `r round(enrollment_totals$ns[8]/1000000, 1)` million are white and `r round(enrollment_totals$ns[3]/1000000, 1)` million are Black[^1]. Previous work using CRDC data have identified a number of districts whose data are in error, and have excluded juvenile justice facilities, as these institutions constitute dramatically different educational environments, where the meaning of disciplinary actions may be quite different [@losen2015we]. We followed similar practices, excluding all juvenile justice facilities. Additionally, we excluded data for a specific disciplinary metric for any schools which reported disciplining more students than it reported enrolling for *any* race for that metric (e.g. a school reported expelling 5 white students when they reported enrolling less than that number). We also excluded any school for all disciplinary actions if they had an overreporting error for 3 or more metrics. After these exclusions are applied, the final sample used for modeling consists of `r filtered_dat$n_sch[1]` institutions, enrolling `r round(filtered_dat$ns[6]/1000000, 1)` million students of which `r round(filtered_dat$ns[8]/1000000,1)` million are white and `r round(filtered_dat$ns[3]/1000000, 1)` million are black.[^2] From these data, we focus on the number of students by race (black and white) who were subjected to each of the disciplinary actions described below. 
-
-[^1]: We note that we initially preregistered a number of analyses concerning this work. There are a number of differences between the analyses we registered and those presented in the main text. We opted to report the modified analyses for reasons of clarity and to remain congruent with previous research on the same topics. The registered analyses can be found, in full, in the appendix.
-
-[^2]: Researchers who compared individual schools' out-of-school suspension rates reported in the 2011-2012 CRDC with suspension rates of the same schools as reported on state websites where available found a number of mismatches [@losen2015we]. We did not have the resources to conduct similar comparisons for all outcomes in all `r filtered_dat$n_sch[1]` institutions; however, informal inspection of the data led us to find one school district for which this was the case. Including versus excluding schools from this district do not change the results in any meaningful way. The analyses presented herein include this district. The results of corresponding analyses without this district can be requested from the first author. It should be noted that the United States Government Accountability Office's recent descriptive overview of the 2013-2014 CRDC also did not exclude cases for which there was a discrepancy between disciplinary rates reported in this dataset and any disciplinary data reported on state websites[@usgao2018discipline]. As such, the analyses here are consistent with the only other published examination of the 2013-2014 CRDC data that we are aware of.
-
-#### Types of disciplinary actions
-We report here on five different types of disciplinary actions: in-school suspensions, out-of-school suspensions, law enforcement referrals, school-related arrests, and expulsions.
-
-The most extreme outcome, *expulsion*, is defined as when a student is prohibited from returning to the educational institution for the remainder of the school year or longer. The institution may or may not set up alternative educational services for the student. *Law enforcement referrals* are actions where a student is "reported to any law enforcement agency or official for an incident including a school police unit, for an incident that occurs on school grounds, during school-related events, or while taking school transportation, regardless of whether official action is taken.  Citations, tickets, and court referrals are considered referrals to law enforcement." *School-related arrests* refer to "an arrest of a student for any activity conducted on school grounds, during off-campus school activities (including while taking school transportation)" *Out-of-school suspensions* are actions where the student "is temporarily removed from his or her regular school for at least half a day (but less than the remainder of the school year)". Finally, *in-school suspensions*  are actions where the student is "temporarily removed from his or her regular classroom(s) for at least half a day...,but remains under the direct supervision of school personnel. Direct supervision means school personnel are physically in the same location as the student under their supervision." [@crdc2013survey, pg. 51]
-
-### Racial Bias
-We used measurements of implicit and explicit bias available from data collected through Project Implicit [@xu2014psychology]. For a full description of the implicit and explicit bias measures available in these data, refer to @xu2014psychology and @leitner2016blacks. We note only that we used the IAT D-score as a measure of implicit bias, and the difference between reported warmth towards whites and warmth towards black (both measured from 0=very cold to 10=very warm) as a measure of explicit bias. Additionally, we used only respondents who had geographic information that would allow us to place them in a United States county, identified as White, and visited the site anytime after it went live in 2002 through the end of 2014. This consisted of approximately `r round(dim(individual_data)[1]/1000000, 1)` million total respondents from `r dim(county_means)[1]` counties. `r round(table(is.na(individual_data$D_biep.White_Good_all))[1]/1000000, 2)` million respondents provided data for the IAT, and `r round(table(is.na(individual_data$explicit_bias))[1]/1000000, 2)` million provided explicit bias ratings.
-
-### Sexuality Bias
-```{r iat-data-sex}
-df_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2004.sav')
-#no county data in 2005
-#df2 <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2005.sav')
-df3_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2006.sav')
-df4_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2007.sav')
-df5_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2008.sav')
-df6_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2009.sav')
-df7_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2010.sav')
-df8_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2011.sav')
-df9_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2012.sav')
-df10_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2013.sav')
-df11_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2014.sav')
-sex_county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means_sexuality.csv')
-
-df_s %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
-         tgaywomen, tstraightmen, tstraightwomen, age)  -> subdat
-
-df3_s %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
-         tgaywomen, tstraightmen, tstraightwomen, age) %>%
-  rbind(subdat) -> subdat
-
-df4_s %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
-         tgaywomen, tstraightmen, tstraightwomen, age) %>%
-  rbind(subdat) -> subdat
-
-df5_s %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
-         tgaywomen, tstraightmen, tstraightwomen, age) %>%
-  rbind(subdat) -> subdat
-
-df6_s %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
-         tgaywomen, tstraightmen, tstraightwomen, age) %>%
-  rbind(subdat) -> subdat
-
-df7_s %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
-         tgaywomen, tstraightmen, tstraightwomen, age) %>%
-  rbind(subdat) -> subdat
-
-df8_s %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
-         tgaywomen, tstraightmen, tstraightwomen, age) %>%
-  rbind(subdat) -> subdat
-
-df9_s %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
-         tgaywomen, tstraightmen, tstraightwomen, age) %>%
-  rbind(subdat) -> subdat
-
-df10_s %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
-         tgaywomen, tstraightmen, tstraightwomen, age) %>%
-  rbind(subdat) -> subdat
-
-df11_s %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
-  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
-         tgaywomen, tstraightmen, tstraightwomen, age) %>%
-  rbind(subdat) -> subdat
-
-subdat %>%
-  mutate(explicit_bias=((tstraightmen-tgaymen) + (tstraightwomen-tgaywomen))/2) %>%
-  mutate(age_bin = cut(age, breaks=c(14, 24, 34, 54, 75, 120))) %>%
-  filter(!is.na(age_bin)) %>%
-  filter(STATE %ni% 
-           c('AA', 'AE', 'AP', 'AS', 'FM', 'GU', 'MH', 'MP', 'PR', 'VI')) %>% #exclude territories, etc
-  mutate(county_id = paste(STATE, CountyNo, sep='-')) -> individual_data_sex
-
-```
-
-We used measurements of implicit and explicit sexuality bias available from data collected through Project Implicit [@xu2014psychology]. We opted for these measures as robustness checks because there were enough observations to closely mimic the racial bias analyses, and they have been used for similar purposes in previous work [@orchard2017county] As in the previous study, we used the IAT D-score as a measure of implicit bias. Our warmth score represented the average of the difference between straight men and gay men and the difference between straight women and lesbian women. We used only respondents who had geographic information that would allow us to place them in a United States county and visited the anytime between when it went live in 2002 through the end of 2014. This consisted of approximately `r round(dim(individual_data_sex)[1], -3)` total respondents from `r dim(sex_county_means)[1]` counties. Of these respondents, `r round(table(is.na(individual_data_sex$D_biep.Straight_Good_all))[1], -3)` respondents provided data for the IAT, and `r round(table(is.na(individual_data_sex$explicit_bias))[1], -3)`K respondents provided explicit bias ratings.
-
-### Covariates
-Each county-level variable used as a covariate in the final model and the corresponding state-level variable used as a predictor in the post-stratification scheme (described below) were taken from the same source. Population size and proportions, socioeconomic indicators, mobility, and segregation indices were all taken from the American Community Survey (ACS) 5-year estimates for the time period ending in 2014. Urban-rural indicators were taken from the 2010 US Census, and crime rates were taken from the FBI Uniform Crime Reporting program, as made available through the National Archive of Criminal Justice Data for each year from 2010-2014[^3]. Each of these variables is described below.
-
-[^3]: These years are chosen to for the FBI data to yield estimates that are similar to the 5-year estimates from the ACS data.
-
-#### Population size and proportions
-We obtained the total population, the proportion of the population that is white, the proportion of the population that is black, and the ratio of black-to-white people in the population from ACS table B02001.
-
-#### Socioeconomic indicators
-We obtained estimates for the percentage of population with a Bachelor's degree or higher, the percentage of the population aged 16 or over in the labor force that is unemployed, the median household income, and the percentage of families and people whose income in the last year was below the poverty line from the ACS table DP03.
-
-#### Urban-rural indicator
-We obtained estimates of housing density per square mile of land area from Census table GCT-PH1.
-
-#### Mobility
-We obtained estimates of population mobility by summing the percentage of Black Americans who moved from a different county, state, or country into the county of interest (county-level covariate) or who moved from a different state or country into the state of interest (state-level covariate). We took these metrics from the ACS table S0701.
-
-#### Crime
-We computed estimates of the number of violent crimes per person by taking the number of crimes reported divided by the population size for each year, and averaging the resulting proportions across the 5 years of data.
-
-#### Segregation
-We computed a dissimiliarity index as described by @massey1988dimensions. This metric is computed based on the racial dissimilarity of census tracts within a county, and reflects the proportion of a group within the county that would have to move in order for all census tracts to have group distributions that matched the overall distribution of the county. These computations were done using data from the ACS table B02001.
-
-# Results
-
-Because Project Implicit is a nonrandom sample, we used multilevel regression and post-stratification to obtain accurate geographical population-based estimates of implicit and explicit bias. Multilevel regression and post-stratification corrects for biased sampling and regularizes extreme observations with little data to support them (e.g. a county with only a handful of respondents with especially high or low scores) [@park2004bayesian; @gelman1997poststratification]. Following past work [@leitner2016blacks], we identified age as one dimension along which IAT respondents differed from the general population in ways that could bias our conclusions [@gonsalkorale2009aging]. Our post-stratification weighting scheme is as follows: We first grouped respondents into five age group categories (15-24, 25-34, 35-54, 55-75, and 75+). We next fit multilevel models estimating bias (implicit and explicit biases separately) as a function of our state-level covariates (the "fixed" effects: proportion of population that is white; proportion of the population that is black, the ratio of black to white people in the population, the percentage of college graduates, the unemployment rate, the median household income, the poverty rate, housing density, mobility rate, crime rate & dissimilarity index), and allowed the estimates to vary by age bin, county, and state (the "random" effects). Next, we determined the population of whites in each county in these age groups using the American Community Survey's 5-year estimates ending in 2014. Finally, we used our estimated models to predict the expected response for each age bin, in each county. Our final county-level estimates are the average of the values predicted for the 5 age bins, weighted by the population size of that bin in that county. As a result of this procedure, we can be confident that our county-level estimates should more closely approximate what our estimates would look like if the Project Implicit data were truly representative along the age dimension in all counties.
-
-We analyzed these data using a series of bayesian multilevel logistic regressions. We modeled the probability that a student would be expelled as a function of a set of effects that are constant across observations (i.e. fixed effects: race (dummy coded), implicit bias, explicit bias, an interaction term between race and implicit bias, an interaction term between race and explicit bias, and all covariates described above, plus each of the covariates interacting with race) and a set of effects that vary across counties (i.e. random effects: overall intercept & race). We fit separate models for each of the outcomes. All numerical predictors were standardized at the appropriate level (county, state) before model estimation (for post-stratification as well as for final inference) to help with estimation efficiency and interpretability. We also set priors for the intercept and coefficients in the bayesian model to be weakly informative normal distributions centered on zero with a standard deviation of five. This corresponds to a prior belief that all parameters take values between -15 and 15 with a probability of more than .99. Realistically, values outside this range are extremely unlikely given that all variables were standardized prior to estimation. Priors on all other parameters (e.g. variance of the county-level intercepts) were left to default settings from the software package used to fit the models.
-
-Because of the computational demands of fitting such a high-dimensional model to such a large dataset (the full model for each metric would consist of over 6k parameters to approximately 170k observations), we used a consensus monte carlo algorithm to obtain approximate posterior distributions for the parameters of interest [@scott2016bayes]. The approximate posteriors derived from this algorithm have been shown to be nearly indistinguishable from the true posterior, a result we verified using a small subset of our own data.
-
-## Project Implicit estimates
-```{r exp-diff}
 individual_data %>%
   mutate(explicit_bias_diff = twhite_0to10-tblack_0to10) -> individual_data
 ```
+
 We first report the results of estimating the implicit and explicit biases from Project Implicit data. When examining the unstandardized county-level estimates adjusted with poststratification, we see that there is a pro-white bias in both implicit ($mean$ = `r round(mean(as.numeric(county_means$weighted_bias), na.rm=T), 2)`, $sd$ = `r round(sd(as.numeric(county_means$weighted_bias), na.rm=T), 2)`) and explicit measures ($mean$ = `r round(mean(as.numeric(county_means$weighted_explicit_diff), na.rm=T), 2)`, $sd$ = `r round(sd(as.numeric(county_means$weighted_explicit_diff), na.rm=T), 2)`), where on both scales 0 = no bias, and positive numbers indicate a pro-white bias.
 
 ## Disciplinary action frequency
-
-```{r disc-count, results='asis'}
+```{r disc-count, results='asis', echo=FALSE, message=FALSE, warning=FALSE}
 model.data %>% 
   filter(exclude==FALSE) %>%
   group_by(group, metric) %>% 
@@ -407,22 +251,28 @@ model.data %>%
                              'in-school suspension' = 'inschool_susp',
                              'law enforcement referral' = 'law_enforcement',
                              'out-of-school suspension' = 'oos_susp')) %>%
-  arrange(black) -> counts_table
+  arrange(black) %>% data.frame() -> counts_table
 
-papaja::apa_table(counts_table, caption = 'Percentage of students of each race receiving each type of disciplinary action')
+stargazer::stargazer(counts_table, summary = F, label='tab:disc-count', title = 'Percentage of students of each race receiving each type of disciplinary action', header = F, rownames=F)
 ```
 
-Table \@ref(tab:disc-count) shows the percentage of students of each race who were reported having received each of the actions under consideration. Additionally, figure \@ref(fig:suspension-disp-map) shows the relative risk ratio for out-of-school suspensions across counties. Our statistical models (described below) show that the racial differences seen here are extremely unlikely to be due to chance.
+Table \ref{tab:disc-count} shows the percentage of students of each race who were reported having received each of the actions under consideration. Additionally, figure \ref{fig:suspension-disp-map} shows the relative risk ratio for out-of-school suspensions across counties. Our statistical models (described below) show that the racial differences seen here are extremely unlikely to be due to chance.
 
-```{r suspension-disp-map, fig.cap="Relative Risk Ratio for out-of-school suspensions for each county in the continental United States. Relative risk ratio is computed as the percentage of black students suspended to the percentage of white students suspended, as reported in the CRDC. Higher values indicate more black students suspended, relative to white students. Counties with the value NA either have no schools, have zero black students enrolled, or have zero white students enrolled."}
+```{r suspension-disp-map, results='hide', echo=F, message=F, warning=F, fig.cap='Relative Risk Ratio for out-of-school suspensions for each county in the continental United States. Relative risk ratio is computed as the percentage of black students suspended to the percentage of white students suspended, as reported in the CRDC. Higher values indicate more black students suspended, relative to white students. Counties with the value NA either have no schools, have zero black students enrolled, or have zero white students enrolled. Interactive maps for all disciplinary outcomes and bias estimates can be found at https://osf.io/pu79a/'}
 library(rgdal)
 library(viridis)
 
+#shapefiles obtained from 2010 US census: https://www.census.gov/geo/maps-data/data/cbf/cbf_counties.html
 US.counties <- readOGR(dsn='/Users/travis/Documents/gits/Data/gz_2010_us_050_00_5m/',
                        layer='gz_2010_us_050_00_5m')
+US.states <- readOGR(dsn='/Users/travis/Documents/gits/Data/gz_2010_us_040_00_5m/',
+                       layer='gz_2010_us_040_00_5m')
 US.counties <- US.counties[!(US.counties$STATE %in% c("02","15","72")),]
+US.states <- US.states[!(US.states$STATE %in% c('02', '15', '72')),]
 county.data <- US.counties@data
+state.data <- US.states@data
 county.data$id <- rownames(county.data)
+state.data$id <- rownames(state.data)
 model.data %>%
   mutate(GEO_ID = id_from_census) %>%
   dplyr::select(county, state_code, state_name, GEO_ID, county_id, 
@@ -453,30 +303,33 @@ model.data %>%
   mutate(risk_cat_num = as.numeric(risk_cat)) -> prop_diff
 
 map.df <- broom::tidy(US.counties)
+state.df <- broom::tidy(US.states)
 map.df %>% 
   left_join(county.data) %>%
   left_join(prop_diff) %>%
   filter(!is.na(GEO_ID)) -> plot.dat
 
-map <- ggplot(plot.dat, aes(x=long, y=lat, group=group, fill=risk_cat)) +
+map <- ggplot(plot.dat, aes(x=long, y=lat, group=group)) +
   scale_fill_viridis(name = 'Relative Risk', discrete=T) +
-  geom_polygon() + 
+  geom_polygon(aes(fill=risk_cat)) + 
+  geom_polygon(data=state.df, aes(x=long, y=lat, group=group, fill=NA), color='gray45', size=.5) + 
   coord_map() +
   theme_void() +
-  ggtitle('Relative Risk Ratio for Out-of-school Suspensions') + 
+  #ggtitle('Relative Risk Ratio for Out-of-school Suspensions') + 
   theme(plot.title = element_text(hjust = 0.5),
-        legend.position='top') +
+        legend.title=element_text(size=10)) +
   guides(fill = guide_legend(reverse=T))
 ggsave('/Users/travis/Documents/gits/educational_disparities/figs/map.jpeg', map, width = 11, height = 6)
 map
 ```
 
-## Associations across counties
-Figure \@ref(fig:overall-associations) shows the estimate of primary interest for each of the models. The estimates displayed are the coefficients for the interaction between race and each of the two bias measurements. Given that Black Americans are the baseline group, negative values for this coefficient indicate that as one moves into counties with higher levels of bias, the gap between the probability of a black student being disciplined and the probability of a white student being disciplined grows. Table \@ref(tab:reg-coefs) displays the estimated coefficients and 95% uncertainty intervals for each of the fixed effects for each model.
 
-```{r overall-associations, fig.cap="Association between each metric and county-level estimates of explicit and implicit bias. Negative values indicate that the rate of increase (or decrease) for blacks is faster (or slower) than for whites. Point is the mean of the posterior and error bars represent 95% bayesian uncertainty intervals."}
+## Associations across counties
+Figure \[fig:overall-associations\]  shows the estimate of primary interest for each of the models. The estimates displayed are the coefficients for the interaction between race and each of the two bias measurements. Given that Black Americans are the baseline group, negative values for this coefficient indicate that as one moves into counties with higher levels of bias, the gap between the probability of a black student being disciplined and the probability of a white student being disciplined grows. Table \[tab:reg-coefs\] displays the estimated coefficients and 95% uncertainty intervals for each of the fixed effects for each model.
+
+```{r overall-associations, results='hide', echo=F, message=F, warning=F, fig.cap='Association between each metric and county-level estimates of explicit and implicit bias. Negative values indicate that the rate of increase (or decrease) for blacks is faster (or slower) than for whites. Point is the mean of the posterior and error bars represent 95% bayesian uncertainty intervals'}
 #the p_neg for oos_susp & implicit bias is 100%, so when reporting the number in-text, i just replace it with 1 to prevent it from being rendered as NA in the document.
-base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/mw_2013uclaexcl/'
+base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/full_models/'
 plot.dat <- data.frame(group = NA, weighted_bias = NA, est = NA, lower = NA, upper=NA, metric = NA)
 plot.dat2 <- data.frame(weighted_bias = NA, est = NA, lower=NA, upper=NA, metric=NA)
 plot.dat3 <- data.frame(est=NA, lower=NA, upper=NA, p_neg=NA, metric=NA)
@@ -661,9 +514,10 @@ p <- ggplot(plot.dat3_all, aes(x=metric, y=est, group=bias, color=bias, shape=bi
   ylab('Black-White Difference in log-odds slope') +
   theme(axis.title.y = element_blank(),
         legend.title = element_blank(),
-        axis.text = element_text(size=12),
-        axis.title.x = element_text(size=14, face='bold'),
-        legend.text = element_text(size=12))
+        legend.position='top',
+        axis.text = element_text(size=10),
+        axis.title.x = element_text(size=12, face='bold'),
+        legend.text = element_text(size=10))
 ggsave('/Users/travis/Documents/gits/educational_disparities/figs/slope_ests.jpeg', p, width = 11, height = 6)
 p
 ```
@@ -672,14 +526,13 @@ Several patterns are apparent from this figure. First, county-level explicit bia
 
 In contrast, the estimated effects for implicit bias are more ambiguous. Expulsions ($M_{slope}$ = `r round(plot.dat3_all$est[5], 2)`, [`r round(plot.dat3_all$lower[5], 2)`, `r round(plot.dat3_all$upper[5], 2)`]), school-related arrests ($M_{slope}$ = `r round(plot.dat3_all$est[4], 2)`, [`r round(plot.dat3_all$lower[4], 2)`, `r round(plot.dat3_all$upper[4], 2)`]), and law enforcement referrals ($M_{slope}$ = `r round(plot.dat3_all$est[2], 2)`, [`r round(plot.dat3_all$lower[2], 2)`, `r round(plot.dat3_all$upper[2], 2)`]) are all estimated to be close to zero, or with substantial uncertainty with respect to the direction of the effect. Surprisingly, there is a reliable association for in-school suspensions, with schools higher in implicit bias having smaller in-school suspension gap ($M_{slope}$ = `r round(plot.dat3_all$est[3], 2)`, [`r round(plot.dat3_all$lower[3], 2)`, `r round(plot.dat3_all$upper[3], 2)`]). Though not fully conclusive, the the association between implicit biases and out-of-school suspensions tends to be in a similar, counter-intuitive direction ($M_{slope}$ = `r round(plot.dat3_all$est[1], 2)`, [`r round(plot.dat3_all$lower[1], 2)`, `r round(plot.dat3_all$upper[1], 2)`]). However, it is important to point out that at no point do these associations "cross over" such that white students are actually suspended more frequently than black students. Even at a county with implicit bias 3 standard deviations above the mean, for every white student who receives an out-of-school suspension, about `r round(outlier_county$est[1], 2)` [`r round(outlier_county$lower[1], 2)`, `r round(outlier_county$upper[1], 2)`] black students are expected to be suspended.
 
-
-```{r, reg-coefs, results='asis'}
-base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/mw_2013uclaexcl/'
+```{r, reg-coefs, results='asis', echo=F, message=F, warning=F}
+base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/full_models/'
 plot.dat <- data.frame(coef = NA, est = NA, lower = NA, upper = NA, p_neg = NA, metric = NA)
 
 # weighted bias w/exclusions & explicit difference
 metrics <- list.files(base_path)
-#metrics <- c('expulsion_combined', 'in_school_arrest', 'law_enforcement', 'oos_susp')#1245
+#metrics <- c('expulsion_combined', 'in_school_arrest', 'law_enforcement', 'oos_susp')
 for (i in metrics){
   pth <- paste(base_path, i, '/', sep='')
   
@@ -774,12 +627,10 @@ plot.dat %>%
 tabledata <- tabledata[c(1:7, 23:27, 30, 8, 28, 29, 9:19, 22, 20, 21),]
 names(tabledata)[1] <- ''
 
-papaja::apa_table(tabledata, caption = 'Regression coefficient estimates for the population-level (i.e. fixed) effects, along with 95\\% uncertainty intervals for each of the disciplinary metrics.', small = T)
+stargazer::stargazer(tabledata, summary = F, label='tab:reg-coefs', title = 'Regression coefficient estimates for the population-level (i.e. fixed) effects, along with 95\\% uncertainty intervals for each of the disciplinary metrics.', header = F, rownames=F)
 ```
 
-
-
-```{r detail-risks, fig.cap="Association between bias and relative risk ratio for black students to white students. Line is the mean of the posterior. Bands indicate 95% uncertainty intervals. Points represent counties, whose sizes are scaled to the number of schools in that county. Printed p_{pos} represents the posterior probability that the association is positive. Note that the y axis is cut at 8 for legibility despite data extending beyond. Additionally, a number of schools cannot be represented because the ratio of discipline proportions (black/white) is undefined, either because there are zero students of a given race enrolled (e.g. NA/white), or the proportion of white students disciplined is zero (e.g. black/0)."}
+```{r detail-risks, fig.cap="Association between bias and relative risk ratio for black students to white students. Line is the mean of the posterior. Bands indicate 95% uncertainty intervals. Points represent counties, whose sizes are scaled to the number of schools in that county. Printed p_{pos} represents the posterior probability that the association is positive. Note that the y axis is cut at 8 for legibility despite data extending beyond. Additionally, a number of schools cannot be represented because the ratio of discipline proportions (black/white) is undefined, either because there are zero students of a given race enrolled (e.g. NA/white), or the proportion of white students disciplined is zero (e.g. black/0).", results='hide', echo=F, message=F, warning=F}
 plot.dat <- data.frame(group=NA, weighted_bias=NA, est=NA, lower=NA, 
                        upper=NA, bias=NA, metric=NA, p_neg_black=NA, p_neg_white=NA)
 plot.dat2 <- data.frame(weighted_bias=NA, est=NA, lower=NA, 
@@ -845,7 +696,7 @@ for (i in metrics){
                         crime_rate=0,
                         density=0,
                         dissim=0,
-                        weighted_bias = seq(-2.5,2.5,.25),
+                        weighted_bias = seq(-2.75,2.75,.25),
                         weighted_explicit_diff = 0,
                         number=0,
                         total_number=1)
@@ -903,7 +754,7 @@ for (i in metrics){
                         density=0,
                         dissim=0,
                         weighted_bias = 0,
-                        weighted_explicit_diff = c(-1, 0),
+                        weighted_explicit_diff = seq(-2.75,2.75,.25),
                         number=0,
                         total_number=7000000)
   y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
@@ -964,11 +815,11 @@ plot.dat$metric <- factor(plot.dat$metric, c('in_school_arrest',
                                          'oos_susp'))
 
 plot.dat$metric <- fct_recode(plot.dat$metric, 
-                               'Out-of-School \n Suspension' = 'oos_susp',
-                               'In-School \n Suspension' = 'inschool_susp',
-                               'School-Related \n Arrest' = 'in_school_arrest',
-                               'Law Enf. \n Referral' = 'law_enforcement',
-                               'Expulsion' = 'expulsion_combined')
+                               'Out \n of-School \n Suspension' = 'oos_susp',
+                              'In \n School \n Suspension' = 'inschool_susp',
+                              'Arrests' = 'in_school_arrest',
+                              'Law Enf. \n Referral' = 'law_enforcement',
+                              'Expulsion' = 'expulsion_combined')
 
 plot.dat2$metric <- factor(plot.dat2$metric, c('in_school_arrest', 
                                          'expulsion_combined', 
@@ -977,9 +828,9 @@ plot.dat2$metric <- factor(plot.dat2$metric, c('in_school_arrest',
                                          'oos_susp'))
 
 plot.dat2$metric <- fct_recode(plot.dat2$metric, 
-                               'Out-of-School \n Suspension' = 'oos_susp',
-                               'In-School \n Suspension' = 'inschool_susp',
-                               'School-Related \n Arrest' = 'in_school_arrest',
+                               'Out \n of-School \n Suspension' = 'oos_susp',
+                               'In \n School \n Suspension' = 'inschool_susp',
+                               'Arrests' = 'in_school_arrest',
                                'Law Enf. \n Referral' = 'law_enforcement',
                                'Expulsion' = 'expulsion_combined')
 
@@ -990,9 +841,9 @@ raw_or$metric <- factor(raw_or$metric, c('in_school_arrest',
                                          'oos_susp'))
                           
 raw_or$metric <- fct_recode(raw_or$metric, 
-                            'Out-of-School \n Suspension' = 'oos_susp',
-                            'In-School \n Suspension' = 'inschool_susp',
-                            'School-Related \n Arrest' = 'in_school_arrest',
+                            'Out \n of-School \n Suspension' = 'oos_susp',
+                            'In \n School \n Suspension' = 'inschool_susp',
+                            'Arrests' = 'in_school_arrest',
                             'Law Enf. \n Referral' = 'law_enforcement',
                             'Expulsion' = 'expulsion_combined')
 
@@ -1049,8 +900,8 @@ plot.dat2 %>%
     geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.25) +
     theme_classic() +
     scale_size_continuous(name='Number\nof schools') + 
-    geom_text(data=text_data, parse=T, size=3,
-              aes(x=-2.75, y=4, label=paste0('p[pos]', text_comp, round(p_neg,2)))) +
+    geom_text(data=text_data, parse=T, size=3.25,
+              aes(x=-2.5, y=4.25, label=paste0('p[pos]', text_comp, round(p_neg,2)))) +
     #scale_color_manual(values=c('grey', 'darkorange'), guide=F) + 
     scale_alpha_manual(values=c(.2, 1), guide=F) +
     ylim(0,8) +
@@ -1060,8 +911,13 @@ plot.dat2 %>%
     geom_hline(yintercept=1) +
     facet_grid(metric~bias) +
     theme(legend.position = 'top',
-          strip.text.y=element_text(size=6)) -> p2
+          strip.text.y=element_text(size=7),        
+          axis.text = element_text(size=10),
+          axis.title.x = element_text(size=12, face='bold'),
+          legend.text = element_text(size=8),
+          legend.title=element_text(size=8)) -> p2
 ggsave('/Users/travis/Documents/gits/educational_disparities/figs/rel_risk.jpeg', p2, width = 11, height = 6)
+ggsave('/Users/travis/Documents/gits/educational_disparities/figs/rel_risk.pdf', p2, width = 10, height = 6)
 
 p1$data %>% filter(weighted_bias %in% c(0, 1)) -> rates
 p2$data %>% filter(weighted_bias %in% c(0, 1)) -> risks
@@ -1070,9 +926,102 @@ p2$data %>% filter(weighted_bias %in% c(0, 1)) -> risks
 p2
 ```
 
-To better illustrate the nature of these relationships, figure \@ref(fig:detail-risks) shows the estimated relative risk ratios for each type of bias measurement and each disciplinary metric. This quantity is the ratio of the probability that a black student will receive a given disciplinary action to the probability that a white students will receive a given disciplinary action. Higher values indicate that black students have a higher probability of being punished than white students. Examining the risk ratio for out-of-school suspensions, in a hypothetical county with 0 standardized bias on both implicit and explicit, the model predicts that for every white student suspended, we should expect `r round(risks$est[1], 2)` [`r round(risks$lower[1], 2)`, `r round(risks$upper[1], 2)`] black students to be suspended. If we move to a county one standard deviation above the mean of explicit bias, the ratio of black to white students expelled increases to `r round(risks$est[2], 2)` [`r round(risks$lower[2], 2)`, `r round(risks$upper[2], 2)`], while the same movement for implicit bias decreases the ratio to `r round(risks$est[4], 2)` [`r round(risks$lower[4], 2)`, `r round(risks$upper[4], 2)`].
+To better illustrate the nature of these relationships, figure \@ref(fig:detail-risks) shows the estimated relative risk ratios for each type of bias measurement and each disciplinary metric. This quantity is the ratio of the probability that a black student will receive a given disciplinary action to the probability that a white students will receive a given disciplinary action. Higher values indicate that black students have a higher probability of being punished than white students. Examining the risk ratio for out-of-school suspensions, in a hypothetical county with 0 standardized bias on both implicit and explicit, the model predicts that for every white student suspended, we should expect `r round(risks$est[1], 2)` [`r round(risks$lower[1], 2)`, `r round(risks$upper[1], 2)`] black students to be suspended. If we move to a county one standard deviation above the mean of explicit bias, the ratio of black to white students suspended increases to `r round(risks$est[2], 2)` [`r round(risks$lower[2], 2)`, `r round(risks$upper[2], 2)`], while the same movement for implicit bias decreases the ratio to `r round(risks$est[4], 2)` [`r round(risks$lower[4], 2)`, `r round(risks$upper[4], 2)`].
 
 ## Additional analyses: Sexuality bias as predictor
+```{r iat-data-sex, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+df_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2004.sav')
+#no county data in 2005
+#df2 <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2005.sav')
+df3_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2006.sav')
+df4_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2007.sav')
+df5_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2008.sav')
+df6_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2009.sav')
+df7_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2010.sav')
+df8_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2011.sav')
+df9_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2012.sav')
+df10_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2013.sav')
+df11_s <- read_sav('/Users/travis/Documents/gits/Data/iat_sexuality/Sexuality IAT.public.2014.sav')
+sex_county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means_sexuality.csv')
+
+df_s %>%
+  filter(CountyNo!='' &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
+         tgaywomen, tstraightmen, tstraightwomen, age)  -> subdat
+
+df3_s %>%
+  filter(CountyNo!='' &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
+         tgaywomen, tstraightmen, tstraightwomen, age) %>%
+  rbind(subdat) -> subdat
+
+df4_s %>%
+  filter(CountyNo!='' &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
+         tgaywomen, tstraightmen, tstraightwomen, age) %>%
+  rbind(subdat) -> subdat
+
+df5_s %>%
+  filter(CountyNo!='' &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
+         tgaywomen, tstraightmen, tstraightwomen, age) %>%
+  rbind(subdat) -> subdat
+
+df6_s %>%
+  filter(CountyNo!='' &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
+         tgaywomen, tstraightmen, tstraightwomen, age) %>%
+  rbind(subdat) -> subdat
+
+df7_s %>%
+  filter(CountyNo!='' &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
+         tgaywomen, tstraightmen, tstraightwomen, age) %>%
+  rbind(subdat) -> subdat
+
+df8_s %>%
+  filter(CountyNo!='' &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
+         tgaywomen, tstraightmen, tstraightwomen, age) %>%
+  rbind(subdat) -> subdat
+
+df9_s %>%
+  filter(CountyNo!='' &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
+         tgaywomen, tstraightmen, tstraightwomen, age) %>%
+  rbind(subdat) -> subdat
+
+df10_s %>%
+  filter(CountyNo!='' &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
+         tgaywomen, tstraightmen, tstraightwomen, age) %>%
+  rbind(subdat) -> subdat
+
+df11_s %>%
+  filter(CountyNo!='' &
+           !is.na(age)) %>%
+  select(CountyNo, STATE, D_biep.Straight_Good_all, tgaymen, 
+         tgaywomen, tstraightmen, tstraightwomen, age) %>%
+  rbind(subdat) -> subdat
+
+subdat %>%
+  mutate(explicit_bias=((tstraightmen-tgaymen) + (tstraightwomen-tgaywomen))/2) %>%
+  mutate(age_bin = cut(age, breaks=c(14, 24, 34, 54, 75, 120))) %>%
+  filter(!is.na(age_bin)) %>%
+  filter(STATE %ni% 
+           c('AA', 'AE', 'AP', 'AS', 'FM', 'GU', 'MH', 'MP', 'PR', 'VI')) %>% #exclude territories, etc
+  mutate(county_id = paste(STATE, CountyNo, sep='-')) -> individual_data_sex
+
+```
 We sought to test whether the relationships observed above were specific to estimates of racial bias. Accordingly, we ran the same set of analyses with sexuality bias replacing racial bias.
 
 ### Project Implicit Estimates
@@ -1081,7 +1030,7 @@ The unstandardized county-level estimates of bias adjusted with poststratificati
 ### Associations across counties
 Figure \@ref(fig:overall-associations-sex) shows the estimate of primary interest for each of the models. The estimates displayed are the coefficients for the interaction between race and each of the two bias measurements. Given that Black Americans are the baseline group, negative values for this coefficient indicate that as one moves into counties with higher levels of bias, the gap between the probability of a black student being disciplined and the probability of a white student being disciplined grows. Table \@ref(tab:reg-coefs-sex) displays the estimated coefficients and 95% uncertainty intervals for each of the fixed effects for each model.
 
-```{r overall-associations-sex, fig.cap="Association between each metric and county-level estimates of explicit and implicit bias. Negative values indicate that the rate of increase (or decrease) for blacks is faster (or slower) than for whites. Point is the mean of the posterior and error bars represent 95% bayesian uncertainty intervals."}
+```{r overall-associations-sex, fig.cap="Association between each metric and county-level estimates of explicit and implicit bias. Negative values indicate that the rate of increase (or decrease) for blacks is faster (or slower) than for whites. Point is the mean of the posterior and error bars represent 95% bayesian uncertainty intervals.", results='hide', echo=F, message=F, warning=F}
 #the p_neg for oos_susp & implicit bias is 100%, so when reporting the number in-text, i just replace it with 1 to prevent it from being rendered as NA in the document.
 base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/sex_bias/'
 plot.dat <- data.frame(group = NA, weighted_bias = NA, est = NA, lower = NA, upper=NA, metric = NA)
@@ -1234,14 +1183,15 @@ pl <- ggplot(plot.dat3_all, aes(x=metric, y=est, group=bias, color=bias, shape=b
   ylab('Black-White Difference in log-odds slope') +
   theme(axis.title.y = element_blank(),
         legend.title = element_blank(),
-        axis.text = element_text(size=12),
-        axis.title.x = element_text(size=14, face='bold'),
-        legend.text = element_text(size=12))
+        legend.position='top',
+        axis.text = element_text(size=10),
+        axis.title.x = element_text(size=12, face='bold'),
+        legend.text = element_text(size=10))
 ggsave('/Users/travis/Documents/gits/educational_disparities/figs/slope_ests_sex.jpeg', pl, width = 11, height = 6)
 pl
 ```
 
-```{r, reg-coefs-sex, results='asis'}
+```{r, reg-coefs-sex, results='asis', echo=F, message=F, warning=F}
 base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/sex_bias/'
 plot.dat <- data.frame(coef = NA, est = NA, lower = NA, upper = NA, p_neg = NA, metric = NA)
 
@@ -1342,32 +1292,120 @@ plot.dat %>%
 tabledata_sex <- tabledata_sex[c(1:7, 23:27, 30, 8, 28, 29, 9:19, 22, 20, 21),]
 names(tabledata_sex)[1] <- ''
 
-papaja::apa_table(tabledata_sex, caption = 'Regression coefficient estimates for the population-level (i.e. fixed) effects, along with 95\\% uncertainty intervals for each of the disciplinary metrics.', small = T)
+stargazer::stargazer(tabledata_sex, summary = F, label='tab:reg-coefs-sex', title = 'Regression coefficient estimates for the population-level (i.e. fixed) effects, along with 95\\% uncertainty intervals for each of the disciplinary metrics.', header = F, rownames=F)
 ```
 
 This figure illustrates that in general, county-level explicit and implicit biases in favor of straight individuals are not consistently associated with racial disciplinary disparities. The one exception is for law enforcement referrals, where we see that counties with higher levels of implicit bias are expected to have a larger racial gap ($M_{slope}$ = `r round(plot.dat3_all$est[2], 2)`, [`r round(plot.dat3_all$lower[2], 2)`, `r round(plot.dat3_all$upper[2], 2)`]). For this particular disciplinar action, explicit biases tend to show the opposite association, with counties higher in explicit bias expected to have a smaller racial gap, though the evidence is not as conclusive ($M_{slope}$ = `r round(plot.dat3_all$est[7], 2)`, [`r round(plot.dat3_all$lower[7], 2)`, `r round(plot.dat3_all$upper[7], 2)`]). All other estimates are located near zero, or are inconclusive with respect to the direction of the effect.
 
 # Discussion
-These analyses across five types of disciplinary actions are fully consistent with county-level estimates of explicit racial bias being associated with racial disciplinary disparities. Specifically, in counties where the white population is estimated to have higher rates of explicit biases that favor whites, the difference in suspensions, expulsions, law enforcement referrals, and school-related arrests between black and white students is expected to be greater than in those counties where the white population has lower rates of explicit racial biases. Only the data for two types of disciplinary actions - in-school suspensions and out-of-school suspensions suggest any form of consistent relationship, and this relationship is in the opposite direction to any directional hypothesis we would make. In a secondary set of analyses with sexuality bias, we found evidence that the aforementioned pattern cannot be explained by a more general tendency to exhibit explicit biases to stigmatized groups, as opposed to racial biases specifically, since most of the associations with respect to county-level explicit and implicit sexuality bias are directionally inconclusive. Additionally, our analyses cover the vast majority of school-aged students in the United States, and our models include a large set of covariates, suggesting that the relationships observed are not attributable to other indicators that can often co-occur with racial disparities, such as socioeconomic status or population demographics [@williams1999race; @skiba2002color].
+These analyses across five types of disciplinary actions are fully consistent with county-level estimates of explicit racial bias being associated with racial disciplinary disparities. Specifically, in counties where the white population is estimated to have higher rates of explicit biases that favor whites, the difference in suspensions, expulsions, law enforcement referrals, and school-related arrests between black and white students is expected to be greater than in those counties where the white population has lower rates of explicit racial biases. In a secondary set of analyses with sexuality bias, we found evidence that the aforementioned pattern cannot be explained by a more general tendency to exhibit explicit biases to stigmatized groups, as opposed to racial biases specifically, since most of the associations with respect to county-level explicit and implicit sexuality bias are directionally inconclusive. Additionally, our analyses cover the vast majority of school-aged students in the United States, and our models include a large set of covariates, suggesting that the relationships observed are not attributable to other indicators that can often co-occur with racial disparities, such as socioeconomic status or population demographics [@williams1999race; @skiba2002color].
 
-Of course, this research is not without limitations and anomalies. As mentioned earlier, the relationship between implicit racial bias and suspension was in an unexpected direction. That is, greater implicit bias is somewhat associated with smaller racial disparities in suspensions. One possibility is that counties higher in implicit bias are not as likely to suspend black students, but rather opt to use other disciplinary tools. Another possibility is that people in counties characterized by higher implicit bias are somewhat willing and able to correct their behavioral responses in order to conform to their egalitarian explicit beliefs or egalitarian social norms [@pryor2004dual. Much research at the individual level shows that people are able to counteract the automatic impulses associated with implicit bias when they have the motivation and cognitive bandwidth to do so [@devine2002regulation]. Additionally, because of the correlational nature of the analyses, it is impossible to definitively establish the causal relationship between explicit bias and disciplinary disparities. The conclusion that explicit biases predict disciplinary disparities is consonant with a great deal of research on disciplinary disparities [@mcintosh2014education. However, it is also possible that living in a region in which black students are disciplined to a greater extent than white students exacerbates and/or reinforces the explicit racial biases of community members, or that the relationship between explicit racial biases and disciplinary disparities is bi-directional. Finally, although we used a poststratification scheme to make our estimates more representative with respect to county age distributions, we cannot account for other ways in which Project Implicit data are not representative of the general population. Our analyses trade off the ability to ask these more detailed question with the strengths of statistical power and population coverage offered by the large datasets we used here. A full understanding of the complex issues shaping racial disciplinary disparities will require integrating findings from carefully controlled experiments, targeted surveys, administrative databases, and large-scale observational data.
+Of course, this research is not without limitations and anomalies. The relationship between implicit racial bias and suspension was in an unexpected direction. That is, greater implicit bias is somewhat associated with smaller racial disparities in suspensions. One possibility is that counties higher in implicit bias are not as likely to suspend black students, but rather opt to use other disciplinary tools unmeasured in these data. Another possibility is that people in counties characterized by higher implicit bias are somewhat willing and able to correct their behavioral responses in order to conform to their egalitarian explicit beliefs or egalitarian social norms [@pryor2004dual. Much research at the individual level shows that people are able to counteract the automatic impulses associated with implicit bias when they have the motivation and cognitive bandwidth to do so [@devine2002regulation]. Additionally, because of the correlational nature of the analyses, it is impossible to definitively establish the causal relationship between explicit bias and disciplinary disparities. The conclusion that explicit biases predict disciplinary disparities is consonant with a great deal of research on disciplinary disparities [@mcintosh2014education. However, it is also possible that living in a region in which black students are disciplined to a greater extent than white students exacerbates and/or reinforces the explicit racial biases of community members, or that the relationship between explicit racial biases and disciplinary disparities is bi-directional. Finally, although we used a poststratification scheme to make our estimates more representative with respect to county age distributions, we cannot account for other ways in which Project Implicit data are not representative of the general population. Our analyses trade off the ability to ask these more detailed question with the strengths of statistical power and population coverage offered by the large datasets we used here. A full understanding of the complex issues shaping racial disciplinary disparities will require integrating findings from carefully controlled experiments, targeted surveys, administrative databases, and large-scale observational data.
 
 Nevertheless, our work compliments other research indicating that racial dynamics are an important source for the observed differences in disciplinary rates between black and white students. For instance, students, caregivers, and administrators perceive suspensions and the disproportionate use of them as at least partially racially motivated [@haight2014ecological; @gibson2013caregivers; @ruck2002racial]. Additionally, other work has shown that even after controlling for a range of other factors, race remains associated with the likelihood of receiving disciplinary actions [@anyon2014persistent; @skiba2002color]. Additionally, experimental evidence shows that disciplinary decision-making for teachers differs depending on the race of the student [@okonofua2015two]. The present research adds to this work by showing for the first time associations between disciplinary actions and measurements of racial bias. 
 
-Our work also compliments existing studies examining the degree to which implicit and explicit racial biases are associated with racial disparities in key areas, such as health and policing [@leitner2016blacks; @orchard2017county; @hehman2017disproportionate] by extending this type of inquiry to educational outcomes. To properly assess the meaning of these findings, it is imperative that future work focus specifically on what it means to exist in a community that is estimated to have high or low levels of implicit or explicit bias. Specifically, what are the structural, environmental, and social differences of living in these communities? 
+Our work also compliments existing studies examining the degree to which implicit and explicit racial biases are associated with racial disparities in key areas, such as health and policing [@leitner2016blacks; @orchard2017county; @hehman2017disproportionate] by extending this type of inquiry to educational outcomes. To properly assess the meaning of these findings, it is imperative that future work focus specifically on what it means to exist in a community that is estimated to have high or low levels of implicit or explicit bias.
 
-As we have already highlighted, students who are subject to the disciplinary actions we examined here are at substantially higher risk for negative life outcomes [@hirschfield2009another]. In dispensing these disciplinary decisions differentially across racial groups, educational agencies are also differentially allocating life prospects. Although implementing training and education focused on implicit bias is popular among educational administrators [@staats2016understanding], and has been recommended by the US department of education [@us2014dear], our analysis suggests that effectively combating racial disparities in discipline requires confronting more explicit forms of racial bias, perhaps, for example, through peer influence or interventions designed to change social norms [@paluck2009prejudice]. 
+As we have already highlighted, students who are subject to the disciplinary actions we examined here are at substantially higher risk for negative life outcomes [@hirschfield2009another]. In dispensing these disciplinary decisions differentially across racial groups, educational agencies are also differentially allocating life prospects. Although implementing training and education focused on implicit bias is popular among educational administrators [@staats2016understanding], and has been recommended by the US Department of Education [@us2014dear], our analysis suggests that effectively combating racial disparities in discipline requires confronting more explicit forms of racial bias, perhaps, for example, through peer influence or interventions designed to change social norms [@paluck2009prejudice]. 
 
-We offer the research presented here to prompt additional scrutiny with respect to how and why educational agencies in the United States differentially administer disciplinary actions, especially when those actions are known to have dire consequences for student welfare. Through understanding and reducing these disciplinary disparities there exists an avenue for education to maximize its promise as the great equalizer it has the potential to be.
+We offer the research presented here to prompt additional scrutiny with
+respect to how and why educational agencies in the United States
+differentially administer disciplinary actions, especially when those
+actions are known to have dire consequences for student welfare. Although the focus here is on actions taking place within educational agencies, the mechanisms responsible for these disparities likely exist, at least partly, in the larger community. Through understanding and reducing these disciplinary disparities specifically and the biases that exist in the community more broadly, there exists an avenue for education to maximize its promise as the great equalizer it has the potential to be. 
 
-\newpage
+## Materials & Methods
+### Analytic Approach
+Because Project Implicit is a nonrandom sample, we used multilevel regression and post-stratification to obtain accurate geographical population-based estimates of implicit and explicit bias. This procedure corrects for biased sampling and regularizes extreme observations with little data to support them (e.g. a county with only a handful of respondents with especially high or low scores) [@park2004bayesian; @gelman1997poststratification]. Following past work [@leitner2016blacks], we identified age as one dimension along which IAT respondents differed from the general population in ways that could bias our conclusions [@gonsalkorale2009aging]. Our post-stratification weighting scheme is as follows: We first grouped respondents into five age group categories (15-24, 25-34, 35-54, 55-75, and 75+). We next fit multilevel models estimating bias (implicit and explicit biases separately) as a function of our state-level covariates (the "fixed" effects: all identical to those included in the final model, described below), and allowed the estimates to vary by age bin, county, and state (the "random" effects). Next, we determined the population of whites in each county in these age groups using the American Community Survey's 5-year estimates ending in 2014. Finally, we used our estimated models to predict the expected response for each age bin, in each county. Our final county-level estimates are the average of the values predicted for the 5 age bins, weighted by the population size of that bin in that county. As a result of this procedure, we can be confident that our county-level estimates should more closely approximate what our estimates would look like if the Project Implicit data were truly representative along the age dimension in all counties.
 
-# References
-```{r create_r-references}
-r_refs(file = "r-references.bib")
+We analyzed these data using a series of bayesian multilevel logistic regressions. We modeled the probability that a student would be expelled as a function of a set of effects that are constant across observations (i.e. fixed effects: race (dummy coded), implicit bias, explicit bias, an interaction term between race and implicit bias, an interaction term between race and explicit bias, and all covariates described below, plus each of the covariates interacting with race) and a set of effects that vary across counties (i.e. random effects: overall intercept & race). We fit separate models for each of the outcomes. All numerical predictors were standardized at the appropriate level (county, state) before model estimation (for post-stratification as well as for final inference) to help with estimation efficiency and interpretability. We also set priors for the intercept and coefficients in the bayesian model to be weakly informative normal distributions centered on zero with a standard deviation of five. This corresponds to a prior belief that all parameters take values between -15 and 15 with a probability of more than .99. Realistically, values outside this range are extremely unlikely given that all variables were standardized prior to estimation. Priors on all other parameters (e.g. variance of the county-level intercepts) were left to default settings from the software package used to fit the models.
+
+Because of the computational demands of fitting such a high-dimensional model to such a large dataset (the full model for each metric would consist of over 6k parameters to approximately 170k observations), we used a consensus monte carlo algorithm to obtain approximate posterior distributions for the parameters of interest [@scott2016bayes]. The approximate posteriors derived from this algorithm have been shown to be nearly indistinguishable from the true posterior, a result we verified using a small subset of our own data.
+### Data Sources
+#### Disciplinary actions
+```{r summary-data, echo=FALSE, results='hide', message=FALSE, warning=FALSE}
+
+schools_dat %>%
+  select(LEA_STATE:LEAID, CCD_LATCOD, CCD_LONCOD, SCH_ENR_HI_M:TOT_ENR_F) %>%
+  gather(group, total_number, SCH_ENR_HI_M:TOT_ENR_F) %>%
+  separate(group, into=c('group', 'gender'), -2) %>%
+  separate(group, into=c('prefix', 'group'), -4) %>%
+  mutate(group=fct_recode(group, am_indian='AM_', asian='AS_', black='BL_',
+                          hispanic='HI_', pac_isl='HP_', total='NR_', 
+                          biracial='TR_', white='WH_')) %>%
+  group_by(COMBOKEY, group) %>%
+  mutate(total_number = sum(total_number)) %>%
+  ungroup() %>%
+  select(-prefix, -gender) %>%
+  distinct() -> enrollment_sample
+
+enrollment_sample %>%
+  group_by(group) %>%
+  summarise(ns = sum(total_number)) -> enrollment_totals
+
+model.data %>% 
+  filter(exclude==FALSE) -> kept_schools
+
+model.data %>%
+  filter(exclude==FALSE) %>%
+  select(COMBOKEY, group, total_number) %>%
+  distinct() %>%
+  mutate(total_schools = n_distinct(COMBOKEY)) %>%
+  group_by(group) %>%
+  summarise(ns = sum(total_number),
+            n_sch = n_distinct(COMBOKEY),
+            total_schools = max(total_schools)) -> enrollment_mod_data
+
+enrollment_sample %>%
+  filter(COMBOKEY %in% kept_schools$COMBOKEY) %>%
+  group_by(group) %>%
+  summarise(ns = sum(total_number),
+            n_sch = n_distinct(COMBOKEY)) -> filtered_dat
+
 ```
 
-\newpage
+To assess rates of disciplinary action, we used data from the Civil Rights Data Collection (CRDC) conducted by the US Department of Education. The dataset we used comes from the 2013-2014 academic year and has data on "all public local and educational agencies and schools, including long-term secure juvenile justice facilities, charter schools, alternative schools, and schools serving students with disabilities." In total, the CRDC data represents `r dim(schools_dat)[1]` institutions enrolling approximately `r round(enrollment_totals$ns[6]/1000000, 1)` million students, of which approximately `r round(enrollment_totals$ns[8]/1000000, 1)` million are white and `r round(enrollment_totals$ns[3]/1000000, 1)` million are Black[^1]. Previous work using CRDC data have identified a number of districts whose data are in error, and have excluded juvenile justice facilities, as these institutions constitute dramatically different educational environments, where the meaning of disciplinary actions may be quite different [@losen2015we]. We followed similar practices, excluding all juvenile justice facilities. Additionally, we excluded data for a specific disciplinary metric for any schools which reported disciplining more students than it reported enrolling for *any* race for that metric (e.g. a school reported expelling 5 white students when they reported enrolling less than that number). We also excluded any school for all disciplinary actions if they had an overreporting error for 3 or more metrics. After these exclusions are applied, the final sample used for modeling consists of `r filtered_dat$n_sch[1]` institutions, enrolling `r round(filtered_dat$ns[6]/1000000, 1)` million students of which `r round(filtered_dat$ns[8]/1000000,1)` million are white and `r round(filtered_dat$ns[3]/1000000, 1)` million are black.[^2] From these data, we focus on the number of students by race (black and white) who were subjected to each of the disciplinary actions described below. 
 
-\setlength{\parindent}{-0.5in}
-\setlength{\leftskip}{0.5in}
+[^1]: We note that we initially preregistered a number of analyses concerning this work. There are a number of differences between the analyses we registered and those presented in the main text. The registered analyses can be found, in full, in the project's OSF page (https://osf.io/pu79a/).
+
+[^2]: Researchers who compared individual schools' out-of-school suspension rates reported in the 2011-2012 CRDC with suspension rates of the same schools as reported on state websites where available found a number of mismatches [@losen2015we]. We did not have the resources to conduct similar comparisons for all outcomes in all `r filtered_dat$n_sch[1]` institutions; however, informal inspection of the data led us to find one school district for which this was the case. Including versus excluding schools from this district do not change the results in any meaningful way. The analyses presented herein include this district. The results of corresponding analyses without this district can be requested from the first author. It should be noted that the United States Government Accountability Office's recent descriptive overview of the 2013-2014 CRDC also did not exclude cases for which there was a discrepancy between disciplinary rates reported in this dataset and any disciplinary data reported on state websites[@usgao2018discipline]. As such, the analyses here are consistent with the only other published examination of the 2013-2014 CRDC data that we are aware of.
+
+##### Types of disciplinary actions
+We report here on five different types of disciplinary actions: in-school suspensions, out-of-school suspensions, law enforcement referrals, school-related arrests, and expulsions.
+
+The most extreme outcome, *expulsion*, is defined as when a student is prohibited from returning to the educational institution for the remainder of the school year or longer. The institution may or may not set up alternative educational services for the student. *Law enforcement referrals* are actions where a student is "reported to any law enforcement agency or official for an incident including a school police unit, for an incident that occurs on school grounds, during school-related events, or while taking school transportation, regardless of whether official action is taken.  Citations, tickets, and court referrals are considered referrals to law enforcement." *School-related arrests* refer to "an arrest of a student for any activity conducted on school grounds, during off-campus school activities (including while taking school transportation)" *Out-of-school suspensions* are actions where the student "is temporarily removed from his or her regular school for at least half a day (but less than the remainder of the school year)". Finally, *in-school suspensions*  are actions where the student is "temporarily removed from his or her regular classroom(s) for at least half a day...,but remains under the direct supervision of school personnel. Direct supervision means school personnel are physically in the same location as the student under their supervision." [@crdc2013survey, pg. 51]
+
+#### Racial Bias
+We used measurements of implicit and explicit bias available from data collected through Project Implicit [@xu2014psychology]. For a full description of the implicit and explicit bias measures available in these data, refer to @xu2014psychology and @leitner2016blacks. We note only that we used the IAT D-score as a measure of implicit bias, and the difference between reported warmth towards whites and warmth towards black (both measured from 0=very cold to 10=very warm) as a measure of explicit bias. Additionally, we used only respondents who had geographic information that would allow us to place them in a United States county, identified as White, and visited the site anytime after it went live in 2002 through the end of 2014. This consisted of approximately `r round(dim(individual_data)[1]/1000000, 1)` million total respondents from `r dim(county_means)[1]` counties. `r round(table(is.na(individual_data$D_biep.White_Good_all))[1]/1000000, 2)` million respondents provided data for the IAT, and `r round(table(is.na(individual_data$explicit_bias))[1]/1000000, 2)` million provided explicit bias ratings.
+
+#### Sexuality Bias
+
+We used measurements of implicit and explicit sexuality bias available from data collected through Project Implicit [@xu2014psychology]. We opted for these measures as robustness checks because there were enough observations to closely mimic the racial bias analyses, and they have been used for similar purposes in previous work [@orchard2017county] As in the previous study, we used the IAT D-score as a measure of implicit bias. Our warmth score represented the average of the difference between straight men and gay men and the difference between straight women and lesbian women. We used only respondents who had geographic information that would allow us to place them in a United States county and visited the anytime between when it went live in 2002 through the end of 2014. This consisted of approximately `r round(dim(individual_data_sex)[1]/1000)`K total respondents from `r dim(sex_county_means)[1]` counties. Of these respondents, `r round(table(is.na(individual_data_sex$D_biep.Straight_Good_all))[1]/1000)`K respondents provided data for the IAT, and `r round(table(is.na(individual_data_sex$explicit_bias))[1]/1000)`K respondents provided explicit bias ratings.
+
+#### Covariates
+Each county-level variable used as a covariate in the final model and the corresponding state-level variable used as a predictor in the post-stratification scheme (described below) were taken from the same source. Population size and proportions, socioeconomic indicators, mobility, and segregation indices were all taken from the American Community Survey (ACS) 5-year estimates for the time period ending in 2014. Urban-rural indicators were taken from the 2010 US Census, and crime rates were taken from the FBI Uniform Crime Reporting program, as made available through the National Archive of Criminal Justice Data for each year from 2010-2014[^3]. Each of these variables is described below.
+
+[^3]: These years are chosen to for the FBI data to yield estimates that are similar to the 5-year estimates from the ACS data.
+
+##### Population size and proportions
+We obtained the total population, the proportion of the population that is white, the proportion of the population that is black, and the ratio of black-to-white people in the population from ACS table B02001.
+
+##### Socioeconomic indicators
+We obtained estimates for the percentage of population with a Bachelor's degree or higher, the percentage of the population aged 16 or over in the labor force that is unemployed, the median household income, and the percentage of families and people whose income in the last year was below the poverty line from the ACS table DP03.
+
+##### Urban-rural indicator
+We obtained estimates of housing density per square mile of land area from Census table GCT-PH1.
+
+##### Mobility
+We obtained estimates of population mobility by summing the percentage of Black Americans who moved from a different county, state, or country into the county of interest (county-level covariate) or who moved from a different state or country into the state of interest (state-level covariate). We took these metrics from the ACS table S0701.
+
+##### Crime
+We computed estimates of the number of violent crimes per person by taking the number of crimes reported divided by the population size for each year, and averaging the resulting proportions across the 5 years of data.
+
+##### Segregation
+We computed a dissimiliarity index as described by @massey1988dimensions. This metric is computed based on the racial dissimilarity of census tracts within a county, and reflects the proportion of a group within the county that would have to move in order for all census tracts to have group distributions that matched the overall distribution of the county. These computations were done using data from the ACS table B02001.
+
+
+<!-- Leave these lines as they are at the end of your .Rmd file to ensure placement of methods & acknowledgements sections before the references-->
+\showmatmethods
+\showacknow
+\pnasbreak

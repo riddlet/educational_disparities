@@ -1,0 +1,464 @@
+---
+title: "PNAS Supporting Information"
+author: "Travis Riddle & Stacey Sinclair"
+date: "5/11/2018"
+output: 
+  bookdown::pdf_document2:
+    toc: no
+    keep_tex: true
+bibliography: ref.bib
+---
+
+The OSF page for this project (https://osf.io/pu79a/) hosts many additional details. These include interactive maps for all disciplinary outcomes, information for a preregistered version of these analyses, explanations for departures from these plans, code, and aggregated data.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+library(forcats)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+```
+
+```{r, reg-coefs, results='asis'}
+base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/full_models/'
+plot.dat <- data.frame(coef = NA, est = NA, lower = NA, upper = NA, p_neg = NA, metric = NA)
+
+# weighted bias w/exclusions & explicit difference
+metrics <- list.files(base_path)
+#metrics <- c('expulsion_combined', 'in_school_arrest', 'law_enforcement', 'oos_susp')#1245
+for (i in metrics){
+  pth <- paste(base_path, i, '/', sep='')
+  
+  files <- list.files(pth)
+  j <- 1
+  posterior_combo <- array(0, dim=c(30,4000,length(files)))
+  for (k in files){
+    load(paste(pth,k,sep=''))
+    dat <- as.matrix(m)
+    posterior_combo[,,j] <- t(dat[,c(1:30)])
+    j <- j+1
+  }
+  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
+  
+  for (param in 1:30){
+    m$stanfit@sim$samples[[1]][[param]] <- p_cons[param,1:1000]
+  }
+  for (param in 1:30){
+    m$stanfit@sim$samples[[2]][[param]] <- p_cons[param,1001:2000]
+  }
+  for (param in 1:30){
+    m$stanfit@sim$samples[[3]][[param]] <- p_cons[param,2001:3000]
+  }
+  for (param in 1:30){
+    m$stanfit@sim$samples[[4]][[param]] <- p_cons[param,3001:4000]
+  }
+  data.frame(coef=colnames(dat)[1:30],
+             est=rowMeans(p_cons),
+             lower=apply(p_cons,1,quantile, probs=.025),
+             upper=apply(p_cons,1,quantile, probs=.975),
+             p_neg = rowSums(p_cons<0)/4000,
+             metric=rep(i, 30)) %>%
+    rbind(plot.dat) %>%
+    filter(!is.na(est)) -> plot.dat
+}
+
+plot.dat$metric <- factor(plot.dat$metric, c('oos_susp', 'inschool_susp',
+                                             'law_enforcement', 
+                                             'expulsion_combined',
+                                             'in_school_arrest'))
+
+plot.dat$metric <- fct_recode(plot.dat$metric, 
+                               'Out-of-School Suspension' = 'oos_susp',
+                               'In-School Suspension' = 'inschool_susp',
+                               'School-Related Arrest' = 'in_school_arrest',
+                               'Law Enf. Referral' = 'law_enforcement',
+                               'Expulsion' = 'expulsion_combined')
+plot.dat$coef <- fct_recode(plot.dat$coef,
+                            'Intercept' = '(Intercept)',
+                            'total population' = 'total_pop',
+                            'proportion black' = 'black_prop',
+                            'proportion white' = 'white_prop',
+                            'black-white ratio' = 'b.w.ratio',
+                            'college grads' = 'col_grads',
+                            'income' = 'med_income',
+                            'poverty' = 'poverty_rate',
+                            'unemployment' = 'unemp_rate',
+                            'crime' = 'crime_rate',
+                            'housing density' = 'density',
+                            'mobility' = 'mobility',
+                            'dissimilarity' = 'dissim',
+                            'total population*race: white' = 'groupwhite:total_pop',
+                            'proportion black*race: white' = 'groupwhite:black_prop',
+                            'proportion white*race: white' = 'groupwhite:white_prop',
+                            'black-white ratio*race: white' = 'groupwhite:b.w.ratio',
+                            'college grads*race: white' = 'groupwhite:col_grads',
+                            'income*race: white' = 'groupwhite:med_income',
+                            'poverty*race: white' = 'groupwhite:poverty_rate',
+                            'unemployment*race: white' = 'groupwhite:unemp_rate',
+                            'crime*race: white' = 'groupwhite:crime_rate',
+                            'housing density*race: white' = 'groupwhite:density',
+                            'mobility*race: white' = 'groupwhite:mobility',
+                            'dissimilarity*race: white' = 'groupwhite:dissim',
+                            'race: white' = 'groupwhite',
+                            'implicit bias' = 'weighted_bias',
+                            'explicit bias' = 'weighted_explicit_diff',
+                            'implicit bias*race: white' = 'groupwhite:weighted_bias',
+                            'explicit bias*race: white' = 'groupwhite:weighted_explicit_diff')
+
+plot.dat %>%
+  mutate(est = round(est, 2)) %>%
+  mutate(estimate=paste(est, ' [', round(lower, 2), ',', round(upper, 2),']', sep='')) %>%
+  mutate(estimate=kableExtra::cell_spec(estimate, 'latex', bold=ifelse(p_neg<.025|p_neg>.975, TRUE, FALSE))) %>%
+  dplyr::select(metric, estimate, coef) %>%
+  spread(metric, estimate) -> tabledata
+
+tabledata <- tabledata[c(1:7, 23:27, 30, 8, 28, 29, 9:19, 22, 20, 21),]
+names(tabledata)[1] <- ''
+
+knitr::kable(tabledata, 
+             caption = '\\label{tab:reg-coefs}Regression coefficient estimates for the population-level (i.e. fixed) effects, 
+             along with 95\\% uncertainty intervals for each of the disciplinary metrics. Bias estimates are from race data.', 
+           format = 'latex', booktabs=T, escape=F, row.names = F) %>%
+  landscape() 
+```
+
+```{r disc-probs, fig.cap="\\label{fig:disc-probs}Association between bias and the probability of receiving discipline for black and white students. Lines represent the mean of the posterior. Bands indicate 95% uncertainty intervals. Printed p_{pos} represents the posterior probability that the association is positive."}
+plot.dat <- data.frame(group=NA, weighted_bias=NA, est=NA, lower=NA, 
+                       upper=NA, bias=NA, metric=NA, p_neg_black=NA, p_neg_white=NA)
+for (i in metrics){
+  pth <- paste(base_path, i, '/', sep='')
+  
+  files <- list.files(pth)
+  j <- 1
+  posterior_combo <- array(0, dim=c(30,4000,length(files)))
+  for (k in files){
+    #print(i)
+    load(paste(pth,k,sep=''))
+    df <- as.matrix(m)
+    posterior_combo[,,j] <- t(df[,c(1:30)])
+    j <- j+1
+  }
+  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
+  
+  for (param in 1:30){
+    m$stanfit@sim$samples[[1]][[param]] <- p_cons[param,1:1000]
+  }
+  for (param in 1:30){
+    m$stanfit@sim$samples[[2]][[param]] <- p_cons[param,1001:2000]
+  }
+  for (param in 1:30){
+    m$stanfit@sim$samples[[3]][[param]] <- p_cons[param,2001:3000]
+  }
+  for (param in 1:30){
+    m$stanfit@sim$samples[[4]][[param]] <- p_cons[param,3001:4000]
+  }
+
+  newdat <- expand.grid(group = rownames(table(m$data$group)),
+                        total_pop=0,
+                        unemp_rate=0,
+                        med_income=0,
+                        poverty_rate=0,
+                        col_grads=0,
+                        white_prop=0,
+                        black_prop=0,
+                        b.w.ratio=0,
+                        mobility=0,
+                        crime_rate=0,
+                        density=0,
+                        dissim=0,
+                        weighted_bias = seq(-3,3,.25),
+                        weighted_explicit_diff = 0,
+                        number=0,
+                        total_number=1)
+  y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
+  
+  cbind(newdat, t(y_hat)) %>% 
+    mutate(index=row_number()) %>%
+    gather(sample, value, `1`:`4000`) -> posterior_distribution
+  
+  p_neg_blackimp <- sum(p_cons[3,]>0)/4000
+  p_neg_blackexp <- sum(p_cons[4,]>0)/4000
+  p_neg_whiteimp <- sum((p_cons[3,]+p_cons[17,])>0)/4000
+  p_neg_whiteexp <- sum((p_cons[4,]+p_cons[18,])>0)/4000
+  
+  posterior_distribution %>%
+    select(group, weighted_bias, sample, value, index) %>%
+    group_by(group, weighted_bias) %>%
+    summarise(est = mean(value),
+              lower = quantile(value, .025),
+              upper = quantile(value, .975)) %>%
+    ungroup() %>%
+    mutate(bias = 'Implicit',
+           metric = i,
+           p_neg_black=p_neg_blackimp,
+           p_neg_white=p_neg_whiteimp) %>%
+    rbind(plot.dat) -> plot.dat
+
+  newdat <- expand.grid(group = rownames(table(m$data$group)),
+                        total_pop=0,
+                        unemp_rate=0,
+                        med_income=0,
+                        poverty_rate=0,
+                        col_grads=0,
+                        white_prop=0,
+                        black_prop=0,
+                        b.w.ratio=0,
+                        mobility=0,
+                        crime_rate=0,
+                        density=0,
+                        dissim=0,
+                        weighted_bias = 0,
+                        weighted_explicit_diff = seq(-3, 3, .25),
+                        number=0,
+                        total_number=1)
+  y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
+  
+  cbind(newdat, t(y_hat)) %>% 
+    mutate(index=row_number()) %>%
+    gather(sample, value, `1`:`4000`) -> posterior_distribution
+  
+  
+  posterior_distribution %>%
+    select(group, weighted_explicit_diff, sample, value, index) %>%
+    mutate(weighted_bias = weighted_explicit_diff) %>%
+    group_by(group, weighted_bias) %>%
+    summarise(est = mean(value),
+              lower = quantile(value, .025),
+              upper = quantile(value, .975)) %>%
+    ungroup() %>%
+    mutate(bias = 'Explicit',
+           metric=i,
+           p_neg_black=p_neg_blackexp,
+           p_neg_white=p_neg_whiteexp) %>%
+    rbind(plot.dat) -> plot.dat
+
+}
+
+plot.dat$metric <- factor(plot.dat$metric, c('in_school_arrest', 
+                                         'expulsion_combined', 
+                                         'law_enforcement',
+                                         'inschool_susp', 
+                                         'oos_susp'))
+
+plot.dat$metric <- fct_recode(plot.dat$metric, 
+                               'Out-of\nSchool\nSusp' = 'oos_susp',
+                               'In-School\nSusp' = 'inschool_susp',
+                               'School\nArrest' = 'in_school_arrest',
+                               'Law Enf.\nReferral' = 'law_enforcement',
+                               'Expulsion' = 'expulsion_combined')
+                          
+plot.dat <- plot.dat[!is.na(plot.dat$weighted_bias),]
+
+plot.dat %>%
+  filter(weighted_bias==2.5) %>%
+  mutate(text_y = est,
+         text_x = 2.75) %>%
+  select(group, text_y, text_x, metric, p_neg_black, p_neg_white, bias) %>%
+  distinct() %>%
+  gather(group1, p_neg, p_neg_black, p_neg_white) %>%
+  mutate(group1 = str_sub(group1, 7, -1)) %>%
+  filter(group==group1) %>%
+  select(-group1) -> text_data
+
+text_data$text_y[8] <- text_data$text_y[8]+.00025
+
+text_data$text_comp <- '=='
+text_data$text_comp[text_data$p_neg>.99] <- '>'
+text_data$text_comp[text_data$p_neg<.01] <- '<'
+text_data$p_neg[text_data$p_neg>.99] <- .99
+text_data$p_neg[text_data$p_neg<.01] <- .01
+
+plot.dat %>%
+  filter(!is.na(weighted_bias)) %>%
+  ggplot(aes(x=weighted_bias, y=est, group=group, linetype=group)) +
+    geom_line(aes(color=group)) +
+    geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.15) +
+    theme_classic() +
+    geom_text(data=text_data, parse=T, size=2.5, 
+              aes(x=2.8, y=text_y, vjust=0,
+                  label=paste0('p[pos]', text_comp, round(p_neg,2)))) +
+    ylab('Probability of \n disciplinary action') +
+    xlab('Standardized Bias') + 
+    facet_grid(metric~bias, scales='free') +
+    xlim(-2.75, 3.25) +
+    theme(axis.title.y = element_text(size=10),
+        legend.title = element_blank(),
+        legend.position='top',
+        axis.text = element_text(size=10),
+        axis.title.x = element_text(size=12, face='bold'),
+        legend.text = element_text(size=10),
+        strip.text.y=element_text(size=7)) -> p1
+
+p1
+```
+
+```{r, reg-coefs-sex, results='asis'}
+base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/sex_bias/'
+plot.dat <- data.frame(coef = NA, est = NA, lower = NA, upper = NA, p_neg = NA, metric = NA)
+
+# weighted bias w/exclusions & explicit difference
+metrics <- list.files(base_path)
+#metrics <- c('expulsion_combined', 'in_school_arrest', 'law_enforcement', 'oos_susp')#1245
+for (i in metrics){
+  pth <- paste(base_path, i, '/', sep='')
+
+  files <- list.files(pth)
+  j <- 1
+  posterior_combo <- array(0, dim=c(30,4000,length(files)))
+  for (k in files){
+    load(paste(pth,k,sep=''))
+    dat <- as.matrix(m)
+    posterior_combo[,,j] <- t(dat[,c(1:30)])
+    j <- j+1
+  }
+  p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
+
+  for (param in 1:30){
+    m$stanfit@sim$samples[[1]][[param]] <- p_cons[param,1:1000]
+  }
+  for (param in 1:30){
+    m$stanfit@sim$samples[[2]][[param]] <- p_cons[param,1001:2000]
+  }
+  for (param in 1:30){
+    m$stanfit@sim$samples[[3]][[param]] <- p_cons[param,2001:3000]
+  }
+  for (param in 1:30){
+    m$stanfit@sim$samples[[4]][[param]] <- p_cons[param,3001:4000]
+  }
+  data.frame(coef=colnames(dat)[1:30],
+             est=rowMeans(p_cons),
+             lower=apply(p_cons,1,quantile, probs=.025),
+             upper=apply(p_cons,1,quantile, probs=.975),
+             p_neg = rowSums(p_cons<0)/4000,
+             metric=rep(i, 30)) %>%
+    rbind(plot.dat) %>%
+    filter(!is.na(est)) -> plot.dat
+}
+
+plot.dat$metric <- factor(plot.dat$metric, c('oos_susp', 'inschool_susp',
+                                             'law_enforcement', 
+                                             'expulsion_combined',
+                                             'in_school_arrest'))
+
+plot.dat$metric <- fct_recode(plot.dat$metric,
+                               'Out-of-School Suspension' = 'oos_susp',
+                               'In-School Suspension' = 'inschool_susp',
+                               'School-Related Arrest' = 'in_school_arrest',
+                               'Law Enf. Referral' = 'law_enforcement',
+                               'Expulsion' = 'expulsion_combined')
+plot.dat$coef <- fct_recode(plot.dat$coef,
+                            'Intercept' = '(Intercept)',
+                            'total population' = 'total_pop',
+                            'proportion black' = 'black_prop',
+                            'proportion white' = 'white_prop',
+                            'black-white ratio' = 'b.w.ratio',
+                            'college grads' = 'col_grads',
+                            'income' = 'med_income',
+                            'poverty' = 'poverty_rate',
+                            'unemployment' = 'unemp_rate',
+                            'crime' = 'crime_rate',
+                            'housing density' = 'density',
+                            'mobility' = 'mobility',
+                            'dissimilarity' = 'dissim',
+                            'total population*race: white' = 'groupwhite:total_pop',
+                            'proportion black*race: white' = 'groupwhite:black_prop',
+                            'proportion white*race: white' = 'groupwhite:white_prop',
+                            'black-white ratio*race: white' = 'groupwhite:b.w.ratio',
+                            'college grads*race: white' = 'groupwhite:col_grads',
+                            'income*race: white' = 'groupwhite:med_income',
+                            'poverty*race: white' = 'groupwhite:poverty_rate',
+                            'unemployment*race: white' = 'groupwhite:unemp_rate',
+                            'crime*race: white' = 'groupwhite:crime_rate',
+                            'housing density*race: white' = 'groupwhite:density',
+                            'mobility*race: white' = 'groupwhite:mobility',
+                            'dissimilarity*race: white' = 'groupwhite:dissim',
+                            'race: white' = 'groupwhite',
+                            'implicit bias' = 'weighted_bias_sex',
+                            'explicit bias' = 'weighted_explicit_sex',
+                            'implicit bias*race: white' = 'groupwhite:weighted_bias_sex',
+                            'explicit bias*race: white' = 'groupwhite:weighted_explicit_sex')
+plot.dat %>%
+  mutate(est = round(est, 2)) %>%
+  mutate(estimate=paste(est, ' [', round(lower, 2), ',', round(upper, 2),']', sep='')) %>%
+  mutate(estimate=kableExtra::cell_spec(estimate, 'latex', bold=ifelse(p_neg<.025|p_neg>.975, TRUE, FALSE))) %>%
+  dplyr::select(metric, estimate, coef) %>%
+  spread(metric, estimate) -> tabledata
+
+tabledata <- tabledata[c(1:7, 23:27, 30, 8, 28, 29, 9:19, 22, 20, 21),]
+names(tabledata)[1] <- ''
+
+knitr::kable(tabledata, 
+             caption = '\\label{tab:reg-coefs-sex}Regression coefficient estimates for the population-level (i.e. fixed) effects, 
+             along with 95\\% uncertainty intervals for each of the disciplinary metrics. Bias estimates are from sexuality data.', 
+           format = 'latex', booktabs=T, escape=F, row.names = F) %>%
+  landscape() 
+
+```
+
+```{r cor-tab}
+county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
+county_means_sex <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means_sexuality.csv')
+covs <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/covariates.csv')
+county_means %>%
+  mutate(race_implicit = weighted_bias,
+         race_explicit = weighted_explicit_diff) %>%
+  select(county_id, race_implicit, race_explicit) %>%
+  left_join(county_means_sex) %>%
+  mutate(sex_implicit = weighted_bias,
+         sex_explicit = weighted_explicit) %>%
+  select(county_id, race_implicit, race_explicit, sex_implicit, sex_explicit) %>%
+  full_join(covs) %>%
+  filter(county_id!='NA-NA') -> preds
+
+preds %>% 
+  select(race_implicit:sex_explicit, total_pop:poverty_rate, crime_rate:dissim) %>%
+  cor(., use='pairwise.complete.obs') -> cormat
+
+preds %>% 
+  mutate(crime_rate = crime_rate*1000, 
+         total_pop = total_pop/1000,
+         white_pop = white_pop/1000,
+         black_pop = black_pop/1000,
+         med_income = med_income/1000) %>%
+  select(race_implicit:sex_explicit, total_pop:poverty_rate, crime_rate:dissim) %>%
+  summarise_all(funs(mean(., na.rm=T))) -> means
+
+preds %>% mutate(crime_rate = crime_rate*1000,
+                 total_pop = total_pop/1000,
+                 white_pop = white_pop/1000,
+                 black_pop = black_pop/1000,
+                 med_income = med_income/1000) %>%
+  select(race_implicit:sex_explicit, total_pop:poverty_rate, crime_rate:dissim) %>%
+  summarise_all(funs(sd(., na.rm=T))) -> sdevs
+
+upper<-round(cormat, 2)
+upper[upper.tri(cormat, diag = T)]<-""
+upper<-as.data.frame(upper)
+upper %>%
+  mutate_all(funs(as.character)) %>%
+  rbind(round(means, 2)) %>%
+  rbind(round(sdevs, 2)) -> cortab
+
+vars <- c("1) Implicit Race", "2) Explicit Race", "3) Implicit Sex", 
+          "4) Explicit Sex", "5) Population Size", "6) White Population",
+          "7) Black Population", "8) College Grads", "9) Unemployment", 
+          "10) Income", "11) Poverty", "12) Crime", "13) Housing Density", 
+          "14) Mobility", "15) Proportion White", "16) Proportion Black", 
+          "17) Black-White Ratio", "18) Segregation", "Mean", "SD")
+
+cortab <- cbind(vars, cortab)
+
+kable(cortab, 
+      caption = '\\label{tab:cor-tab}Correlation matrix for all county-level predictor variables.',
+      format = 'latex', booktabs=T, escape=F, row.names = F,
+             col.names=c('', seq(1:18))) %>%
+  landscape() %>%
+  kable_styling(latex_options=c('scale_down')) %>%
+  footnote(number = c("Crime rate is scaled to rate per 1000 people",
+                      "Total population, black population, and white population are in 1000's of people",
+                      "Income is in 1000's of dollars")) %>%
+  group_rows("", 19, 20, latex_gap_space = ".5em")
+```

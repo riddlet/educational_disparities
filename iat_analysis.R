@@ -8,32 +8,26 @@ library(stringr)
 library(lme4)
 
 "%ni%" <- Negate("%in%")
-custom_scale <- function(x){
-  out <- x-mean(x, na.rm=T)/sd(x, na.rm=T)
-  return(out)
-}
 ######load datasets
 #IAT
-df <- rbind(read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2013.sav'),
-            read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2012.sav'),
-            read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2010.sav'))
+df <- rbind(read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2013.sav'),
+            read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2012.sav'),
+            read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2010.sav'))
 
-df2 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2011.sav')
-df3 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2009.sav')
-df4 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2008.sav')
-df5 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2007.sav')
-df6 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2006.sav')
-df7 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2005.sav')
-df8 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2004.sav')
-df9 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2002-2003.sav')
-df10 <- read_sav('/Users/travis/Documents/gits/Data/iat/Race IAT.public.2014.sav')
+df2 <- read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2011.sav')
+df3 <- read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2009.sav')
+df4 <- read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2008.sav')
+df5 <- read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2007.sav')
+df6 <- read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2006.sav')
+df7 <- read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2005.sav')
+df8 <- read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2004.sav')
+df9 <- read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2002-2003.sav')
+df10 <- read_sav('/Users/travis/Documents/gits/Data/iat_race/Race IAT.public.2014.sav')
 
 #County linking information
 df_haley <- read.csv('/Users/travis/Documents/gits/Data/Haley_countylinks/_Master Spreadsheet.csv', stringsAsFactors = F)
 df_haley[1791,6] <- 'Doña Ana County, New Mexico' #because of the "ñ"
 
-df_county_linking_info <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_linking_table.csv', stringsAsFactors = F)
-df_county_linking_info$county_name[1904] <- 'Doña Ana'
 df_states <- data.frame(state=c(state.name, 'District of Columbia'),
                         state_abb=c(state.abb, 'DC'))
 
@@ -339,7 +333,9 @@ individual_data %>%
   group_by(county_id) %>%
   summarise(bias = mean(D_biep.White_Good_all, na.rm=T),
             explicit = mean(explicit_bias, na.rm=T),
-            explicit_diff = mean(explicit_bias_diff, na.rm=T)) %>%
+            explicit_diff = mean(explicit_bias_diff, na.rm=T),
+            n_bias_obs = sum(!is.na(D_biep.White_Good_all)),
+            n_explicit_obs = sum(!is.na(explicit_bias))) %>%
   left_join(mrp_ests) -> county_means
 
 write.csv(county_means, '/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
@@ -348,49 +344,42 @@ write.csv(county_means, '/Users/travis/Documents/gits/educational_disparities/ou
 
 #gather all dataframes who have occupation info
 df %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
+  filter(CountyNo!='') %>%
   select(CountyNo, STATE, D_biep.White_Good_all, 
          twhite_0to10, tblack_0to10, raceomb, age, occupation)  -> subdat
 
 df2 %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
+  filter(CountyNo!='') %>%
   select(CountyNo, STATE, D_biep.White_Good_all, 
          twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat
 
 df3 %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
+  filter(CountyNo!='') %>%
   select(CountyNo, STATE, D_biep.White_Good_all, 
          twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat
 
 df4 %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
+  filter(CountyNo!='') %>%
   select(CountyNo, STATE, D_biep.White_Good_all, 
          twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat
 
 df5 %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
+  filter(CountyNo!='') %>%
   select(CountyNo, STATE, D_biep.White_Good_all, 
          twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat
 
 df6 %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
+  filter(CountyNo!='') %>%
   select(CountyNo, STATE, D_biep.White_Good_all, 
          twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat
 
 df10 %>%
-  filter(CountyNo!='' &
-           !is.na(age)) %>%
+  filter(CountyNo!='') %>%
   select(CountyNo, STATE, D_biep.White_Good_all, 
          twhite_0to10, tblack_0to10, raceomb, age, occupation) %>%
   rbind(subdat) -> subdat

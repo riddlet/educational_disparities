@@ -13,7 +13,7 @@ dft %>%
   distinct() -> teacher_counties
 
 counties %>% 
-  mutate(grouping=sample(1:15, n(), replace=T)) -> county_assignments
+  mutate(grouping=sample(1:20, n(), replace=T)) -> county_assignments
 
 teacher_counties %>%
   mutate(grouping=sample(1:12, n(), replace=T)) -> teacher_county_assignments
@@ -205,12 +205,16 @@ string2 <- "') %>% select(county_id, bias:weighted_explicit_diff) %>% distinct()
 df %>% filter(grouping=="
 
 string3 <- ") %>% filter(exclude==FALSE) %>% filter(metric=='"
-string4 <- "') %>% select(county_id, total_pop:poverty_rate, crime_rate:b.w.ratio, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
+string4 <- "') %>% select(county_id, total_pop:poverty_rate, crime_rate:b.w.ratio, dissim, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
 
 m <- stan_glmer(cbind(number, total_number-number) ~ group + weighted_bias + 
 weighted_explicit_diff + group:weighted_bias + group:weighted_explicit_diff + total_pop + 
 unemp_rate + med_income + poverty_rate + col_grads + white_prop + 
-black_prop + b.w.ratio + mobility + crime_rate + density + 
+black_prop + b.w.ratio + mobility + crime_rate + density + dissim +
+total_pop:group + unemp_rate:group + med_income:group + 
+poverty_rate:group + col_grads:group + white_prop:group + 
+black_prop:group + b.w.ratio:group + mobility:group + 
+crime_rate:group + density:group + dissim:group +
 (group|county_id), data=mod.dat, prior = normal(0,5), 
 prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
 
@@ -218,9 +222,54 @@ save(m, file='/tigress/triddle/educational_disparities/mw_2013uclaexcl/"
 
 
 for(i in rownames(table(dfs$metric))){
-  for (j in 1:15){
+  for (j in 1:20){
     fs <- paste(string1, i, string2, j, string3, i, string4, i, "/m", j, ".rdata')", sep='')
     fileConn <- file(paste("/Users/travis/Documents/gits/educational_disparities/cluster/model_scripts/mw_2013uclaexcl/",i,"/m", j, ".R", sep=''))
+    writeLines(fs, fileConn)
+    close(fileConn)
+  }
+}
+
+######################## write weighted files for sex bias #############
+
+#write files
+string1 <- "library(dplyr)
+library(tidyr)
+library(forcats)
+library(ggplot2)
+library(rstanarm)
+
+options(mc.cores = parallel::detectCores())
+
+df <- read.csv('/home/triddle/educational_disparities/cluster/data/county_grouping.csv')
+
+df %>% filter(exclude==FALSE) %>% filter(metric=='"
+
+string2 <- "') %>% select(county_id, sex_bias:weighted_explicit_sex) %>% distinct() %>% mutate_at(vars(-county_id), scale) -> scaled_county_level
+
+df %>% filter(grouping=="
+
+string3 <- ") %>% filter(exclude==FALSE) %>% filter(metric=='"
+string4 <- "') %>% select(county_id, total_pop:poverty_rate, crime_rate:b.w.ratio, dissim, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
+
+m <- stan_glmer(cbind(number, total_number-number) ~ group + weighted_bias_sex + 
+weighted_explicit_sex + group:weighted_bias_sex + group:weighted_explicit_sex + 
+total_pop + unemp_rate + med_income + poverty_rate + col_grads + white_prop + 
+black_prop + b.w.ratio + mobility + crime_rate + density + dissim +
+total_pop:group + unemp_rate:group + med_income:group + 
+poverty_rate:group + col_grads:group + white_prop:group + 
+black_prop:group + b.w.ratio:group + mobility:group + 
+crime_rate:group + density:group + dissim:group +
+(group|county_id), data=mod.dat, prior = normal(0,5), 
+prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
+
+save(m, file='/tigress/triddle/educational_disparities/sex_bias/"
+
+
+for(i in rownames(table(dfs$metric))){
+  for (j in 1:20){
+    fs <- paste(string1, i, string2, j, string3, i, string4, i, "/m", j, ".rdata')", sep='')
+    fileConn <- file(paste("/Users/travis/Documents/gits/educational_disparities/cluster/model_scripts/sex_bias/",i,"/m", j, ".R", sep=''))
     writeLines(fs, fileConn)
     close(fileConn)
   }
@@ -277,18 +326,18 @@ options(mc.cores = parallel::detectCores())
 
 df <- read.csv('/home/triddle/educational_disparities/cluster/data/county_grouping.csv')
 
-df %>% filter(metric=='"
+df %>% filter(exclude==FALSE) %>% filter(metric=='"
 
-string2 <- "') %>% select(county_id, bias:weighted_warmth, total_pop, unemp_rate:b.w.ratio) %>% distinct() %>% mutate_at(vars(-county_id), scale) -> scaled_county_level
+string2 <- "') %>% select(county_id, bias:weighted_explicit_diff) %>% distinct() %>% mutate_at(vars(-county_id), scale) -> scaled_county_level
 
 df %>% filter(grouping=="
 
-string3 <- ") %>% filter(metric=='"
-string4 <- "') %>% select(county_id, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
+string3 <- ") %>% filter(exclude==FALSE) %>% filter(metric=='"
+string4 <- "') %>% select(county_id, total_pop:poverty_rate, crime_rate:b.w.ratio, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
 
-m <- stan_glmer(cbind(number, total_number-number) ~ group*weighted_bias*weighted_warmth
-+ total_pop + unemp_rate + med_income + poverty_rate + col_grads + white_prop + 
-black_prop + b.w.ratio + 
+m <- stan_glmer(cbind(number, total_number-number) ~ group*weighted_bias*weighted_explicit_diff + 
+total_pop + unemp_rate + med_income + poverty_rate + col_grads + white_prop + 
+black_prop + b.w.ratio + mobility + crime_rate + density + 
 (group|county_id), data=mod.dat, prior = normal(0,5), 
 prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
 
@@ -296,7 +345,7 @@ save(m, file='/tigress/triddle/educational_disparities/metrics_weighted_3way/"
 
 
 for(i in rownames(table(dfs$metric))){
-  for (j in 1:12){
+  for (j in 1:17){
     fs <- paste(string1, i, string2, j, string3, i, string4, i, "/m", j, ".rdata')", sep='')
     fileConn <- file(paste("/Users/travis/Documents/gits/educational_disparities/cluster/model_scripts/metrics_weighted_3way/",i,"/m", j, ".R", sep=''))
     writeLines(fs, fileConn)
