@@ -43,252 +43,13 @@ ggplot(df, aes(x=race, y=perc, label=perc)) +
         axis.text = element_text(size=12),
         legend.text = element_text(size=12))
 
-df <- data.frame(race = rep(c('white', 'black'), each=46),
-                 perc = c(13.2, 13.4, 12.3, 11.6, 11.9, 11.4, 12.0, 11.9, 11.9,
-                          12.0, 11.4, 11.3, 11.4, 11.1, 11.0, 10.4, 9.7, 10.4, 
-                          9.6, 9.4, 9.0, 8.9, 7.7, 7.9, 7.7, 8.6, 7.3, 7.6, 7.7,
-                          7.3, 6.9, 7.3, 6.5, 6.3, 6.8, 6.0, 5.8, 5.3, 4.8, 5.2,
-                          5.1, 5.0, 4.3, 5.1, 5.2, 4.6, 27.9, 24.0, 21.3, 22.2,
-                          21.2, 22.9, 20.5, 19.8, 20.2, 21.1, 19.1, 18.4, 18.4, 
-                          18.0, 15.5, 15.2, 14.2, 14.1, 14.5, 13.9, 13.2, 13.6,
-                          13.7, 13.6, 12.6, 12.1, 13.0, 13.4, 13.8, 12.6, 13.1, 
-                          10.9, 11.3, 10.9, 11.8, 10.4, 10.7, 8.4, 9.9, 9.3, 
-                          8.0, 7.3, 7.5, 7.3, 7.4, 6.5),
-                 yr = rep(seq(1970, 2015, 1),2))
-
-ggplot(df, aes(x=yr, y=perc, group=race, color=race)) + 
-  theme_classic() +
-  geom_line() +
-  ggtitle('US Census Bureau national estimates for high school dropout rate') +
-  ylab('Percentage of dropouts among 16-24 year-olds') +
-  ylim(0, 35) +
-  theme(legend.title = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size=14),
-        axis.text = element_text(size=12),
-        legend.text = element_text(size=12))
-
-df <- data.frame(race = rep(c('white', 'black'), each=22),
-                 perc = c(2.7, 3.1, 1.9, 2.1, 2.5, 2.5, 2.5, 2.4, 2.5, 2.7,
-                          2.7, 2.8, 2.4, 2.0, 1.8, 1.7, 1.6, 1.7, 1.5, 1.5, 
-                          1.8, 1.8, 4.8, 4.9, 3.8, 4.2, 4.1, 4.0, 5.3, 4.9, 
-                          3.9, 4.9, 5.4, 5.0, 4.2, 2.7, 3.0, 2.3, 2.5, 1.9,
-                          2.7, 3.2, 3.3, 3.2),
-                 yr = rep(seq(1994, 2015, 1),2))
-
-ggplot(df, aes(x=yr, y=perc, group=race, color=race)) + 
-  theme_classic() +
-  geom_line() +
-  ggtitle('US Census Bureau national estimate of annual retention, K-8') +
-  ylab('Percentage of students retained') +
-  ylim(0, 10) +
-  theme(legend.title = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size=14),
-        axis.text = element_text(size=12),
-        legend.text = element_text(size=12))
-
-df <- data.frame(race = rep(c('white', 'black'), each=5),
-                 perc = c(38.2, 30.9, 22.3, 6.7, 2,
-                          33.5, 25.7, 27.1, 10.9, 2.8),
-                 categ = rep(c('Excellent', 'Very Good', 'Good', 'Fair', 'Poor'), 2))
-df$categ <- forcats::fct_relevel(df$categ, 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor')                 
-
-ggplot(df, aes(x=categ, y=perc, group=race, fill=race)) + 
-  geom_bar(stat='identity', position=position_dodge()) +
-  theme_classic() +
-  ggtitle('CDC national estimates for self-reported health status (2015)') +
-  ylab('Estimated Percentage') +
-  theme(legend.title = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size=14),
-        axis.text = element_text(size=12),
-        legend.text = element_text(size=12))
-
-df <- data.frame(race = rep(c('white', 'black'), each=2),
-                 perc = c(7.7, 9.6, 16.3, 18),
-                 yr = rep(c('1988-1994', '2011-2014'), 2))
-              
-ggplot(df, aes(x=yr, y=perc, group=race, color=race, label=perc)) + 
-  geom_point(stat='identity', size=2) +
-  theme_classic() +
-  geom_line() +
-  ggtitle('CDC national estimates for diabetes prevalence among adults') +
-  ylab('Estimated Percentage (age adjusted)') +
-  geom_text(vjust=-.75, size=4.5) +
-  theme(legend.title = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size=14),
-        axis.text = element_text(size=12),
-        legend.text = element_text(size=12))
-
-df <- data.frame(race = rep(rep(c('white', 'black'), each=10),2),
-                 perc = c(6.85, 6.27, 5.72, 5.65, 5.7, 6.22, 6.55, 7.16, 7.08, 7,
-                          13.9, 13.19, 12.69, 12.65, 13.25, 13.13, 12.99, 13.59, 
-                          13.21, 13.03, .95, .92, .9, .94, .95, 1.06, 1.14, 
-                          1.20, 1.17, 1.12, 2.4, 2.4, 2.48, 2.71, 2.92, 2.97, 
-                          3.07, 3.15, 2.9, 2.81),
-                 yr = rep(c(1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 
-                            2010, 2015), 4),
-                 type = rep(c('Low Birthweight (<2,500g)', 
-                              'Very Low Birthweight (<1,500g)'), each=20))
-
-
-ggplot(df, aes(x=yr, y=perc, group=race, color=race)) + 
-  geom_point(stat='identity', size=2) +
-  theme_classic() +
-  geom_line() +
-  ggtitle('CDC national estimates for low birthweight') +
-  ylab('Estimated Percentage (age adjusted)') +
-  facet_wrap(~type, ncol=1, scales = 'free') +
-  theme(legend.title = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size=14),
-        axis.text = element_text(size=12),
-        legend.text = element_text(size=12),
-        strip.text = element_text(size=12))
-
-df <- data.frame(race = rep(c('white', 'black'), each=15),
-                 perc = c(3.1, 2.5, 2.9, 3, 3, 3.1, 2.9, 2.7, 2.9, 3.2, 3.2,
-                          3.2, 3.1, 3.4, 3.3, 4, 2.9, 3.1, 3.5, 3.4, 3.4, 3.6,
-                          3.2, 3.2, 3.7, 3.8, 3.7, 3.3, 3.5, 3.4),
-                 yr = rep(c(1997, 1999, 2000, 2001, 2002, 2003, 2004, 2006, 
-                            2007, 2008, 2009, 2010, 2011, 2013, 2014), 2))
-
-
-ggplot(df, aes(x=yr, y=perc, group=race, color=race)) + 
-  geom_point(stat='identity', size=2) +
-  theme_classic() +
-  geom_line() +
-  ylim(0, 5) +
-  ggtitle('Serious psychological distress in the past 30 days') +
-  ylab('Estimated Percentage of adults') +
-  theme(legend.title = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size=14),
-        axis.text = element_text(size=12),
-        legend.text = element_text(size=12),
-        strip.text = element_text(size=12))
-
-df <- data.frame(race = rep(c('white', 'black'), each=7),
-                 perc = c(28.3, 29.4, 29.9, 29.9, 29.7, 28.6, 29.1,
-                          42.3, 43.1, 43.4, 43.2, 42.7, 43.4, 43.3),
-                 yr = rep(c(2002, 2004, 2006, 2008, 2010, 2012, 2014), 2))
-
-ggplot(df, aes(x=yr, y=perc, group=race, color=race)) + 
-  geom_point(stat='identity', size=2) +
-  theme_classic() +
-  geom_line() +
-  ylim(0, 50) + 
-  ggtitle('Rate of Hypertension') +
-  ylab('Estimated Percentage of adults') +
-  theme(legend.title = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size=14),
-        axis.text = element_text(size=12),
-        legend.text = element_text(size=12),
-        strip.text = element_text(size=12))
-  
-df <- data.frame(race = rep(c('white', 'black'), 2),
-                 perc = c(19, 16.8, 4.3, 3.1),
-                 type = c(rep('Any Mental Illness', 2),
-                          rep('Serious Mental Illness', 2)))
-
-ggplot(df, aes(x=type, y=perc, group=race, color=race, label=perc)) + 
-  geom_point(stat='identity', size=2) +
-  theme_classic() +
-  geom_line() +
-  ggtitle('Substance Abuse and Mental Health Services Administration',
-          'Rates of mental illness, 2008-2012') +
-  ylab('Estimated Annual Percentage') +
-  geom_text(vjust=-.25, hjust=-.1, size=4) +
-  theme(legend.title = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size=14),
-        axis.text = element_text(size=12),
-        legend.text = element_text(size=12),
-        strip.text = element_text(size=12))
-
-df <- data.frame(race = rep(c('white', 'black'), each=4),
-                 perc = c(46.3, 41, 25.7, 2.9, 29.8, 23.4, 18.7, 5.1),
-                 type = rep(c('Any Service', 'Prescription', 'Outpatient', 
-                              'Inpatient'),2))
-
-ggplot(df, aes(x=race, y=perc, label=perc)) + 
-  geom_point(stat='identity', size=2, aes(color=race)) +
-  theme_classic() +
-  geom_line(aes(group=1)) +
-  ggtitle('Substance Abuse and Mental Health Services Administration',
-          'Rate of Service use in the past year among adults with any mental illness') +
-  ylab('Estimated Annual Percentage') +
-  geom_text(hjust=-.5) +
-  facet_wrap(~type, ncol=2, scales='free') + 
-  theme(legend.title = element_blank(),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size=14),
-        axis.text = element_text(size=12),
-        legend.text = element_text(size=12),
-        strip.text = element_text(size=12))
-
-df <- data.frame(occupation = c('Manufacturing/Construction', 
-                                'Retail trade',
-                                'Finance/information/real estate',
-                                'Professional/administrative/management',
-                                'Educational services',
-                                'Health care/social assistance',
-                                'Accommodation/food services',
-                                'Public administration/arts/other services'),
-                 prev_ratio = c(1.14, 1.07, 1.44, 1.3, 1.39, 1.23, 1.05, 1.3),
-                 lower = c(1.07, .96, 1.3, 1.18, 1.25, 1.14, .93, 1.21),
-                 upper = c(1.2, 1.18, 1.59, 1.44, 1.54, 1.32, 1.19, 1.41))
-
-df %>%
-  mutate(occupation=reorder(occupation, prev_ratio)) %>%
-  ggplot(aes(x=occupation, y=prev_ratio)) + 
-  geom_point(stat='identity', size=2) +
-  theme_classic() +
-  geom_line() +
-  geom_errorbar(aes(ymin=lower, ymax=upper)) +
-  coord_flip() +
-  geom_hline(yintercept = 1) +
-  ggtitle('Short Sleeper black-white prevalence ratio',
-          'Data from the National Health Interview Survey; Model described in Jackson et al., 2013') +
-  ylab('Estimated Prevalence Ratio') +
-  theme(legend.title = element_blank(),
-        axis.title.y = element_blank(),
-        axis.title.x = element_text(size=14),
-        axis.text = element_text(size=12),
-        legend.text = element_text(size=12),
-        strip.text = element_text(size=12))
-
-df <- data.frame(metric = rep(c('Percent of all KG held back', 
-                            'Proportion of Preschoolers Suspended (n=6,751)'),
-                            each=2),
-                 per = c(5, 4, 46.9, 27.6),
-                 race = c('black', 'white', 'black', 'white'))
-
-df %>%
-  ggplot(aes(x=race, y=per)) + 
-  geom_point(stat='identity', size=2, aes(color=race)) +
-  theme_classic() +
-  geom_line(aes(group=1)) +
-  ggtitle('Very early differences in educational attainment',
-          'Data from the US department of Education, 2013-2014') +
-  facet_wrap(~metric, scales='free', ncol=1) +
-  theme(legend.title = element_blank(),
-        axis.title = element_blank(),
-        axis.text = element_text(size=12),
-        legend.text = element_text(size=12),
-        strip.text = element_text(size=12))
-
 "%ni%" <- Negate("%in%")
 
 district_content <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_LEA_content.csv')
 df_district <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_LEA.csv')
 school_content <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH_content.csv')
 df_school <- read.csv('/Users/travis/Documents/gits/Data/crdc201314csv/CRDC2013_14_SCH.csv')
-county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv', 
-                         colClasses = 'character')
+county_means <- read.csv('/Users/travis/Documents/gits/educational_disparities/output/county_means.csv')
 
 # Get enrollment figures
 df_school %>%
@@ -722,15 +483,19 @@ ggplot(county_means, aes(x=explicit_diff, y=weighted_explicit_diff)) +
   xlab('Raw Explicit mean') +
   ylab('Post-Stratified Explicit estimate') 
 
-county_means$mercer <- county_means$county_id=='NJ-021'
+county_means %>%
+  mutate(highlight = case_when(county_id == 'NJ-021' ~ 'Princeton',
+                               county_id == 'NY-061' ~ 'NYU',
+                               TRUE ~ 'Other')) -> county_means
+
 ggplot(county_means, aes(x=weighted_bias, y=weighted_explicit_diff, 
-                         color=mercer, alpha=mercer)) +
+                         color=highlight, alpha=highlight)) +
   geom_point() +
   theme_classic() +
   xlab('Implicit Bias') +
   ylab('Explicit Bias') +
-  scale_color_manual(values=c('grey', 'darkorange'), guide=F) +
-  scale_alpha_manual(values=c(.25, 1), guide=F) 
+  scale_color_manual(values=c('purple', 'grey', 'darkorange'), guide=F) +
+  scale_alpha_manual(values=c(1, .25, 1), guide=F) 
 
 # Get exclusion schools
 df_school %>%
@@ -771,7 +536,7 @@ enrollment %>%
   group_by(exclude, group) %>%
   summarise(ns=sum(total_number)) -> tempout
 
-base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/mw_uclaexcl_diff/'
+base_path <- '/Users/travis/Documents/gits/educational_disparities/cluster/output/full_models/'
 plot.dat <- data.frame(group = NA, weighted_bias = NA, est = NA, lower = NA, upper=NA, metric = NA)
 plot.dat2 <- data.frame(weighted_bias = NA, est = NA, lower=NA, upper=NA, metric=NA)
 plot.dat3 <- data.frame(est=NA, lower=NA, upper=NA, metric=NA)
@@ -923,14 +688,14 @@ ggplot(plot.dat3_all, aes(x=metric, y=est, group=bias, color=bias)) +
         strip.text = element_text(size=12))
 
 
-i <- 'expulsion_combined'
+i <- 'oos_susp'
 pth <- paste(base_path, i, '/', sep='')
 
 files <- list.files(pth)
 j <- 1
-posterior_combo <- array(0, dim=c(14,4000,length(files)))
+posterior_combo <- array(0, dim=c(30,4000,length(files)))
 raw_rate <- data.frame(county_id=NA, nschools=NA, weighted_bias=NA, 
-                       weighted_warmth=NA, group=NA, nincidents=NA, 
+                       weighted_explicit_diff=NA, group=NA, nincidents=NA, 
                        nstudents=NA, rate=NA)
 for (k in files){
   #print(i)
@@ -946,26 +711,26 @@ for (k in files){
     summarise(nincidents=sum(number), nstudents=sum(total_number)) %>%
     mutate(rate=nincidents/nstudents) -> rate
   n_schools %>%
-    left_join(m$data[, c('county_id', 'weighted_bias', 'weighted_warmth')]) %>%
+    left_join(m$data[, c('county_id', 'weighted_bias', 'weighted_explicit_diff')]) %>%
     distinct() %>%
     left_join(rate) %>%
     rbind(raw_rate) %>%
     filter(!is.na(county_id)) -> raw_rate
-  posterior_combo[,,j] <- t(df[,c(1:14)])
+  posterior_combo[,,j] <- t(df[,c(1:30)])
   j <- j+1
 }
 p_cons <- parallelMCMCcombine::consensusMCcov(posterior_combo, shuff = T)
 
-for (p in 1:14){
+for (p in 1:30){
   m$stanfit@sim$samples[[1]][[p]] <- p_cons[p,1:1000]
 }
-for (p in 1:14){
+for (p in 1:30){
   m$stanfit@sim$samples[[2]][[p]] <- p_cons[p,1001:2000]
 }
-for (p in 1:14){
+for (p in 1:30){
   m$stanfit@sim$samples[[3]][[p]] <- p_cons[p,2001:3000]
 }
-for (p in 1:14){
+for (p in 1:30){
   m$stanfit@sim$samples[[4]][[p]] <- p_cons[p,3001:4000]
 }
 
@@ -978,8 +743,12 @@ newdat <- expand.grid(group = rownames(table(m$data$group)),
                       white_prop=0,
                       black_prop=0,
                       b.w.ratio=0,
+                      mobility=0,
+                      crime_rate=0,
+                      density=0,
+                      dissim=0,
                       weighted_bias = seq(-2.25,2.25,.25),
-                      weighted_warmth = 0,
+                      weighted_explicit_diff = 0,
                       number=0,
                       total_number=1)
 y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
@@ -1007,8 +776,12 @@ newdat <- expand.grid(group = rownames(table(m$data$group)),
                       white_prop=0,
                       black_prop=0,
                       b.w.ratio=0,
+                      mobility=0,
+                      crime_rate=0,
+                      density=0,
+                      dissim=0,
                       weighted_bias = 0,
-                      weighted_warmth = seq(-2.25,2.25,.25),
+                      weighted_explicit_diff = seq(-2.25,2.25,.25),
                       number=0,
                       total_number=1)
 y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
@@ -1019,8 +792,8 @@ cbind(newdat, t(y_hat)) %>%
 
 
 posterior_distribution %>%
-  select(group, weighted_warmth, sample, value, index) %>%
-  mutate(weighted_bias = weighted_warmth) %>%
+  select(group, weighted_explicit_diff, sample, value, index) %>%
+  mutate(weighted_bias = weighted_explicit_diff) %>%
   group_by(group, weighted_bias) %>%
   summarise(est = mean(value),
             lower = quantile(value, .025),
@@ -1034,7 +807,7 @@ ggplot(plot.dat, aes(x=weighted_bias, y=est, group=group)) +
   geom_line(aes(color=group)) +
   geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.15) +
   theme_classic() +
-  ylab('Probability of Expulsion') +
+  ylab('Probability of Suspension') +
   xlab('Standardized Bias') + 
   facet_wrap(~bias, ncol=2) +
   theme(legend.title = element_blank(),
@@ -1044,10 +817,10 @@ ggplot(plot.dat, aes(x=weighted_bias, y=est, group=group)) +
         strip.text = element_text(size=12)) -> p1
 
 posterior_distribution %>%
-  select(group, weighted_warmth, sample, value) %>%
+  select(group, weighted_explicit_diff, sample, value) %>%
   spread(group, value) %>%
   mutate(ratio = black/white) %>%
-  mutate(weighted_bias = weighted_warmth) %>%
+  mutate(weighted_bias = weighted_explicit_diff) %>%
   group_by(weighted_bias) %>%
   summarise(est = mean(ratio),
             lower = quantile(ratio, .025),
@@ -1064,8 +837,12 @@ newdat <- expand.grid(group = rownames(table(m$data$group)),
                       white_prop=0,
                       black_prop=0,
                       b.w.ratio=0,
+                      mobility=0,
+                      crime_rate=0,
+                      density=0,
+                      dissim=0,
                       weighted_bias = seq(-2.25,2.25,.25),
-                      weighted_warmth = 0,
+                      weighted_explicit_diff = 0,
                       number=0,
                       total_number=1)
 y_hat <- rstanarm::posterior_linpred(m, newdata = newdat, re.form=~0, transform=T)
@@ -1088,26 +865,28 @@ posterior_distribution %>%
 
 raw_rate %>%
   mutate(Implicit = weighted_bias,
-         Explicit = weighted_warmth) %>%
-  select(-weighted_bias, -weighted_warmth) %>%
+         Explicit = weighted_explicit_diff) %>%
+  select(-weighted_bias, -weighted_explicit_diff) %>%
   gather(bias, value, Implicit:Explicit) %>%
   select(county_id, nschools, bias, group, rate, value) %>%
   spread(group, rate) %>%
   mutate(odds_r = black/white) -> raw_or
   
 
-raw_or$mercer_county <- FALSE
-raw_or$mercer_county[which(raw_or$county_id=='NJ-021')] <- TRUE
+raw_or %>%
+  mutate(highlight = case_when(county_id == 'NJ-021' ~ 'Princeton',
+                               county_id == 'NY-061' ~ 'NYU',
+                               TRUE ~ 'Other')) -> raw_or
 
 ggplot(plot.dat, aes(x=weighted_bias, y=est)) +
   geom_point(data=raw_or, aes(x=value, y=odds_r, size=nschools,
-                              color=mercer_county, alpha=mercer_county)) +
+                              color=highlight, alpha=highlight)) +
   geom_line() +
   geom_ribbon(aes(ymin=lower, ymax=upper), alpha=.25) +
   theme_classic() +
-  scale_color_manual(values=c('grey', 'darkorange'), guide=F) + 
-  scale_alpha_manual(values=c(.2, 1), guide=F) +
-  ylim(0,8) +
+  scale_color_manual(values=c('purple', 'grey', 'darkorange'), guide=F) +
+  scale_alpha_manual(values=c(1, .25, 1), guide=F) +
+  ylim(0,17) +
   xlab('Standardized Bias') +
   ylab('Relative Risk Ratio') +
   geom_hline(yintercept=1) +
@@ -1508,5 +1287,242 @@ df %>% group_by(group) %>% summarise(ns = n_distinct(screen_name))
 df.dist %>% group_by(group) %>% summarise(ns=sum(tweets))
 df.dist %>% group_by(group) %>% summarise(ns = n_distinct(screen_name))
 
+###### Appendix plots
+df <- data.frame(race = rep(c('white', 'black'), each=46),
+                 perc = c(13.2, 13.4, 12.3, 11.6, 11.9, 11.4, 12.0, 11.9, 11.9,
+                          12.0, 11.4, 11.3, 11.4, 11.1, 11.0, 10.4, 9.7, 10.4, 
+                          9.6, 9.4, 9.0, 8.9, 7.7, 7.9, 7.7, 8.6, 7.3, 7.6, 7.7,
+                          7.3, 6.9, 7.3, 6.5, 6.3, 6.8, 6.0, 5.8, 5.3, 4.8, 5.2,
+                          5.1, 5.0, 4.3, 5.1, 5.2, 4.6, 27.9, 24.0, 21.3, 22.2,
+                          21.2, 22.9, 20.5, 19.8, 20.2, 21.1, 19.1, 18.4, 18.4, 
+                          18.0, 15.5, 15.2, 14.2, 14.1, 14.5, 13.9, 13.2, 13.6,
+                          13.7, 13.6, 12.6, 12.1, 13.0, 13.4, 13.8, 12.6, 13.1, 
+                          10.9, 11.3, 10.9, 11.8, 10.4, 10.7, 8.4, 9.9, 9.3, 
+                          8.0, 7.3, 7.5, 7.3, 7.4, 6.5),
+                 yr = rep(seq(1970, 2015, 1),2))
 
+ggplot(df, aes(x=yr, y=perc, group=race, color=race)) + 
+  theme_classic() +
+  geom_line() +
+  ggtitle('US Census Bureau national estimates for high school dropout rate') +
+  ylab('Percentage of dropouts among 16-24 year-olds') +
+  ylim(0, 35) +
+  theme(legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.text = element_text(size=12))
+
+df <- data.frame(race = rep(c('white', 'black'), each=22),
+                 perc = c(2.7, 3.1, 1.9, 2.1, 2.5, 2.5, 2.5, 2.4, 2.5, 2.7,
+                          2.7, 2.8, 2.4, 2.0, 1.8, 1.7, 1.6, 1.7, 1.5, 1.5, 
+                          1.8, 1.8, 4.8, 4.9, 3.8, 4.2, 4.1, 4.0, 5.3, 4.9, 
+                          3.9, 4.9, 5.4, 5.0, 4.2, 2.7, 3.0, 2.3, 2.5, 1.9,
+                          2.7, 3.2, 3.3, 3.2),
+                 yr = rep(seq(1994, 2015, 1),2))
+
+ggplot(df, aes(x=yr, y=perc, group=race, color=race)) + 
+  theme_classic() +
+  geom_line() +
+  ggtitle('US Census Bureau national estimate of annual retention, K-8') +
+  ylab('Percentage of students retained') +
+  ylim(0, 10) +
+  theme(legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.text = element_text(size=12))
+
+df <- data.frame(race = rep(c('white', 'black'), each=5),
+                 perc = c(38.2, 30.9, 22.3, 6.7, 2,
+                          33.5, 25.7, 27.1, 10.9, 2.8),
+                 categ = rep(c('Excellent', 'Very Good', 'Good', 'Fair', 'Poor'), 2))
+df$categ <- forcats::fct_relevel(df$categ, 'Excellent', 'Very Good', 'Good', 'Fair', 'Poor')                 
+
+ggplot(df, aes(x=categ, y=perc, group=race, fill=race)) + 
+  geom_bar(stat='identity', position=position_dodge()) +
+  theme_classic() +
+  ggtitle('CDC national estimates for self-reported health status (2015)') +
+  ylab('Estimated Percentage') +
+  theme(legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.text = element_text(size=12))
+
+df <- data.frame(race = rep(c('white', 'black'), each=2),
+                 perc = c(7.7, 9.6, 16.3, 18),
+                 yr = rep(c('1988-1994', '2011-2014'), 2))
+
+ggplot(df, aes(x=yr, y=perc, group=race, color=race, label=perc)) + 
+  geom_point(stat='identity', size=2) +
+  theme_classic() +
+  geom_line() +
+  ggtitle('CDC national estimates for diabetes prevalence among adults') +
+  ylab('Estimated Percentage (age adjusted)') +
+  geom_text(vjust=-.75, size=4.5) +
+  theme(legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.text = element_text(size=12))
+
+df <- data.frame(race = rep(rep(c('white', 'black'), each=10),2),
+                 perc = c(6.85, 6.27, 5.72, 5.65, 5.7, 6.22, 6.55, 7.16, 7.08, 7,
+                          13.9, 13.19, 12.69, 12.65, 13.25, 13.13, 12.99, 13.59, 
+                          13.21, 13.03, .95, .92, .9, .94, .95, 1.06, 1.14, 
+                          1.20, 1.17, 1.12, 2.4, 2.4, 2.48, 2.71, 2.92, 2.97, 
+                          3.07, 3.15, 2.9, 2.81),
+                 yr = rep(c(1970, 1975, 1980, 1985, 1990, 1995, 2000, 2005, 
+                            2010, 2015), 4),
+                 type = rep(c('Low Birthweight (<2,500g)', 
+                              'Very Low Birthweight (<1,500g)'), each=20))
+
+
+ggplot(df, aes(x=yr, y=perc, group=race, color=race)) + 
+  geom_point(stat='identity', size=2) +
+  theme_classic() +
+  geom_line() +
+  ggtitle('CDC national estimates for low birthweight') +
+  ylab('Estimated Percentage (age adjusted)') +
+  facet_wrap(~type, ncol=1, scales = 'free') +
+  theme(legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.text = element_text(size=12),
+        strip.text = element_text(size=12))
+
+df <- data.frame(race = rep(c('white', 'black'), each=15),
+                 perc = c(3.1, 2.5, 2.9, 3, 3, 3.1, 2.9, 2.7, 2.9, 3.2, 3.2,
+                          3.2, 3.1, 3.4, 3.3, 4, 2.9, 3.1, 3.5, 3.4, 3.4, 3.6,
+                          3.2, 3.2, 3.7, 3.8, 3.7, 3.3, 3.5, 3.4),
+                 yr = rep(c(1997, 1999, 2000, 2001, 2002, 2003, 2004, 2006, 
+                            2007, 2008, 2009, 2010, 2011, 2013, 2014), 2))
+
+
+ggplot(df, aes(x=yr, y=perc, group=race, color=race)) + 
+  geom_point(stat='identity', size=2) +
+  theme_classic() +
+  geom_line() +
+  ylim(0, 5) +
+  ggtitle('Serious psychological distress in the past 30 days') +
+  ylab('Estimated Percentage of adults') +
+  theme(legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.text = element_text(size=12),
+        strip.text = element_text(size=12))
+
+df <- data.frame(race = rep(c('white', 'black'), each=7),
+                 perc = c(28.3, 29.4, 29.9, 29.9, 29.7, 28.6, 29.1,
+                          42.3, 43.1, 43.4, 43.2, 42.7, 43.4, 43.3),
+                 yr = rep(c(2002, 2004, 2006, 2008, 2010, 2012, 2014), 2))
+
+ggplot(df, aes(x=yr, y=perc, group=race, color=race)) + 
+  geom_point(stat='identity', size=2) +
+  theme_classic() +
+  geom_line() +
+  ylim(0, 50) + 
+  ggtitle('Rate of Hypertension') +
+  ylab('Estimated Percentage of adults') +
+  theme(legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.text = element_text(size=12),
+        strip.text = element_text(size=12))
+
+df <- data.frame(race = rep(c('white', 'black'), 2),
+                 perc = c(19, 16.8, 4.3, 3.1),
+                 type = c(rep('Any Mental Illness', 2),
+                          rep('Serious Mental Illness', 2)))
+
+ggplot(df, aes(x=type, y=perc, group=race, color=race, label=perc)) + 
+  geom_point(stat='identity', size=2) +
+  theme_classic() +
+  geom_line() +
+  ggtitle('Substance Abuse and Mental Health Services Administration',
+          'Rates of mental illness, 2008-2012') +
+  ylab('Estimated Annual Percentage') +
+  geom_text(vjust=-.25, hjust=-.1, size=4) +
+  theme(legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.text = element_text(size=12),
+        strip.text = element_text(size=12))
+
+df <- data.frame(race = rep(c('white', 'black'), each=4),
+                 perc = c(46.3, 41, 25.7, 2.9, 29.8, 23.4, 18.7, 5.1),
+                 type = rep(c('Any Service', 'Prescription', 'Outpatient', 
+                              'Inpatient'),2))
+
+ggplot(df, aes(x=race, y=perc, label=perc)) + 
+  geom_point(stat='identity', size=2, aes(color=race)) +
+  theme_classic() +
+  geom_line(aes(group=1)) +
+  ggtitle('Substance Abuse and Mental Health Services Administration',
+          'Rate of Service use in the past year among adults with any mental illness') +
+  ylab('Estimated Annual Percentage') +
+  geom_text(hjust=-.5) +
+  facet_wrap(~type, ncol=2, scales='free') + 
+  theme(legend.title = element_blank(),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.text = element_text(size=12),
+        strip.text = element_text(size=12))
+
+df <- data.frame(occupation = c('Manufacturing/Construction', 
+                                'Retail trade',
+                                'Finance/information/real estate',
+                                'Professional/administrative/management',
+                                'Educational services',
+                                'Health care/social assistance',
+                                'Accommodation/food services',
+                                'Public administration/arts/other services'),
+                 prev_ratio = c(1.14, 1.07, 1.44, 1.3, 1.39, 1.23, 1.05, 1.3),
+                 lower = c(1.07, .96, 1.3, 1.18, 1.25, 1.14, .93, 1.21),
+                 upper = c(1.2, 1.18, 1.59, 1.44, 1.54, 1.32, 1.19, 1.41))
+
+df %>%
+  mutate(occupation=reorder(occupation, prev_ratio)) %>%
+  ggplot(aes(x=occupation, y=prev_ratio)) + 
+  geom_point(stat='identity', size=2) +
+  theme_classic() +
+  geom_line() +
+  geom_errorbar(aes(ymin=lower, ymax=upper)) +
+  coord_flip() +
+  geom_hline(yintercept = 1) +
+  ggtitle('Short Sleeper black-white prevalence ratio',
+          'Data from the National Health Interview Survey; Model described in Jackson et al., 2013') +
+  ylab('Estimated Prevalence Ratio') +
+  theme(legend.title = element_blank(),
+        axis.title.y = element_blank(),
+        axis.title.x = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.text = element_text(size=12),
+        strip.text = element_text(size=12))
+
+df <- data.frame(metric = rep(c('Percent of all KG held back', 
+                                'Proportion of Preschoolers Suspended (n=6,751)'),
+                              each=2),
+                 per = c(5, 4, 46.9, 27.6),
+                 race = c('black', 'white', 'black', 'white'))
+
+df %>%
+  ggplot(aes(x=race, y=per)) + 
+  geom_point(stat='identity', size=2, aes(color=race)) +
+  theme_classic() +
+  geom_line(aes(group=1)) +
+  ggtitle('Very early differences in educational attainment',
+          'Data from the US department of Education, 2013-2014') +
+  facet_wrap(~metric, scales='free', ncol=1) +
+  theme(legend.title = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_text(size=12),
+        legend.text = element_text(size=12),
+        strip.text = element_text(size=12))
 
