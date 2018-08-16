@@ -205,20 +205,19 @@ string2 <- "') %>% select(county_id, bias:weighted_explicit_diff) %>% distinct()
 df %>% filter(grouping=="
 
 string3 <- ") %>% filter(exclude==FALSE) %>% filter(metric=='"
-string4 <- "') %>% select(county_id, total_pop:poverty_rate, crime_rate:b.w.ratio, dissim, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
+string4 <- "') %>% select(county_id, ses, total_pop:poverty_rate, crime_rate:b.w.ratio, dissim, COMBOKEY:metric) %>% left_join(scaled_county_level) -> mod.dat
 
 m <- stan_glmer(cbind(number, total_number-number) ~ group + weighted_bias + 
 weighted_explicit_diff + group:weighted_bias + group:weighted_explicit_diff + total_pop + 
-unemp_rate + med_income + poverty_rate + col_grads + white_prop + 
+ses + white_prop + 
 black_prop + b.w.ratio + mobility + crime_rate + density + dissim +
-total_pop:group + unemp_rate:group + med_income:group + 
-poverty_rate:group + col_grads:group + white_prop:group + 
+total_pop:group + ses:group + white_prop:group + 
 black_prop:group + b.w.ratio:group + mobility:group + 
 crime_rate:group + density:group + dissim:group +
 (group|county_id), data=mod.dat, prior = normal(0,5), 
 prior_intercept = normal(0,5), family=binomial, adapt_delta=.99)
 
-save(m, file='/tigress/triddle/educational_disparities/mw_2013uclaexcl/"
+save(m, file='/tigress/triddle/educational_disparities/mw_2013uclaexcl_pca/"
 
 
 for(i in rownames(table(dfs$metric))){
