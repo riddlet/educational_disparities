@@ -405,22 +405,46 @@ full_data %>%
 ################
 # append covariates #
 ################
-df_haley <- read.csv('/Users/travis/Documents/gits/Data/Haley_countylinks/_Master Spreadsheet.csv')
-names(df_haley)[6] <- 'county'
+#df_haley <- read.csv('/Users/travis/Documents/gits/Data/Haley_countylinks/_Master Spreadsheet.csv')
+#names(df_haley)[6] <- 'county'
 
 df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_ethnicity/ACS_14_5YR_B02001_with_ann.csv',skip = 1)
 
-covs_pop <- df_acs[,c(3, 4, 6, 8)]
-names(covs_pop) <- c('county', 'total_pop', 'white_pop', 'black_pop')
+covs_pop <- df_acs[,c(2, 3, 4, 6, 8)]
+names(covs_pop) <- c('county_fips', 'county', 'total_pop', 'white_pop', 'black_pop')
+covs_pop %>%
+  mutate(county_fips = formatC(county_fips, width = 5, format = "d", flag = "0")) -> covs_pop
 
-df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_poverty_emp/ACS_14_5YR_DP03_with_ann.csv',skip = 1)
+#df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_poverty_emp/ACS_14_5YR_DP03_with_ann.csv',skip = 1)
+df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_poverty_emp/ACS_14_5YR_S2301_with_ann.csv',skip = 1)
+df_acs2 <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_poverty_emp/ACS_14_5YR_S1903_with_ann.csv', skip=1)
+df_acs3 <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_poverty_emp/ACS_14_5YR_S1701_with_ann.csv', skip=1)
+df_acs4 <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_education/ACS_14_5YR_C15002A_with_ann.csv',skip=1)
+df_acs5 <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_education/ACS_14_5YR_C15002B_with_ann.csv', skip=1)
 
-covs_emp <- df_acs[,c(3, 22, 248, 478)]
-names(covs_emp) <- c('county', 'unemp_rate', 'med_income', 'poverty_rate')
+#covs_emp <- df_acs[,c(3, 22, 248, 478)]
+covs_emp <- df_acs[,c(2, 3, 82, 90)]
+names(covs_emp) <- c('county_fips', 'county', 'unemp_rate_w', 'unemp_rate_b')
+covs_emp %>%
+ mutate(county_fips = formatC(county_fips, width = 5, format = "d", flag = "0"),
+        unemp_rate_b = as.numeric(as.character(unemp_rate_b))) -> covs_emp
 
-df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_education/ACS_14_5YR_S1501_with_ann.csv',skip=1)
-covs_ed <- df_acs[,c(3, 28)]
-names(covs_ed) <- c('county', 'col_grads')
+covs_inc <- df_acs2[,c(3, 10, 14)]
+names(covs_inc) <- c('county', 'med_inc_w', 'med_inc_b')
+covs_inc$med_inc_b <- as.numeric(as.character(covs_inc$med_inc_b))
+
+covs_pov <- df_acs3[,c(3, 56, 62)]
+names(covs_pov) <- c('county', 'poverty_rate_w', 'poverty_rate_b')
+covs_pov$poverty_rate_b <- as.numeric(as.character(covs_pov$poverty_rate_b))
+
+covs_ed_w <- df_acs4[,c(3, 4, 14, 24)]
+names(covs_ed_w) <- c('county', 'total', 'col_grads_wm', 'col_grads_ww')
+
+covs_ed_b <- df_acs5[,c(3, 4, 14, 24)]
+names(covs_ed_b) <- c('county', 'total', 'col_grads_bm', 'col_grads_bw')
+
+covs_ed_w$col_grads_w <- (covs_ed_w$col_grads_wm+covs_ed_w$col_grads_ww)/covs_ed_w$total
+covs_ed_b$col_grads_b <- (covs_ed_b$col_grads_bm+covs_ed_b$col_grads_bw)/covs_ed_b$total
 
 df_acs <- read.csv('/Users/travis/Documents/gits/Data/ACS/county_mobility/ACS_14_5YR_S0701_with_ann.csv', skip=1)
 covs_mob <- df_acs[,c(3, 158, 160, 162)]
@@ -482,27 +506,43 @@ df_seg %>%
   ungroup() %>%
   select(state_name, county, county_fips, state_fips, dissim) %>%
   mutate(state_name = stringr::str_trim(state_name)) %>%
-  left_join(df_haley[,c('state_code', 'state_name')]) %>%
   distinct() %>%
-  arrange(desc(dissim)) %>%
-  mutate(county_id = paste(state_code, county_fips, sep='-')) -> covs_seg
+  arrange(desc(dissim)) -> covs_seg
+
+df_states <- data.frame(state_fips = maps::state.fips$fips,
+                        state_abb = maps::state.fips$abb)
+
+df_states <- distinct(right_join(df_states, 
+                       rbind(data.frame(state_abb=c(state.abb, 'DC'),
+                                  state = c(state.name, 'District of Columbia')))))
+
+df_states$state_fips[c(2,11)] <- c(2, 15)
+df_states$state_fips <- formatC(df_states$state_fips, width = 2, format = "d", flag = "0")
 
 covs_pop %>%
-  left_join(covs_ed) %>%
   left_join(covs_emp) %>%
-  left_join(df_haley) %>%
+  left_join(covs_inc) %>%
+  left_join(covs_pov) %>%
+  left_join(covs_ed_w) %>%
+  left_join(covs_ed_b[,c('county', 'col_grads_b')]) %>%
   left_join(covs_fbi) %>% 
   left_join(covs_hous) %>%
   left_join(covs_mob) %>%
+  separate(county_fips, into = c('state_fips', 'county_fips'), sep = 2) %>%
+  left_join(df_states) %>%
   mutate(white_prop = white_pop/total_pop,
          black_prop = black_pop/total_pop) %>%
   mutate(b.w.ratio = black_prop/white_prop) %>%
-  mutate(county_id = paste(state_code, 
-                           stringr::str_sub(county_fips, -3, -1), sep='-')) %>%
-  left_join(covs_seg[,c('county_id', 'dissim')]) -> covs
+  mutate(county_id = paste(state_abb, county_fips, sep='-')) %>%
+  left_join(covs_seg[,c('county_fips', 'state_fips', 'dissim')]) -> covs
 
 write.csv(covs, file='/Users/travis/Documents/gits/educational_disparities/output/covariates.csv', row.names = FALSE)
 
+imp <- mice(covs[,c(4:13, 16:20, 23:25, 27)])
+covs_imputed <- covs
+covs_imputed[,c(4:13, 16:20, 23:25, 27)] <- complete(imp)
+
+write.csv(covs_imputed, file='/Users/travis/Documents/gits/educational_disparities/output/covariates_imputed.csv', row.names = FALSE)
 
 #counties w/o IAT data: 
 #Aleutians East, Hoonah-Angoon, Prince of Wales-Hyder, Skagway, Wrangell, 
@@ -513,12 +553,40 @@ write.csv(covs, file='/Users/travis/Documents/gits/educational_disparities/outpu
 #counties w/o schools:
 #kalawao, Issaquena, Mora, Divide, Loving
 
-covs %>%
+#pca on covariates
+covs_imputed %>%
+  select(county_id, unemp_rate_w, unemp_rate_b, med_inc_w, med_inc_b, 
+         poverty_rate_w, poverty_rate_b, col_grads_w, col_grads_b) %>%
+  mutate(col_grads_diff = scale(col_grads_w-col_grads_b)[,1],
+         unemp_rate_diff = scale(unemp_rate_w - unemp_rate_b)[,1],
+         med_inc_diff = scale(med_inc_w-med_inc_b)[,1],
+         poverty_rate_diff = scale(poverty_rate_w-poverty_rate_b)[,1]) %>%
+  mutate(col_grads_w = scale(col_grads_w)[,1],
+         unemp_rate_w = scale(unemp_rate_w)[,1],
+         med_inc_w = scale(med_inc_w)[,1],
+         poverty_rate_w = scale(poverty_rate_w)[,1],
+         col_grads_b = scale(col_grads_b)[,1],
+         unemp_rate_b = scale(unemp_rate_b)[,1],
+         med_inc_b = scale(med_inc_b)[,1],
+         poverty_rate_b = scale(poverty_rate_b)[,1]) -> ses_covs
+pca_cov_w <- FactoMineR::PCA(ses_covs[,c(2, 4, 6, 8)])
+pca_cov_b <- FactoMineR::PCA(ses_covs[,c(3, 5, 7, 9)])
+pca_cov_diff <- FactoMineR::PCA(ses_covs[,c(10:13)])
+
+covs_imputed$ses_w <- pca_cov_w$ind$coord[,1]
+covs_imputed$ses_b <- pca_cov_b$ind$coord[,1]
+covs_imputed$ses_gap <- pca_cov_diff$ind$coord[,1]
+
+covs_imputed %>%
   mutate(total_pop = scale(total_pop)[,1],
-         col_grads = scale(col_grads)[,1],
-         unemp_rate = scale(unemp_rate)[,1],
-         med_income = scale(med_income)[,1],
-         poverty_rate = scale(poverty_rate)[,1],
+         col_grads_w = scale(col_grads_w)[,1],
+         col_grads_b = scale(col_grads_b)[,1],
+         unemp_rate_w = scale(unemp_rate_w)[,1],
+         unemp_rate_b = scale(unemp_rate_b)[,1],
+         med_inc_w = scale(med_inc_w)[,1],
+         med_inc_b = scale(med_inc_b)[,1],
+         poverty_rate_w = scale(poverty_rate_w)[,1],
+         poverty_rate_b = scale(poverty_rate_b)[,1],
          crime_rate = scale(crime_rate)[,1],
          density = scale(density)[,1],
          mobility = scale(mobility)[,1],
@@ -527,7 +595,6 @@ covs %>%
          b.w.ratio = scale(b.w.ratio)[,1],
          dissim = scale(dissim)[,1]) %>%
   right_join(full_data, by='county_id') -> mod.dat
-
 
 ################
 # write file #
